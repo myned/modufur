@@ -395,7 +395,7 @@ class MsG:
     @commands.is_owner()
     async def __clear_global_blacklist(self, ctx):
         global global_blacklist
-        global_blacklist = []
+        del global_blacklist
         with open('global_blacklist.json', 'w') as outfile:
             json.dump(global_blacklist, outfile, indent=4, sort_keys=True)
         await ctx.send('✅ **Global blacklist cleared.**', delete_after=5)
@@ -408,7 +408,7 @@ class MsG:
         else:
             guild = ctx.message.channel
         channel = ctx.message.channel
-        guild_blacklist.get(str(guild.id), {})[str(channel.id)] = []
+        del guild_blacklist.get(str(guild.id), {})[str(channel.id)]
         with open('guild_blacklist.json', 'w') as outfile:
             json.dump(guild_blacklist, outfile, indent=4, sort_keys=True)
         await ctx.send('✅ <#' + str(channel.id) + '> **blacklist cleared.**', delete_after=5)
@@ -416,7 +416,7 @@ class MsG:
     async def __clear_user_blacklist(self, ctx):
         global user_blacklist
         user = ctx.message.author
-        user_blacklist[str(user.id)] = []
+        del user_blacklist[str(user.id)]
         with open('user_blacklist.json', 'w') as outfile:
             json.dump(user_blacklist, outfile, indent=4, sort_keys=True)
         await ctx.send('✅ ' + user.mention + '**\'s blacklist cleared.**', delete_after=5)
