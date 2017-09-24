@@ -49,7 +49,7 @@ async def die(ctx):
 @commands.is_owner()
 async def invite(ctx):
     try:
-        await ctx.send('🔗 ' + utils.oauth_url(config['client_id'], permissions=config['permissions'], guild=ctx.message.guild))
+        await ctx.send('🔗 https://discordapp.com/oauth2/authorize?&client_id=' + str(config['client_id']) + '&scope=bot&permissions=' + str(config['permissions']))
     except Exception:
         await ctx.send(exc.base)
         traceback.print_exc(limit=1)
