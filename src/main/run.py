@@ -1,12 +1,4 @@
-import asyncio
-import discord
 import json
-import traceback
-from discord import utils
-from discord.ext import commands
-from cogs import booru, info, tools
-from misc import checks
-from misc import exceptions as exc
 
 try:
     with open('config.json') as infile:
@@ -14,8 +6,17 @@ try:
         print('\"config.json\" loaded.')
 except FileNotFoundError:
     with open('config.json', 'w') as outfile:
-        json.dump({'client_id': 'int', 'owner_id': 'int', 'permissions': 'int', 'shutdown_channel': 'int', 'startup_channel': 'int', 'token': 'str'}, outfile, indent=4, sort_keys=True)
+        json.dump({'client_id': 0, 'owner_id': 0, 'permissions': 0, 'shutdown_channel': 0, 'startup_channel': 0, 'token': 'str'}, outfile, indent=4, sort_keys=True)
         raise FileNotFoundError('Config file not found: \"config.json\" created with abstract values. Restart \"run.py\" with correct values.')
+
+import asyncio
+import discord
+import traceback
+from discord import utils
+from discord.ext import commands
+from cogs import booru, info, tools
+from misc import checks
+from misc import exceptions as exc
 
 bot = commands.Bot(command_prefix=commands.when_mentioned_or(','), description='Experimental booru bot')
 
