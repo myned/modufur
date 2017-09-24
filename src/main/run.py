@@ -24,7 +24,7 @@ bot = commands.Bot(command_prefix=commands.when_mentioned_or(config['prefix']), 
 @bot.event
 async def on_ready():
     if isinstance(bot.get_channel(config['startup_channel']), discord.TextChannel):
-        await bot.get_channel(config['startup_channel']).send('Hello how are? **Have day.** 🌈\n<embed>[STARTUP-INFO]</embed>')
+        await bot.get_channel(config['startup_channel']).send('H3l1(0) hOw aR3? **H4VE dAy.** 🌈')
     print('Connected.')
     print('Username: ' + bot.user.name)
     print('-------')
@@ -35,7 +35,7 @@ async def on_ready():
 @commands.is_owner()
 async def die(ctx):
     try:
-        await bot.get_channel(config['shutdown_channel']).send('Am go bye. **Have night.** 💤\n<embed>[SHUTDOWN-INFO]</embed>')
+        await bot.get_channel(config['shutdown_channel']).send('Am g0 by3e333333eee. **H4v3 n1GhT.** 💤')
         await bot.close()
         print('-------')
         print('Closed.')
