@@ -1,0 +1,2 @@
+# Modumind
+Experimental Discord bot
