@@ -6,7 +6,7 @@ try:
         print('\"config.json\" loaded.')
 except FileNotFoundError:
     with open('config.json', 'w') as outfile:
-        json.dump({'client_id': 0, 'owner_id': 0, 'permissions': 0, 'shutdown_channel': 0, 'startup_channel': 0, 'token': 'str'}, outfile, indent=4, sort_keys=True)
+        json.dump({'client_id': 0, 'owner_id': 0, 'permissions': 388160, 'prefix': ',', 'shutdown_channel': 0, 'startup_channel': 0, 'token': 'str'}, outfile, indent=4, sort_keys=True)
         raise FileNotFoundError('Config file not found: \"config.json\" created with abstract values. Restart \"run.py\" with correct values.')
 
 import asyncio
@@ -18,12 +18,13 @@ from cogs import booru, info, tools
 from misc import checks
 from misc import exceptions as exc
 
-bot = commands.Bot(command_prefix=commands.when_mentioned_or(','), description='Experimental booru bot')
+bot = commands.Bot(command_prefix=commands.when_mentioned_or(config['prefix']), description='Experimental booru bot')
 
 # Send and print ready message to #testing and console after logon
 @bot.event
 async def on_ready():
-    await bot.get_channel(config['startup_channel']).send('Hello how are? **Have day.** 🌈\n<embed>[STARTUP-INFO]</embed>')
+    if isinstance(bot.get_channel(config['startup_channel']), discord.TextChannel):
+        await bot.get_channel(config['startup_channel']).send('Hello how are? **Have day.** 🌈\n<embed>[STARTUP-INFO]</embed>')
     print('Connected.')
     print('Username: ' + bot.user.name)
     print('-------')
@@ -34,8 +35,7 @@ async def on_ready():
 @commands.is_owner()
 async def die(ctx):
     try:
-        await ctx.send('Am go bye. **Have night.** 💤')
-        # await bot.get_channel(config['shutdown_channel']).send('<embed>[SHUTDOWN-INFO]</embed>')
+        await bot.get_channel(config['shutdown_channel']).send('Am go bye. **Have night.** 💤\n<embed>[SHUTDOWN-INFO]</embed>')
         await bot.close()
         print('-------')
         print('Closed.')
