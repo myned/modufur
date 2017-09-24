@@ -1,22 +1,12 @@
-import asyncio
-import discord
 import json
-import requests
-import traceback
-from discord import reaction
-from discord.ext import commands
-from discord.ext.commands import errors
-from misc import checks
-from misc import exceptions as exc
-from utils import formatter, scraper
 
 try:
     with open('global_blacklist.json') as infile:
         global_blacklist = json.load(infile)
         print('\"global_blacklist.json\" loaded.')
 except FileNotFoundError:
-    print('Blacklist file not found: \"global_blacklist.json\" created.')
     with open('global_blacklist.json', 'w+') as iofile:
+        print('Blacklist file not found: \"global_blacklist.json\" created.')
         json.dump([], iofile, indent=4, sort_keys=True)
         iofile.seek(0)
         global_blacklist = json.load(iofile)
@@ -25,8 +15,8 @@ try:
         guild_blacklist = json.load(infile)
         print('\"guild_blacklist.json\" loaded.')
 except FileNotFoundError:
-    print('Blacklist file not found: \"guild_blacklist.json\" created.')
     with open('guild_blacklist.json', 'w+') as iofile:
+        print('Blacklist file not found: \"guild_blacklist.json\" created.')
         json.dump({}, iofile, indent=4, sort_keys=True)
         iofile.seek(0)
         guild_blacklist = json.load(iofile)
@@ -35,11 +25,22 @@ try:
         user_blacklist = json.load(infile)
         print('\"user_blacklist.json\" loaded.')
 except FileNotFoundError:
-    print('Blacklist file not found: \"user_blacklist.json\" created.')
     with open('user_blacklist.json', 'w+') as iofile:
+        print('Blacklist file not found: \"user_blacklist.json\" created.')
         json.dump({}, iofile, indent=4, sort_keys=True)
         iofile.seek(0)
         user_blacklist = json.load(iofile)
+
+import asyncio
+import discord
+import requests
+import traceback
+from discord import reaction
+from discord.ext import commands
+from discord.ext.commands import errors
+from misc import checks
+from misc import exceptions as exc
+from utils import formatter, scraper
 
 last_command = {}
 
