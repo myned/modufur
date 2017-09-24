@@ -14,8 +14,7 @@ try:
         print('\"config.json\" loaded.')
 except FileNotFoundError:
     with open('config.json', 'w') as outfile:
-        json.dump({'client_id': 'int', 'owner_id': 'int', 'permissions': 'int', 'shutdown_channel': 'int', 'startup_channel': 'int',
-        'token': 'str'}, outfile, indent=4, sort_keys=True)
+        json.dump({'client_id': 'int', 'owner_id': 'int', 'permissions': 'int', 'shutdown_channel': 'int', 'startup_channel': 'int', 'token': 'str'}, outfile, indent=4, sort_keys=True)
         raise FileNotFoundError('Config file not found: \"config.json\" created with abstract values. Restart \"run.py\" with correct values.')
 
 bot = commands.Bot(command_prefix=commands.when_mentioned_or(','), description='Experimental booru bot')
