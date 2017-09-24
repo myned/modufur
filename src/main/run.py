@@ -29,7 +29,7 @@ async def on_ready():
     print('-------')
 
 # Close connection to Discord - immediate offline
-@bot.command(name=',die', aliases=[',d', ',close', ',kill'], brief='Kills the bot', description='BOT OWNER ONLY\nCloses the connections to Discord', hidden=True)
+@bot.command(name=',die', aliases=[',d', ',close', ',kill'], brief='Kills the bot', description='BOT OWNER ONLY\nCloses the connection to Discord', hidden=True)
 @checks.del_ctx()
 @commands.is_owner()
 async def die(ctx):
