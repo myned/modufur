@@ -80,7 +80,7 @@ class MsG:
             await ctx.trigger_typing()
             await ctx.send('✅ ' + ctx.message.author.mention + ' **Probable match:**\n' + scraper.check_match('http://iqdb.harry.lu/?url=' + url))
         except exc.MatchError:
-            await ctx.send('❌ ' + ctx.message.author.mention + ' **No probable match.**')
+            await ctx.send('❌ ' + ctx.message.author.mention + ' **No probable match.**', delete_after=10)
         except Exception:
             await ctx.send(exc.base)
             traceback.print_exc(limit=1)

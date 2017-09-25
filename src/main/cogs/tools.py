@@ -45,14 +45,13 @@ class Utils:
 
     @commands.group(name=',send', aliases=[',s'], hidden=True)
     @commands.is_owner()
+    @checks.del_ctx()
     async def send(self, ctx):
         pass
 
     @send.command(name='guild', aliases=['g', 'server', 's'])
-    @checks.del_ctx()
     async def send_guild(self, ctx, guild, channel, *message):
         await discord.utils.get(self.bot.get_all_channels(), guild__name=guild, name=channel).send(formatter.tostring(message))
     @send.command(name='user', aliases=['u', 'member', 'm'])
-    @checks.del_ctx()
     async def send_user(self, ctx, user, *message):
         await discord.utils.get(self.bot.get_all_members(), id=int(user)).send(formatter.tostring(message))
