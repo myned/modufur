@@ -35,7 +35,8 @@ async def on_ready():
 @checks.del_ctx()
 async def die(ctx):
     try:
-        await bot.get_channel(config['shutdown_channel']).send('Am g0 by3e333333eee. **H4v3 n1GhT.** 💤')
+        if isinstance(bot.get_channel(config['startup_channel']), discord.TextChannel):
+            await bot.get_channel(config['shutdown_channel']).send('Am g0 by3e333333eee. **H4v3 n1GhT.** 💤')
         await bot.close()
         print('-------')
         print('Closed.')
