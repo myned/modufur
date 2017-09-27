@@ -20,5 +20,7 @@ class FlagError(Exception):
     pass
 class BlacklistError(Exception):
     pass
+class NotFound(Exception):
+    pass
 class Continue(Exception):
     pass

@@ -37,7 +37,7 @@ import requests
 import traceback
 from discord import reaction
 from discord.ext import commands
-from discord.ext.commands import errors
+from discord import errors as err
 from misc import checks
 from misc import exceptions as exc
 from utils import formatter, scraper
@@ -101,6 +101,10 @@ class MsG:
             await ctx.send('❌ `' + str(e) + '` **out of bounds.**', delete_after=10)
         except exc.TagBoundsError as e:
             await ctx.send('❌ `' + str(e) + '` **out of bounds.** Tags limited to 5, currently.', delete_after=10)
+        except ValueError:
+            await ctx.send('❌ `' + args[-1] + '` **not a valid limit.**', delete_after=10)
+        except exc.NotFound:
+            await ctx.send('❌ **Tag(s) not found.**', delete_after=10)
         except Exception:
             await ctx.send(exc.base)
             traceback.print_exc()
@@ -125,6 +129,10 @@ class MsG:
             await ctx.send('❌ `' + str(e) + '` **out of bounds.**', delete_after=10)
         except exc.TagBoundsError as e:
             await ctx.send('❌ `' + str(e) + '` **out of bounds.** Tags limited to 5, currently.', delete_after=10)
+        except ValueError:
+            await ctx.send('❌ `' + args[-1] + '` **not a valid limit.**', delete_after=10)
+        except exc.NotFound:
+            await ctx.send('❌ **Tag(s) not found.**', delete_after=10)
         except Exception:
             await ctx.send(exc.base)
             traceback.print_exc(limit=1)
@@ -156,7 +164,10 @@ class MsG:
                 raise exc.BoundsError(args[-1])
         # Checks for blacklisted tags in endpoint blacklists - try/except is for continuing the parent loop
         while len(urls) < limit:
-            request = requests.get('https://' + booru + '.net/post/index.json?limit=6&tags=order:random' + formatter.tostring_commas(args)).json()
+            headers = {'user-agent': 'Modumind/0.0.1 (Myned)'}
+            request = requests.get('https://' + booru + '.net/post/index.json?limit=6&tags=order:random' + formatter.tostring_commas(args), headers=headers).json()
+            if not request:
+                raise exc.NotFound
             for post in request:
                 if 'swf' in post['file_ext'] or 'webm' in post['file_ext']:
                     continue
