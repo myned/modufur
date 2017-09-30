@@ -6,7 +6,7 @@ try:
         print('\"global_blacklist.json\" loaded.')
 except FileNotFoundError:
     with open('global_blacklist.json', 'w+') as iofile:
-        print('Blacklist file not found: \"global_blacklist.json\" created.')
+        print('Blacklist file not found: \"global_blacklist.json\" created and loaded.')
         json.dump([], iofile, indent=4, sort_keys=True)
         iofile.seek(0)
         global_blacklist = json.load(iofile)
@@ -16,7 +16,7 @@ try:
         print('\"guild_blacklist.json\" loaded.')
 except FileNotFoundError:
     with open('guild_blacklist.json', 'w+') as iofile:
-        print('Blacklist file not found: \"guild_blacklist.json\" created.')
+        print('Blacklist file not found: \"guild_blacklist.json\" created and loaded.')
         json.dump({}, iofile, indent=4, sort_keys=True)
         iofile.seek(0)
         guild_blacklist = json.load(iofile)
@@ -26,10 +26,20 @@ try:
         print('\"user_blacklist.json\" loaded.')
 except FileNotFoundError:
     with open('user_blacklist.json', 'w+') as iofile:
-        print('Blacklist file not found: \"user_blacklist.json\" created.')
+        print('Blacklist file not found: \"user_blacklist.json\" created and loaded.')
         json.dump({}, iofile, indent=4, sort_keys=True)
         iofile.seek(0)
         user_blacklist = json.load(iofile)
+try:
+    with open('aliases.json') as infile:
+        aliases = json.load(infile)
+        print('\"aliases.json\" loaded.')
+except FileNotFoundError:
+    with open('aliases.json', 'w+') as iofile:
+        print('Aliases file not found: \"aliases.json\" created and loaded.')
+        json.dump({'global_blacklist': {}, 'guild_blacklist': {}, 'user_blacklist': {}}, iofile, indent=4, sort_keys=True)
+        iofile.seek(0)
+        aliases = json.load(iofile)
 
 import asyncio
 import discord
@@ -42,6 +52,7 @@ from misc import checks
 from misc import exceptions as exc
 from utils import formatter, scraper
 
+headers = {'user-agent': 'Modumind/0.0.1 (Myned)'}
 last_command = {}
 
 class MsG:
@@ -71,6 +82,18 @@ class MsG:
         except Exception:
             await ctx.send(exc.base)
             traceback.print_exc(limit=1)
+
+    # Tag aliases
+    @commands.command(name='aliases', aliases=['a'], brief='e621 Tag aliases', description='e621 | NSFW\nSearch aliases for given tag')
+    @checks.del_ctx()
+    async def alias(self, ctx, tag):
+        global headers
+        aliases = []
+        try:
+            alias_request = requests.get('https://e621.net/tag_alias/index.json?aliased_to=' + tag + '&approved=true', headers=headers).json()
+            for dic in alias_request:
+                aliases.append(dic['name'])
+            await ctx.send('✅ `' + tag + '` **aliases:**\n`' + formatter.tostring(aliases) + '`')
 
     # Reverse image searches a linked image using the public iqdb
     @commands.command(name='reverse', aliases=['rev', 'ris'], brief='e621 Reverse image search', description='e621 | NSFW\nReverse-search an image with given URL')
@@ -104,7 +127,9 @@ class MsG:
         except ValueError:
             await ctx.send('❌ `' + args[-1] + '` **not a valid limit.**', delete_after=10)
         except exc.NotFound:
-            await ctx.send('❌ **Tag(s) not found.**', delete_after=10)
+            await ctx.send('❌ **Post not found.**', delete_after=10)
+        except exc.Timeout:
+            await ctx.send('❌ **Request timed out.**', delete_after=10)
         except Exception:
             await ctx.send(exc.base)
             traceback.print_exc()
@@ -132,14 +157,16 @@ class MsG:
         except ValueError:
             await ctx.send('❌ `' + args[-1] + '` **not a valid limit.**', delete_after=10)
         except exc.NotFound:
-            await ctx.send('❌ **Tag(s) not found.**', delete_after=10)
+            await ctx.send('❌ **Post not found.**', delete_after=10)
+        except exc.Timeout:
+            await ctx.send('❌ **Request timed out.**', delete_after=10)
         except Exception:
             await ctx.send(exc.base)
             traceback.print_exc(limit=1)
 
     # Messy code that checks image limit and tags in blacklists
     async def check_send_urls(self, ctx, booru, args):
-        global global_blacklist, guild_blacklist, user_blacklist
+        global global_blacklist, guild_blacklist, user_blacklist, aliases, headers
         if isinstance(ctx.message.guild, discord.Guild):
             guild = ctx.message.guild
         else:
@@ -148,11 +175,7 @@ class MsG:
         user = ctx.message.author
         urls = []
         limit = 1
-        # Checks if tags are in the file blacklists
-        if args:
-            for tag in args:
-                if tag == 'swf' or tag == 'webm' or tag in global_blacklist or tag in guild_blacklist.get(str(guild.id), {}).get(str(channel.id), []) or tag in user_blacklist.get(str(user.id), []):
-                    raise exc.TagBlacklisted(tag)
+        c = 0
         if len(args) > 5:
             raise exc.TagBoundsError(formatter.tostring(args[5:]))
         # Checks for, defines, and removes limit from end of args
@@ -162,9 +185,13 @@ class MsG:
                 args.pop()
             else:
                 raise exc.BoundsError(args[-1])
+        # Checks if tags are in local blacklists
+        if args:
+            for tag in args:
+                if tag == 'swf' or tag == 'webm' or tag in global_blacklist or tag in guild_blacklist.get(str(guild.id), {}).get(str(channel.id), []) or tag in user_blacklist.get(str(user.id), []) or tag in aliases['global_blacklist'].values() or tag in aliases['guild_blacklist'].get(str(guild.id), {}).get(str(channel.id), []).values() or tag in aliases['user_blacklist'].get(str(user.id), []).values():
+                    raise exc.TagBlacklisted(tag)
         # Checks for blacklisted tags in endpoint blacklists - try/except is for continuing the parent loop
         while len(urls) < limit:
-            headers = {'user-agent': 'Modumind/0.0.1 (Myned)'}
             request = requests.get('https://' + booru + '.net/post/index.json?limit=6&tags=order:random' + formatter.tostring_commas(args), headers=headers).json()
             if not request:
                 raise exc.NotFound
@@ -187,6 +214,9 @@ class MsG:
                     urls.append(post['file_url'])
                 if len(urls) == limit:
                     break
+            c += 1
+            if c == 10:
+                raise exc.Timeout
         for url in urls:
             await ctx.send('`' + formatter.tostring(args) + '`\n' + url)
 
@@ -279,18 +309,24 @@ class MsG:
     @_add_tags.command(name='global', aliases=['gl', 'g'])
     @commands.is_owner()
     async def __add_global_tags(self, ctx, *tags):
-        global global_blacklist
+        global global_blacklist, aliases, headers
         for tag in tags:
             if tag in global_blacklist:
                 raise exc.TagExists(tag)
         global_blacklist.extend(tags)
+        for tag in tags:
+            alias_request = requests.get('https://e621.net/tag_alias/index.json?aliased_to=' + tag + '&approved=true', headers=headers).json()
+            for dic in alias_request:
+                aliases['global_blacklist'].setdefault(tag, []).append(dic['name'])
         with open('global_blacklist.json', 'w') as outfile:
             json.dump(global_blacklist, outfile, indent=4, sort_keys=True)
+        with open('aliases.json', 'w') as outfile:
+            json.dump(aliases, outfile, indent=4, sort_keys=True)
         await ctx.send('✅ **Added to global blacklist:**\n```' + formatter.tostring(tags) + '```', delete_after=5)
     @_add_tags.command(name='channel', aliases=['ch', 'c'])
     @commands.has_permissions(manage_channels=True)
     async def __add_channel_tags(self, ctx, *tags):
-        global guild_blacklist
+        global guild_blacklist, aliases, headers
         if isinstance(ctx.message.guild, discord.Guild):
             guild = ctx.message.guild
         else:
@@ -300,19 +336,31 @@ class MsG:
             if tag in guild_blacklist.get(str(guild.id), {}).get(str(channel.id), []):
                 raise exc.TagExists(tag)
         guild_blacklist.setdefault(str(guild.id), {}).setdefault(str(channel.id), []).extend(tags)
+        for tag in tags:
+            alias_request = requests.get('https://e621.net/tag_alias/index.json?aliased_to=' + tag + '&approved=true', headers=headers).json()
+            for dic in alias_request:
+                aliases['guild_blacklist'].setdefault(str(guild.id), {}).setdefault(str(channel.id), {}).setdefault(tag, []).append(dic['name'])
         with open('guild_blacklist.json', 'w') as outfile:
             json.dump(guild_blacklist, outfile, indent=4, sort_keys=True)
+        with open('aliases.json', 'w') as outfile:
+            json.dump(aliases, outfile, indent=4, sort_keys=True)
         await ctx.send('✅ **Added to** <#' + str(channel.id) + '> **blacklist:**\n```' + formatter.tostring(tags) + '```', delete_after=5)
     @_add_tags.command(name='me', aliases=['m'])
     async def __add_user_tags(self, ctx, *tags):
-        global user_blacklist
+        global user_blacklist, aliases, headers
         user = ctx.message.author
         for tag in tags:
             if tag in user_blacklist.get(str(user.id), []):
                 raise exc.TagExists(tag)
         user_blacklist.setdefault(str(user.id), []).extend(tags)
+        for tag in tags:
+            alias_request = requests.get('https://e621.net/tag_alias/index.json?aliased_to=' + tag + '&approved=true', headers=headers).json()
+            for dic in alias_request:
+                aliases['user_blacklist'].setdefault(str(user.id), {}).setdefault(tag, []).append(dic['name'])
         with open('user_blacklist.json', 'w') as outfile:
             json.dump(user_blacklist, outfile, indent=4, sort_keys=True)
+        with open('aliases.json', 'w') as outfile:
+            json.dump(aliases, outfile, indent=4, sort_keys=True)
         await ctx.send('✅ ' + user.mention + ' **added:**\n```' + formatter.tostring(tags) + '```', delete_after=5)
 
     @blacklist.group(name='remove', aliases=['rm', 'r'])
@@ -327,6 +375,7 @@ class MsG:
         for tag in tags:
             if tag in global_blacklist:
                 global_blacklist.remove(tag)
+                aliases['global_blacklist'][tag].clear()
             else:
                 raise exc.TagError(tag)
         with open('global_blacklist.json', 'w') as outfile:
@@ -344,6 +393,7 @@ class MsG:
         for tag in tags:
             if tag in guild_blacklist.get(str(guild.id), {}).get(str(channel.id), []):
                 guild_blacklist.get(str(guild.id), {})[str(channel.id)].remove(tag)
+                aliases['guild_blacklist'][str(guild.id)][str(channel.id)][tag].clear()
             else:
                 raise exc.TagError(tag)
         with open('guild_blacklist.json', 'w') as outfile:
@@ -356,46 +406,12 @@ class MsG:
         for tag in tags:
             if tag in user_blacklist.get(str(user.id), []):
                 user_blacklist.get[str(user.id)].remove(tag)
+                aliases['user_blacklist'][str(user.id)][tag].clear()
             else:
                 raise exc.TagError(tag)
         with open('user_blacklist.json', 'w') as outfile:
             json.dump(user_blacklist, outfile, indent=4, sort_keys=True)
         await ctx.send('✅ ' + user.mention + ' **removed:**\n```' + formatter.tostring(tags) + '```', delete_after=5)
-
-    @blacklist.group(name='set', aliases=['s'])
-    async def _set_blacklist(self, ctx):
-        if ctx.invoked_subcommand is None:
-            await ctx.send('❌ **Invalid blacklist.**')
-
-    @_set_blacklist.command(name='global', aliases=['gl', 'g'])
-    @commands.is_owner()
-    async def __set_global_blacklist(self, ctx, *tags):
-        global global_blacklist
-        global_blacklist = tags[:]
-        with open('global_blacklist.json', 'w') as outfile:
-            json.dump(global_blacklist, outfile, indent=4, sort_keys=True)
-        await ctx.send('✅ **Global blacklist set to:**\n```' + formatter.tostring(global_blacklist) + '```', delete_after=10)
-    @_set_blacklist.command(name='channel', aliases=['ch', 'c'])
-    @commands.has_permissions(manage_channels=True)
-    async def __set_channel_blacklist(self, ctx, *tags):
-        global guild_blacklist
-        if isinstance(ctx.message.guild, discord.Guild):
-            guild = ctx.message.guild
-        else:
-            guild = ctx.message.channel
-        channel = ctx.message.channel
-        guild_blacklist.setdefault(str(guild.id), {})[str(channel.id)] = tags[:]
-        with open('guild_blacklist.json', 'w') as outfile:
-            json.dump(guild_blacklist, outfile, indent=4, sort_keys=True)
-        await ctx.send('✅ <#' + str(channel.id) + '> **blacklist set to:**\n```' + formatter.tostring(guild_blacklist.get(str(guild.id), {}).get(str(channel.id), [])) + '```', delete_after=10)
-    @_set_blacklist.command(name='me', aliases=['m'])
-    async def __set_user_blacklist(self, ctx, *tags):
-        global user_blacklist
-        user = ctx.message.author
-        user_blacklist[str(user.id)] = tags[:]
-        with open('user_blacklist.json', 'w') as outfile:
-            json.dump(user_blacklist, outfile, indent=4, sort_keys=True)
-        await ctx.send('✅ ' + user.mention + '**\'s blacklist set to:**\n```' + formatter.tostring(user_blacklist.get(str(user.id), [])) + '```', delete_after=10)
 
     @blacklist.group(name='clear', aliases=['cl', 'c'])
     async def _clear_blacklist(self, ctx):

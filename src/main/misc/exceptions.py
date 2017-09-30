@@ -22,5 +22,7 @@ class BlacklistError(Exception):
     pass
 class NotFound(Exception):
     pass
+class Timeout(Exception):
+    pass
 class Continue(Exception):
     pass
