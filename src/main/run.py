@@ -44,6 +44,11 @@ async def die(ctx):
         await ctx.send(exc.base)
         traceback.print_exc(limit=1)
 
+@bot.command(aliases=['res', 'r'])
+@commands.is_owner()
+async def restart(self, ctx):
+    pass
+
 # Invite bot to bot owner's server
 @bot.command(name=',invite', aliases=[',inv', ',link'], brief='Invite the bot', description='BOT OWNER ONLY\nInvite the bot to a server (Requires admin)', hidden=True)
 @commands.is_owner()
