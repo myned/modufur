@@ -294,6 +294,9 @@ class MsG:
             await ctx.send('✅ **Added to global blacklist:**\n```' + formatter.tostring(tags) + '```', delete_after=5)
         except exc.TagExists as e:
             await ctx.send('❌ `' + str(e) + '` **already in blacklist.**', delete_after=10)
+        except Exception:
+            await ctx.send(exc.base + '\n```python' + traceback.format_exc(limit=1) + '```')
+            traceback.print_exc(limit=1)
     @_add_tags.command(name='channel', aliases=['ch', 'c'])
     @commands.has_permissions(manage_channels=True)
     async def __add_channel_tags(self, ctx, *tags):
@@ -319,6 +322,9 @@ class MsG:
             await ctx.send('✅ **Added to** <#' + str(channel.id) + '> **blacklist:**\n```' + formatter.tostring(tags) + '```', delete_after=5)
         except exc.TagExists as e:
             await ctx.send('❌ `' + str(e) + '` **already in blacklist.**', delete_after=10)
+        except Exception:
+            await ctx.send(exc.base + '\n```python' + traceback.format_exc(limit=1) + '```')
+            traceback.print_exc(limit=1)
     @_add_tags.command(name='me', aliases=['m'])
     async def __add_user_tags(self, ctx, *tags):
         global blacklists, aliases, headers
@@ -339,6 +345,9 @@ class MsG:
             await ctx.send('✅ ' + user.mention + ' **added:**\n```' + formatter.tostring(tags) + '```', delete_after=5)
         except exc.TagExists as e:
             await ctx.send('❌ `' + str(e) + '` **already in blacklist.**', delete_after=10)
+        except Exception:
+            await ctx.send(exc.base + '\n```python' + traceback.format_exc(limit=1) + '```')
+            traceback.print_exc(limit=1)
 
     @blacklist.group(name='remove', aliases=['rm', 'r'])
     async def _remove_tags(self, ctx):
@@ -362,6 +371,9 @@ class MsG:
             await ctx.send('✅ **Removed from global blacklist:**\n```' + formatter.tostring(tags) + '```', delete_after=5)
         except exc.TagError as e:
             await ctx.send('❌ `' + str(e) + '` **not in blacklist.**', delete_after=10)
+        except Exception:
+            await ctx.send(exc.base + '\n```python' + traceback.format_exc(limit=1) + '```')
+            traceback.print_exc(limit=1)
     @_remove_tags.command(name='channel', aliases=['ch', 'c'])
     @commands.has_permissions(manage_channels=True)
     async def __remove_channel_tags(self, ctx, *tags):
@@ -385,6 +397,9 @@ class MsG:
             await ctx.send('✅ **Removed from** <#' + str(channel.id) + '> **blacklist:**\n```' + formatter.tostring(tags) + '```', delete_after=5)
         except exc.TagError as e:
             await ctx.send('❌ `' + str(e) + '` **not in blacklist.**', delete_after=10)
+        except Exception:
+            await ctx.send(exc.base + '\n```python' + traceback.format_exc(limit=1) + '```')
+            traceback.print_exc(limit=1)
     @_remove_tags.command(name='me', aliases=['m'])
     async def __remove_user_tags(self, ctx, *tags):
         global blacklists, aliases
@@ -403,6 +418,9 @@ class MsG:
             await ctx.send('✅ ' + user.mention + ' **removed:**\n```' + formatter.tostring(tags) + '```', delete_after=5)
         except exc.TagError as e:
             await ctx.send('❌ `' + str(e) + '` **not in blacklist.**', delete_after=10)
+        except Exception:
+            await ctx.send(exc.base + '\n```python' + traceback.format_exc(limit=1) + '```')
+            traceback.print_exc(limit=1)
 
     @blacklist.group(name='clear', aliases=['cl', 'c'])
     async def _clear_blacklist(self, ctx):
