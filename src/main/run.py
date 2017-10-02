@@ -81,8 +81,8 @@ async def test(ctx):
     embed = embed.set_thumbnail('https://cdn.discordapp.com/attachments/353251794161500163/357707620561453077/9d803ea3-b7fa-401f-89cf-f32cf21fe772.png')
     ctx.send('Embed test', embed=embed)
 
-bot.add_cog(info.Info(bot))
 bot.add_cog(tools.Utils(bot))
+bot.add_cog(info.Info(bot))
 bot.add_cog(booru.MsG(bot))
 
 bot.run(config['token'])
