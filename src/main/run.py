@@ -48,10 +48,11 @@ async def die(ctx):
 
 @bot.command(name=',restart', aliases=[',res', ',r'], hidden=True)
 @commands.is_owner()
+@checks.del_ctx()
 async def restart(ctx):
     try:
         if isinstance(bot.get_channel(config['startup_channel']), discord.TextChannel):
-            await bot.get_channel(config['shutdown_channel']).send('Am go :b: rite becc. **Have noon.** 💤')
+            await bot.get_channel(config['shutdown_channel']).send('Am :b: rite becc. **Have noon.** 💤')
         process = subprocess.run(['python3', 'restart.py'])
         print(process.returncode)
         await bot.close()
