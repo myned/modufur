@@ -28,12 +28,12 @@ import traceback
 from discord import reaction
 from discord.ext import commands
 from discord import errors as err
+from cogs import tools
 from misc import checks
 from misc import exceptions as exc
 from utils import formatter, scraper
 
 headers = {'user-agent': 'Modumind/0.0.1 (Myned)'}
-last_command = {}
 
 class MsG:
 
@@ -116,6 +116,7 @@ class MsG:
         except Exception:
             await ctx.send(exc.base + '\n```python' + traceback.format_exc(limit=1) + '```')
             traceback.print_exc()
+        tools.command_dict.setdefault(str(ctx.message.author.id), {}).update({'command': ctx.command, 'args': ctx.args})
 
     @e621.error
     async def e621_error(self, ctx, error):
@@ -172,11 +173,10 @@ class MsG:
         # Creates temp blacklist based on context
         for k, v in aliases['global_blacklist'].items():
             blacklist.extend([k] + v)
-        for k, v in aliases['guild_blacklist'][str(guild.id)][str(channel.id)].items():
+        for k, v in aliases['guild_blacklist'].get(str(guild.id), {}).get(str(channel.id), {}).items():
             blacklist.extend([k] + v)
-        for k, v in aliases['user_blacklist'][str(user.id)].items():
+        for k, v in aliases['user_blacklist'].get(str(user.id), {}).items():
             blacklist.extend([k] + v)
-        print(blacklist)
         # Checks if tags are in local blacklists
         if args:
             for tag in args:
@@ -201,7 +201,7 @@ class MsG:
                 if len(urls) == limit:
                     break
             c += 1
-            if c == 50:
+            if c == 50 + limit:
                 raise exc.Timeout
         for url in urls:
             await ctx.send('`' + formatter.tostring(args) + '`\n' + url)
