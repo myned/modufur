@@ -11,6 +11,8 @@ except FileNotFoundError:
 
 import asyncio
 import discord
+import os
+import subprocess
 import traceback
 from discord import utils
 from discord.ext import commands
@@ -24,7 +26,7 @@ bot = commands.Bot(command_prefix=commands.when_mentioned_or(config['prefix']), 
 @bot.event
 async def on_ready():
     if isinstance(bot.get_channel(config['startup_channel']), discord.TextChannel):
-        await bot.get_channel(config['startup_channel']).send('H3l1(0) hOw aR3? **H4vE dAy.** 🌈')
+        await bot.get_channel(config['startup_channel']).send('Hello how are? **Have day.** 🌈')
     print('Connected.')
     print('Username: ' + bot.user.name)
     print('-------')
@@ -36,18 +38,28 @@ async def on_ready():
 async def die(ctx):
     try:
         if isinstance(bot.get_channel(config['startup_channel']), discord.TextChannel):
-            await bot.get_channel(config['shutdown_channel']).send('Am g0 by3e333333eee. **H4v3 n1GhT.** 💤')
+            await bot.get_channel(config['shutdown_channel']).send('Am go bye. **Have night.** 💤')
         await bot.close()
         print('-------')
         print('Closed.')
     except Exception:
-        await ctx.send(exc.base)
+        await ctx.send(exc.base + '\n```python' + traceback.format_exc(limit=1) + '```')
         traceback.print_exc(limit=1)
 
-@bot.command(aliases=['res', 'r'])
+@bot.command(name=',restart', aliases=[',res', ',r'], hidden=True)
 @commands.is_owner()
-async def restart(self, ctx):
-    pass
+async def restart(ctx):
+    try:
+        if isinstance(bot.get_channel(config['startup_channel']), discord.TextChannel):
+            await bot.get_channel(config['shutdown_channel']).send('Am go :b: rite becc. **Have noon.** 💤')
+        process = subprocess.run(['python3', 'restart.py'])
+        print(process.returncode)
+        await bot.close()
+        print('-------')
+        print('Closed.')
+    except Exception:
+        await ctx.send(exc.base + '\n```python' + traceback.format_exc(limit=1) + '```')
+        traceback.print_exc(limit=1)
 
 # Invite bot to bot owner's server
 @bot.command(name=',invite', aliases=[',inv', ',link'], brief='Invite the bot', description='BOT OWNER ONLY\nInvite the bot to a server (Requires admin)', hidden=True)
@@ -57,7 +69,7 @@ async def invite(ctx):
     try:
         await ctx.send('🔗 https://discordapp.com/oauth2/authorize?&client_id=' + str(config['client_id']) + '&scope=bot&permissions=' + str(config['permissions']))
     except Exception:
-        await ctx.send(exc.base)
+        await ctx.send(exc.base + '\n```python' + traceback.format_exc(limit=1) + '```')
         traceback.print_exc(limit=1)
 
 @bot.command(brief='[IN TESTING]', description='[IN TESTING]', hidden=True)
@@ -72,7 +84,7 @@ async def hi(ctx):
             hello = hello[:7] + '**Mod** ' + hello[7:]
         await ctx.send(hello)
     except Exception:
-        await ctx.send(exc.base)
+        await ctx.send(exc.base + '\n```python' + traceback.format_exc(limit=1) + '```')
         traceback.print_exc(limit=1)
 
 @bot.command(hidden=True)
