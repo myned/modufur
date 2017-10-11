@@ -1,9 +1,13 @@
-def tostring(i):
-    o = ' '
+def tostring(i, *, random=False):
+    o = ''
     if i:
         for v in i:
             o += v + ' '
-        o = o[1:-1]
+        o = o[:-1]
+    elif random is True:
+        o += 'order:random'
+    else:
+        o = ' '
     return o
 
 def tostring_commas(i):
