@@ -51,15 +51,13 @@ async def die(ctx):
 @checks.del_ctx()
 async def restart(ctx):
     try:
-        if isinstance(bot.get_channel(config['startup_channel']), discord.TextChannel):
-            await bot.get_channel(config['shutdown_channel']).send('Am :b: rite becc. **Have noon.** 💤')
-        process = subprocess.run(['python3', 'restart.py'])
-        print(process.returncode)
-        await bot.close()
+        print('RESTARTING')
         print('-------')
-        print('Closed.')
+        if isinstance(bot.get_channel(config['startup_channel']), d.TextChannel):
+            await bot.get_channel(config['shutdown_channel']).send('**Restarting...** 💤')
+        os.execl(sys.executable, 'python3', 'run.py')
     except Exception:
-        await ctx.send(exc.base + '\n```python' + traceback.format_exc(limit=1) + '```')
+        await ctx.send('{}\n```{}```'.format(exc.base, traceback.format_exc(limit=1)))
         traceback.print_exc(limit=1)
 
 # Invite bot to bot owner's server
