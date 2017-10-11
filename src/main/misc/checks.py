@@ -9,6 +9,7 @@ with open('config.json') as infile:
     config = json.load(infile)
 
 owner_id = config['owner_id']
+listed_ids = config['listed_ids']
 
 def is_owner():
     async def predicate(ctx):
@@ -21,6 +22,10 @@ def is_admin():
 def is_mod():
     def predicate(ctx):
         return ctx.message.author.guild_permissions.ban_members
+    return commands.check(predicate)
+def is_listed():
+    def predicate(ctx):
+        return ctx.message.author.id in listed_ids
     return commands.check(predicate)
 
 def owner(ctx):
