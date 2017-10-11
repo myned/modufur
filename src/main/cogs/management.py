@@ -135,7 +135,8 @@ class Administration:
         while True:
             message = await self.queue.get()
             await asyncio.sleep(RATE_LIMIT)
-            await message.delete()
+            try: await message.delete()
+            except d.errors.NotFound: pass
 
     async def on_message(self, channel):
         def check(msg):
@@ -150,8 +151,6 @@ class Administration:
             while True:
                 message = await self.bot.wait_for('message', check=check)
                 await self.queue.put(message)
-        except d.errors.NotFound:
-            pass
         except exc.Abort:
             u.background['management']['auto_delete'].remove(channel.id)
             u.update(u.background, 'background.json')
@@ -178,4 +177,4 @@ class Administration:
                 print('Looping {}'.format(channel.id))
                 await ctx.send('✅ **Auto-deleting all messages in this channel.**', delete_after=5)
             else: raise exc.Exists
-        except exc.Exists: await ctx.send('❌ **Already deleting in this channel.**')
+        except exc.Exists: await ctx.send('❌ **Already deleting in this channel.** Type `stop` to stop deleting.')
