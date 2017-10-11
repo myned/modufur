@@ -22,9 +22,10 @@ except FileNotFoundError:
         aliases = json.load(iofile)
 
 import asyncio
-import discord
+import discord as d
 import requests
-import traceback
+import traceback as tb
+import discord as d
 from discord import reaction
 from discord.ext import commands
 from discord.ext.commands import errors as errext
@@ -33,8 +34,11 @@ from cogs import tools
 from misc import checks
 from misc import exceptions as exc
 from utils import formatter, scraper
+from utils import utils as u
 
-headers = {'user-agent': 'Modumind/0.0.1 (Myned)'}
+HEADERS = {'user-agent': 'Modumind/0.0.1 (Myned)'}
+
+# temp_urls = {}
 
 class MsG:
 
@@ -98,6 +102,7 @@ class MsG:
     @checks.is_nsfw()
     async def e621(self, ctx, *args):
         global blacklists
+        # global temp_urls
         args = list(args)
         try:
             await ctx.trigger_typing()
@@ -114,6 +119,8 @@ class MsG:
             await ctx.send('❌ **Post not found.**', delete_after=10)
         except exc.Timeout:
             await ctx.send('❌ **Request timed out.**')
+            posts = self.check_return_posts(ctx=ctx, booru='e621', tags=args, limit=limit)#, previous=temp_urls.get(ctx.message.author.id, []))
+            # temp_urls.setdefault(ctx.message.author.id, []).extend(posts.values())
         except Exception:
             await ctx.send(exc.base + '\n```python' + traceback.format_exc(limit=1) + '```')
             traceback.print_exc()
@@ -129,6 +136,7 @@ class MsG:
     @checks.del_ctx()
     async def e926(self, ctx, *args):
         global blacklists
+        # global temp_urls
         args = list(args)
         try:
             await ctx.trigger_typing()
@@ -145,6 +153,8 @@ class MsG:
             await ctx.send('❌ **Post not found.**', delete_after=10)
         except exc.Timeout:
             await ctx.send('❌ **Request timed out.**')
+            posts = self.check_return_posts(ctx=ctx, booru='e926', tags=args, limit=limit)#, previous=temp_urls.get(ctx.message.author.id, []))
+            # temp_urls.setdefault(ctx.message.author.id, []).extend(posts.values())
         except Exception:
             await ctx.send(exc.base + '\n```python' + traceback.format_exc(limit=1) + '```')
             traceback.print_exc(limit=1)
