@@ -10,40 +10,58 @@ except FileNotFoundError:
         raise FileNotFoundError('Config file not found: \"config.json\" created with abstract values. Restart \"run.py\" with correct values.')
 
 import asyncio
-import discord
+import datetime as dt
+import discord as d
 import os
 import subprocess
+import sys
 import traceback
 from discord import utils
 from discord.ext import commands
-from cogs import booru, info, tools
+from cogs import booru, info, owner, management, tools
 from misc import checks
 from misc import exceptions as exc
+from utils import utils as u
 
-bot = commands.Bot(command_prefix=commands.when_mentioned_or(config['prefix']), description='Experimental booru bot')
+import logging
+logging.basicConfig(level=logging.INFO)
+
+print('PID {}'.format(os.getpid()))
+
+bot = commands.Bot(command_prefix=config['prefix'], description='Experimental booru bot')
 
 # Send and print ready message to #testing and console after logon
 @bot.event
 async def on_ready():
-    if isinstance(bot.get_channel(config['startup_channel']), discord.TextChannel):
-        await bot.get_channel(config['startup_channel']).send('Hello how are? **Have day.** 🌈')
-    print('Connected.')
-    print('Username: ' + bot.user.name)
+    global bot
+
+    bot.add_cog(tools.Utils(bot))
+    bot.add_cog(owner.Tools(bot))
+    bot.add_cog(management.Administration(bot))
+    bot.add_cog(info.Info(bot))
+    bot.add_cog(booru.MsG(bot))
+
+    # bot.loop.create_task(u.clear(booru.temp_urls, 30*60))
+
+    if isinstance(bot.get_channel(config['startup_channel']), d.TextChannel):
+        await bot.get_channel(config['startup_channel']).send('**Started.** ☀️')
+    print('CONNECTED')
+    print(bot.user.name)
     print('-------')
 
 # Close connection to Discord - immediate offline
-@bot.command(name=',die', aliases=[',d', ',close', ',kill'], brief='Kills the bot', description='BOT OWNER ONLY\nCloses the connection to Discord', hidden=True)
+@bot.command(name=',die', aliases=[',d'], brief='Kills the bot', description='BOT OWNER ONLY\nCloses the connection to Discord', hidden=True)
 @commands.is_owner()
 @checks.del_ctx()
 async def die(ctx):
     try:
-        if isinstance(bot.get_channel(config['startup_channel']), discord.TextChannel):
-            await bot.get_channel(config['shutdown_channel']).send('Am go bye. **Have night.** 💤')
+        if isinstance(bot.get_channel(config['startup_channel']), d.TextChannel):
+            await bot.get_channel(config['shutdown_channel']).send('**Shutting down...** 🌙')
         await bot.close()
         print('-------')
-        print('Closed.')
+        print('CLOSED')
     except Exception:
-        await ctx.send(exc.base + '\n```python' + traceback.format_exc(limit=1) + '```')
+        await ctx.send(exc.base + '\n```' + traceback.format_exc(limit=1) + '```')
         traceback.print_exc(limit=1)
 
 @bot.command(name=',restart', aliases=[',res', ',r'], hidden=True)
@@ -66,39 +84,36 @@ async def restart(ctx):
 @checks.del_ctx()
 async def invite(ctx):
     try:
-        await ctx.send('🔗 https://discordapp.com/oauth2/authorize?&client_id=' + str(config['client_id']) + '&scope=bot&permissions=' + str(config['permissions']))
+        await ctx.send('🔗 https://discordapp.com/oauth2/authorize?&client_id={}&scope=bot&permissions={}'.format(config['client_id'], config['permissions']), delete_after=10)
     except Exception:
-        await ctx.send(exc.base + '\n```python' + traceback.format_exc(limit=1) + '```')
+        await ctx.send('{}\n```{}```'.format(exc.base, traceback.format_exc(limit=1)))
         traceback.print_exc(limit=1)
 
 @bot.command(brief='[IN TESTING]', description='[IN TESTING]', hidden=True)
 async def hi(ctx):
+    user = ctx.message.author
     try:
-        hello = 'Hewwo, ' + ctx.message.author.mention + '.'
-        if ctx.message.author.id == checks.owner_id:
+        hello = 'Hewwo, {}.'.format(user.mention)
+        if user.id == checks.owner_id:
             hello += '.. ***Master.*** uwu'
-        elif ctx.message.author.guild_permissions.administrator:
-            hello = hello[:7] + '**Admin** ' + hello[7:]
-        elif ctx.message.author.guild_permissions.ban_members:
-            hello = hello[:7] + '**Mod** ' + hello[7:]
+        elif user.guild_permissions.administrator:
+            hello = '{} **Admin** {}'.format(hello[:7], hello[7:])
+        elif user.guild_permissions.ban_members:
+            hello = '{} **Mod** {}'.format(hello[:7], hello[7:])
         await ctx.send(hello)
     except Exception:
-        await ctx.send(exc.base + '\n```python' + traceback.format_exc(limit=1) + '```')
+        await ctx.send('{}\n```{}```'.format(exc.base, traceback.format_exc(limit=1)))
         traceback.print_exc(limit=1)
 
-@bot.command(hidden=True)
+@bot.command(name=',test', hidden=True)
 @commands.is_owner()
 @checks.del_ctx()
 async def test(ctx):
-    embed = discord.Embed(title='Title', type='rich', description='Description.', url='https://static1.e621.net/data/4b/3e/4b3ec0c2e8580f418e4ce019dfd5ac32.png', color=discord.Color.from_rgb(255, 255, 255))
-    embed = embed.set_image('https://static1.e621.net/data/27/0f/270fd28caa5e6d8bf542a76515848e02.png')
-    embed = embed.set_footer('Footer')
-    embed = embed.set_author('Author')
-    embed = embed.set_thumbnail('https://cdn.discordapp.com/attachments/353251794161500163/357707620561453077/9d803ea3-b7fa-401f-89cf-f32cf21fe772.png')
-    ctx.send('Embed test', embed=embed)
-
-bot.add_cog(tools.Utils(bot))
-bot.add_cog(info.Info(bot))
-bot.add_cog(booru.MsG(bot))
+    embed = d.Embed(title='/post/xxxxxx', url='https://static1.e621.net/data/4b/3e/4b3ec0c2e8580f418e4ce019dfd5ac32.png', timestamp=dt.datetime.utcnow(), color=ctx.me.color)
+    embed.set_image(url='https://static1.e621.net/data/27/0f/270fd28caa5e6d8bf542a76515848e02.png')
+    embed.set_footer(text='e621', icon_url='http://ndl.mgccw.com/mu3/app/20141013/18/1413204353554/icon/icon_xl.png')
+    embed.set_author(name='tags', url=ctx.message.author.avatar_url, icon_url=ctx.message.author.avatar_url)
+    embed.add_field(name='Link', value='https://static1.e621.net/data/c2/55/c255792b5a307ee6efa51d6bb3edf878.jpg')
+    await ctx.send(embed=embed)
 
 bot.run(config['token'])
