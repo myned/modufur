@@ -164,7 +164,10 @@ class MsG:
             tb.print_exc()
         finally:
             if starred:
-                for url in starred: await user.send(url)
+                for url in starred:
+                    await user.send(url)
+                    if len(starred) > 5:
+                        await asyncio.sleep(2.1)
 
     @e621_paginator.error
     async def e621_paginator_error(self, ctx, error):

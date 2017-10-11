@@ -3,6 +3,7 @@ base = '⚠️ **An internal error has occurred.** Please notify my master! 🐺
 class Left(Exception): pass
 class Right(Exception): pass
 class Save(Exception): pass
+class Exists(Exception): pass
 class PostError(Exception): pass
 class ImageError(Exception): pass
 class MatchError(Exception): pass
