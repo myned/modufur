@@ -1,4 +1,5 @@
 import asyncio
+import datetime as dt
 import discord
 import httplib2
 import mimetypes
@@ -8,22 +9,18 @@ import tempfile
 import traceback
 import webbrowser
 from discord.ext import commands
+#from run import config
 from cogs import booru
 from misc import checks
 from misc import exceptions as exc
 from utils import formatter
 
 from apiclient.discovery import build
-from apiclient.http import MediaFileUpload
+from apiclient import http
 from oauth2client.client import flow_from_clientsecrets
+youtube = None
 
-# flow = flow_from_clientsecrets('../client_secrets.json', scope='https://www.googleapis.com/auth/youtube.upload', login_hint='botmyned@gmail.com', redirect_uri='urn:ietf:wg:oauth:2.0:oob')
-# flow.params['access_type'] = 'offline'
-# webbrowser.open_new(flow.step1_get_authorize_url())
-# credentials = flow.step2_exchange(input('Authorization code: '))
-# youtube = build('youtube', 'v3', http=credentials.authorize(httplib2.Http()))
-
-tempfile.tempdir = '../temp'
+tempfile.tempdir = os.getcwd()
 
 command_dict = {}
 
@@ -41,7 +38,7 @@ class Utils:
             print(command_dict)
             await ctx.invoke(command_dict.get(str(ctx.message.author.id), {}).get('command', None), args)
         except Exception:
-            await ctx.send(exc.base + '\n```python' + traceback.format_exc(limit=1) + '```')
+            await ctx.send(exc.base + '\n```' + traceback.format_exc(limit=1) + '```')
             traceback.print_exc(limit=1)
 
     # [prefix]ping -> Pong!
@@ -52,7 +49,7 @@ class Utils:
         try:
             await ctx.send(ctx.message.author.mention + '  🏓  `' + str(int(self.bot.latency * 1000)) + 'ms`', delete_after=5)
         except Exception:
-            await ctx.send(exc.base + '\n```python' + traceback.format_exc(limit=1) + '```')
+            await ctx.send(exc.base + '\n```' + traceback.format_exc(limit=1) + '```')
             traceback.print_exc(limit=1)
         command_dict.setdefault(str(ctx.message.author.id), {}).update({'command': ctx.command})
 
@@ -60,9 +57,9 @@ class Utils:
     @checks.del_ctx()
     async def prefix(self, ctx):
         try:
-            await ctx.send('**Prefix:** `,` or ' + ctx.me.mention)
+            await ctx.send('**Prefix:** `,`')
         except Exception:
-            await ctx.send(exc.base + '\n```python' + traceback.format_exc(limit=1) + '```')
+            await ctx.send(exc.base + '\n```' + traceback.format_exc(limit=1) + '```')
             traceback.print_exc(limit=1)
 
     @commands.group(name=',send', aliases=[',s'], hidden=True)
@@ -78,17 +75,42 @@ class Utils:
     async def send_user(self, ctx, user, *message):
         await discord.utils.get(self.bot.get_all_members(), id=int(user)).send(formatter.tostring(message))
 
+    @commands.command(aliases=['authenticateupload', 'authupload', 'authup', 'auth'])
+    async def authenticate_upload(self, ctx):
+        global youtube
+        flow = flow_from_clientsecrets('client_secrets.json', scope='https://www.googleapis.com/auth/youtube.upload', login_hint='botmyned@gmail.com', redirect_uri='urn:ietf:wg:oauth:2.0:oob')
+        flow.params['access_type'] = 'offline'
+        webbrowser.open_new_tab(flow.step1_get_authorize_url())
+        credentials = flow.step2_exchange(input('Authorization code: '))
+        youtube = build('youtube', 'v3', http=credentials.authorize(http.build_http()))
+        print('Service built.')
     @commands.command(aliases=['up', 'u', 'vid', 'v'])
     @checks.is_listed()
     async def upload(self, ctx):
         global youtube
+        attachments = ctx.message.attachments
         try:
-            print(mimetypes.guess_type(ctx.message.attachments[0].filename))
-            with tempfile.TemporaryFile() as temp:
-                await ctx.message.attachments[0].save(temp)
-                print(os.path.basename('../temp/*'))
-                print(mimetypes.guess_type(os.path.basename('../temp/*')))
-            # print('https://www.youtube.com/watch?v=' + youtube.videos().insert(part='snippet', body={'categoryId': '24', 'title': 'Test'}, media_body=MediaFileUpload('../temp/*', chunksize=-1))
+            if not attachments:
+                raise exc.MissingAttachment
+            if len(attachments) > 1:
+                raise exc.TooManyAttachments(len(attachments))
+            mime = mimetypes.guess_type(attachments[0].filename)[0]
+            if 'video/' in mime:
+                with tempfile.NamedTemporaryFile() as temp:
+                    await attachments[0].save(temp)
+            else:
+                raise exc.InvalidVideoFile(mime)
+            print('https://www.youtube.com/watch?v=' + youtube.videos().insert(part='snippet', body={'categoryId': '24', 'title': 'Test'}, media_body=http.MediaFileUpload(temp.name, chunksize=-1)))
+        except exc.InvalidVideoFile as e:
+            await ctx.send('❌ `' + str(e) + '` **not valid video type.**', delete_after=10)
+        except exc.TooManyAttachments as e:
+            await ctx.send('❌ `' + str(e) + '` **too many attachments.** Only one attachment is permitted to upload.', delete_after=10)
+        except exc.MissingAttachment:
+            await ctx.send('❌ **Missing attachment.**', delete_after=10)
         except Exception:
-            await ctx.send(exc.base + '\n```python' + traceback.format_exc(limit=1) + '```')
+            await ctx.send(exc.base + '\n```' + traceback.format_exc(limit=1) + '```')
             traceback.print_exc(limit=1)
+    @upload.error
+    async def upload_error(self, ctx, error):
+        pass
+# http.
