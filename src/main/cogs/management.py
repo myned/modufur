@@ -169,13 +169,15 @@ class Administration:
         channel = ctx.message.channel
 
         try:
-            if channel.id not in u.background['management']['auto_delete']:
-                u.background.setdefault('management', {}).setdefault('auto_delete', []).append(channel.id)
+            if channel.id not in u.background.setdefault('management', {}).setdefault('auto_delete', []):
+                u.background['management']['auto_delete'].append(channel.id)
                 u.update(u.background, 'background.json')
                 self.bot.loop.create_task(self.on_message(channel))
                 self.bot.loop.create_task(self.delete())
                 print('Looping {}'.format(channel.id))
                 await ctx.send('✅ **Auto-deleting all messages in this channel.**', delete_after=5)
             else: raise exc.Exists
-        except exc.Exists: await ctx.send('❌ **Already deleting in this channel.** Type `stop` to stop deleting.')
+        except exc.Exists: await ctx.send('❌ **Already auto-deleting in this channel.** Type `stop` to stop.', delete_after=10)
+        except Exception:
+            await channel.send(exc.base + '\n```' + traceback.format_exc(limit=1) + '```')
             traceback.print_exc()
