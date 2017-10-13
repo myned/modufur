@@ -1,87 +1,48 @@
-import json
-
-try:
-    with open('blacklists.json') as infile:
-        blacklists = json.load(infile)
-        print('\"blacklists.json\" loaded.')
-except FileNotFoundError:
-    with open('blacklists.json', 'w+') as iofile:
-        print('Blacklists file not found: \"blacklists.json\" created and loaded.')
-        json.dump({'global_blacklist': [], 'guild_blacklist': {}, 'user_blacklist': {}}, iofile, indent=4, sort_keys=True)
-        iofile.seek(0)
-        blacklists = json.load(iofile)
-try:
-    with open('aliases.json') as infile:
-        aliases = json.load(infile)
-        print('\"aliases.json\" loaded.')
-except FileNotFoundError:
-    with open('aliases.json', 'w+') as iofile:
-        print('Aliases file not found: \"aliases.json\" created and loaded.')
-        json.dump({'global_blacklist': {}, 'guild_blacklist': {}, 'user_blacklist': {}}, iofile, indent=4, sort_keys=True)
-        iofile.seek(0)
-        aliases = json.load(iofile)
-
 import asyncio
-import discord as d
-import requests
+import json
 import traceback as tb
+
 import discord as d
+from discord import errors as err
 from discord import reaction
 from discord.ext import commands
 from discord.ext.commands import errors as errext
-from discord import errors as err
-from cogs import tools
-from misc import checks
-from misc import exceptions as exc
-from utils import formatter, scraper
-from utils import utils as u
 
-HEADERS = {'user-agent': 'Modumind/0.0.1 (Myned)'}
+from cogs import tools
+from misc import exceptions as exc
+from misc import checks
+from utils import utils as u
+from utils import formatter, scraper
 
 # temp_urls = {}
+
 
 class MsG:
 
     def __init__(self, bot):
         self.bot = bot
+        self.LIMIT = 100
 
-    # Creates reaction-based paginator for linked pools
-    @commands.command(brief='e621/e926 Pool selector', description='e621/e926 | NSFW/SFW\nShow pools in a page format', hidden=True)
+        self.blacklists = u.setdefault(
+            './cogs/blacklists.pkl', {'global_blacklist': set(), 'guild_blacklist': {}, 'user_blacklist': {}})
+        self.aliases = u.setdefault('./cogs/aliases.pkl', {})
+
+    # Tag search
+    @commands.command(aliases=['tag', 't'], brief='e621 Tag search', description='e621 | NSFW\nReturn a link search for given tags')
     @checks.del_ctx()
-    async def pool(self, ctx, url):
-        pool_urls = []
-
-        def check_right(reaction, user):
-            return user == ctx.message.author and str(reaction.emoji) == '➡️'
-        def check_left(reaction, user):
-            return user == ctx.message.author and str(reaction.emoji) == '⬅️'
-
-        try:
-            pool = scraper.find_pool(url)
-            for link in pool:
-                pool_urls.append(scraper.find_image_url('https://e621.net' + link))
-        except exc.PostError:
-            await ctx.send('❌ ' + ctx.message.author.mention + ' **No pool found.**')
-        except exc.ImageError:
-            await ctx.send('❌ ' + ctx.message.author.mention + ' **No image found.**')
-        except Exception:
-            await ctx.send('{}\n```{}```'.format(exc.base, tb.format_exc(limit=1)))
-            tb.print_exc()
+    async def tags(self, ctx, *tags):
+        await ctx.send('✅ `{}`\nhttps://e621.net/post?tags={}'.format(formatter.tostring(tags), ','.join(tags)))
 
     # Tag aliases
     @commands.command(aliases=['alias', 'a'], brief='e621 Tag aliases', description='e621 | NSFW\nSearch aliases for given tag')
     @checks.del_ctx()
     async def aliases(self, ctx, tag):
-        global HEADERS
         aliases = []
-        try:
-            alias_request = requests.get('https://e621.net/tag_alias/index.json?aliased_to=' + tag + '&approved=true', headers=HEADERS).json()
-            for dic in alias_request:
-                aliases.append(dic['name'])
-            await ctx.send('✅ `' + tag + '` **aliases:**\n```' + formatter.tostring(aliases) + '```')
-        except Exception:
-            await ctx.send('{}\n```{}```'.format(exc.base, tb.format_exc(limit=1)))
-            tb.print_exc()
+
+        alias_request = await u.fetch('https://e621.net/tag_alias/index.json', params={'aliased_to': tag, 'approved': 'true'}, json=True)
+        for dic in alias_request:
+            aliases.append(dic['name'])
+        await ctx.send('✅ `' + tag + '` **aliases:**\n```' + formatter.tostring(aliases) + '```')
 
     # Reverse image searches a linked image using the public iqdb
     @commands.command(name='reverse', aliases=['rev', 'ris'], brief='e621 Reverse image search', description='e621 | NSFW\nReverse-search an image with given URL')
@@ -89,85 +50,355 @@ class MsG:
     async def reverse_image_search(self, ctx, url):
         try:
             await ctx.trigger_typing()
-            await ctx.send('✅ ' + ctx.message.author.mention + ' **Probable match:**\n' + scraper.check_match('http://iqdb.harry.lu/?url={}'.format(url)))
+            await ctx.send('✅ ' + ctx.message.author.mention + ' **Probable match:**\n' + await scraper.check_match(url))
         except exc.MatchError:
             await ctx.send('❌ ' + ctx.message.author.mention + ' **No probable match.**', delete_after=10)
-        except Exception:
-            await ctx.send('{}\n```{}```'.format(exc.base, tb.format_exc(limit=1)))
-            tb.print_exc()
 
-    @commands.command(name='e621p', aliases=['e6p', '6p'])
+    async def return_pool(self, *, ctx, booru='e621', query=[]):
+        def on_message(msg):
+            if msg.content.lower() == 'cancel' and msg.author is ctx.message.author and msg.channel is ctx.message.channel:
+                raise exc.Abort
+            try:
+                if int(msg.content) <= len(pools) and int(msg.content) > 0 and msg.author is ctx.message.author and msg.channel is ctx.message.channel:
+                    return True
+            except ValueError:
+                pass
+            else:
+                return False
+
+        posts = {}
+        pool_id = None
+
+        pools = []
+        pool_request = await u.fetch('https://{}.net/pool/index.json'.format(booru), params={'query': ' '.join(query)}, json=True)
+        if len(pool_request) > 1:
+            for pool in pool_request:
+                pools.append(pool['name'])
+            match = await ctx.send('✅ **Multiple pools found.** Type in the correct match.\n```\n{}```\nor `cancel` to cancel.'.format('\n'.join(['{} {}'.format(c, elem) for c, elem in enumerate(pools, 1)])))
+            try:
+                selection = await self.bot.wait_for('message', check=on_message, timeout=10 * 60)
+            except exc.Abort:
+                raise exc.Abort
+            finally:
+                await match.delete()
+            pool = [pool for pool in pool_request if pool['name']
+                    == pools[int(selection.content) - 1]][0]
+            await selection.delete()
+            pool_id = pool['id']
+        elif request:
+            pool = pool_request[0]
+            pool_id = pool_request[0]['id']
+        else:
+            raise exc.NotFound
+
+        page = 1
+        while len(posts) < pool['post_count']:
+            posts_request = await u.fetch('https://{}.net/pool/show.json'.format(booru), params={'id': pool['id'], 'page': page}, json=True)
+            for post in posts_request['posts']:
+                posts[post['id']] = post['file_url']
+            page += 1
+
+        return posts, pool_id
+
+    # Creates reaction-based paginator for linked pools
+    @commands.command(name='pool', aliases=['e6pp'], brief='e621 pool paginator', description='e621 | NSFW\nShow pools in a page format', hidden=True)
     @checks.del_ctx()
-    @checks.is_nsfw()
-    async def e621_paginator(self, ctx, *args):
-        def react(reaction, user):
-            if reaction.emoji == '⬅' and reaction.message.content == paginator.content and user is ctx.message.author: raise exc.Left
-            elif reaction.emoji == '🚫' and reaction.message.content == paginator.content and user is ctx.message.author: raise exc.Abort
-            elif reaction.emoji == '📁' and reaction.message.content == paginator.content and user is ctx.message.author: raise exc.Save
-            elif reaction.emoji == '➡' and reaction.message.content == paginator.content and user is ctx.message.author: raise exc.Right
-            else: return False
+    async def pool_paginator(self, ctx, *kwords):
+        def on_react(reaction, user):
+            if reaction.emoji == '🚫' and reaction.message.content == paginator.content and user is ctx.message.author:
+                raise exc.Abort
+            elif reaction.emoji == '📁' and reaction.message.content == paginator.content and user is ctx.message.author:
+                raise exc.Save
+            elif reaction.emoji == '⬅' and reaction.message.content == paginator.content and user is ctx.message.author:
+                raise exc.Left
+            elif reaction.emoji == '🔢' and reaction.message.content == paginator.content and user is ctx.message.author:
+                raise exc.GoTo
+            elif reaction.emoji == '➡' and reaction.message.content == paginator.content and user is ctx.message.author:
+                raise exc.Right
+            else:
+                return False
+
+        def on_message(msg):
+            try:
+                if int(msg.content) <= len(posts) and msg.author is ctx.message.author and msg.channel is ctx.message.channel:
+                    return True
+            except ValueError:
+                pass
+            else:
+                return False
 
         user = ctx.message.author
-        args = list(args)
-        limit = 100
+        starred = []
+        c = 1
 
         try:
             await ctx.trigger_typing()
 
-            c = 1
-            posts = self.check_return_posts(ctx=ctx, booru='e621', tags=args, limit=limit)
-            starred = []
+            posts, pool_id = await self.return_pool(ctx=ctx, booru='e621', query=kwords)
+            keys = list(posts.keys())
+            values = list(posts.values())
 
-            embed = d.Embed(title='/post/{}'.format(list(posts.keys())[c-1]), url='https://e621.net/post/show/{}'.format(list(posts.keys())[c-1]), color=ctx.me.color).set_image(url=list(posts.values())[c-1])
-            embed.set_author(name=formatter.tostring(args, random=True), url='https://e621.net/post?tags={}'.format(','.join(args)), icon_url=user.avatar_url)
-            embed.set_footer(text='e621', icon_url='http://ndl.mgccw.com/mu3/app/20141013/18/1413204353554/icon/icon_xl.png')
+            embed = d.Embed(
+                title='/post/{}'.format(keys[c - 1]), url='https://e621.net/post/show/{}'.format(keys[c - 1]), color=ctx.me.color).set_image(url=values[c - 1])
+            embed.set_author(name='/pool/{}'.format(pool_id),
+                             url='https://e621.net/pool/show?id={}'.format(pool_id), icon_url=user.avatar_url)
+            embed.set_footer(text='{} / {}'.format(c, len(posts)),
+                             icon_url='http://ndl.mgccw.com/mu3/app/20141013/18/1413204353554/icon/icon_xl.png')
+
             paginator = await ctx.send(embed=embed)
 
-            await paginator.add_reaction('⬅')
             await paginator.add_reaction('🚫')
             await paginator.add_reaction('📁')
+            await paginator.add_reaction('⬅')
+            await paginator.add_reaction('🔢')
             await paginator.add_reaction('➡')
             await asyncio.sleep(1)
 
             while True:
                 try:
-                    await self.bot.wait_for('reaction_add', check=react, timeout=5*60)
+                    await self.bot.wait_for('reaction_add', check=on_react, timeout=10 * 60)
+
                 except exc.Left:
                     if c > 1:
                         c -= 1
-                        embed.title = '/post/{}'.format(list(posts.keys())[c-1])
-                        embed.url = 'https://e621.net/post/show/{}'.format(list(posts.keys())[c-1])
-                        embed.set_image(url=list(posts.values())[c-1])
-                        await paginator.edit(embed=embed)
+                        embed.title = '/post/{}'.format(keys[c - 1])
+                        embed.url = 'https://e621.net/post/show/{}'.format(keys[c - 1])
+                        embed.set_footer(text='{} / {}'.format(c, len(posts)),
+                                         icon_url='http://ndl.mgccw.com/mu3/app/20141013/18/1413204353554/icon/icon_xl.png')
+                        embed.set_image(url=values[c - 1])
+
+                        await paginator.edit(content=None, embed=embed)
+                    else:
+                        await paginator.edit(content='❌ **First image.**')
+
+                except exc.GoTo:
+                    await paginator.edit(content='**Enter image number...**')
+                    number = await self.bot.wait_for('message', check=on_message, timeout=10 * 60)
+
+                    c = int(number.content)
+                    await number.delete()
+                    embed.title = '/post/{}'.format(keys[c - 1])
+                    embed.url = 'https://e621.net/post/show/{}'.format(keys[c - 1])
+                    embed.set_footer(text='{} / {}'.format(c, len(posts)),
+                                     icon_url='http://ndl.mgccw.com/mu3/app/20141013/18/1413204353554/icon/icon_xl.png')
+                    embed.set_image(url=values[c - 1])
+
+                    await paginator.edit(content=None, embed=embed)
+
                 except exc.Save:
-                    if list(posts.values())[c-1] not in starred:
-                        starred.append(list(posts.values())[c-1])
+                    if values[c - 1] not in starred:
+                        starred.append(values[c - 1])
+
+                        await paginator.edit(content='**Image** `{}` **saved.**'.format(len(starred)))
+
+                except exc.Right:
+                    if c < len(keys):
+                        c += 1
+                        embed.title = '/post/{}'.format(keys[c - 1])
+                        embed.url = 'https://e621.net/post/show/{}'.format(keys[c - 1])
+                        embed.set_footer(text='{} / {}'.format(c, len(posts)),
+                                         icon_url='http://ndl.mgccw.com/mu3/app/20141013/18/1413204353554/icon/icon_xl.png')
+                        embed.set_image(url=values[c - 1])
+
+                        await paginator.edit(content=None, embed=embed)
+
+        except exc.Abort:
+            try:
+                await paginator.edit(content='🚫 **Exited paginator.**')
+            except UnboundLocalError:
+                await ctx.send('🚫 **Exited paginator.**')
+        except asyncio.TimeoutError:
+            try:
+                await ctx.send(content='❌ **Paginator timed out.**')
+            except UnboundLocalError:
+                await ctx.send('❌ **Paginator timed out.**')
+        except exc.NotFound:
+            await ctx.send('❌ **Pool not found.**', delete_after=10)
+        except exc.Timeout:
+            await ctx.send('❌ **Request timed out.**')
+        finally:
+            for url in starred:
+                await user.send(url)
+                if len(starred) > 5:
+                    await asyncio.sleep(2.1)
+
+    # Messy code that checks image limit and tags in blacklists
+    async def check_return_posts(self, *, ctx, booru='e621', tags=[], limit=1, previous=[]):
+        guild = ctx.message.guild if isinstance(
+            ctx.message.guild, d.Guild) else ctx.message.channel
+        channel = ctx.message.channel
+        user = ctx.message.author
+
+        blacklist = set()
+        # Creates temp blacklist based on context
+        for tag in self.blacklists['global_blacklist']:
+            blacklist.update(list(self.aliases[tag]) + [tag])
+        for tag in self.blacklists['guild_blacklist'].get(guild.id, {}).get(channel.id, set()):
+            blacklist.update(list(self.aliases[tag]) + [tag])
+        for tag in self.blacklists['user_blacklist'].get(user.id, set()):
+            blacklist.update(list(self.aliases[tag]) + [tag])
+        # Checks if tags are in local blacklists
+        if tags:
+            if len(tags) > 5:
+                raise exc.TagBoundsError(formatter.tostring(tags[5:]))
+            for tag in tags:
+                if tag == 'swf' or tag == 'webm' or tag in blacklist:
+                    raise exc.TagBlacklisted(tag)
+
+        # Checks for blacklisted tags in endpoint blacklists - try/except is for continuing the parent loop
+        posts = {}
+        c = 0
+        while len(posts) < limit:
+            if c == 50 + limit * 3:
+                raise exc.Timeout
+            request = await u.fetch('https://{}.net/post/index.json'.format(booru), params={'tags': ','.join(['order:random'] + tags), 'limit': self.LIMIT}, json=True)
+            if len(request) == 0:
+                raise exc.NotFound(formatter.tostring(tags))
+            if len(request) < limit:
+                limit = len(request)
+            for post in request:
+                if 'swf' in post['file_ext'] or 'webm' in post['file_ext']:
+                    continue
+                try:
+                    for tag in blacklist:
+                        if tag in post['tags']:
+                            raise exc.Continue
+                except exc.Continue:
+                    continue
+                if post['file_url'] not in posts.values() and post['file_url'] not in previous:
+                    posts[post['id']] = post['file_url']
+                if len(posts) == limit:
+                    break
+            c += 1
+        return posts
+
+    @commands.command(name='e621p', aliases=['e6p', '6p'])
+    @checks.del_ctx()
+    @checks.is_nsfw()
+    async def e621_paginator(self, ctx, *args):
+        def on_react(reaction, user):
+            if reaction.emoji == '🚫' and reaction.message.content == paginator.content and user is ctx.message.author:
+                raise exc.Abort
+            elif reaction.emoji == '📁' and reaction.message.content == paginator.content and user is ctx.message.author:
+                raise exc.Save
+            elif reaction.emoji == '⬅' and reaction.message.content == paginator.content and user is ctx.message.author:
+                raise exc.Left
+            elif reaction.emoji == '🔢' and reaction.message.content == paginator.content and user is ctx.message.author:
+                raise exc.GoTo
+            elif reaction.emoji == '➡' and reaction.message.content == paginator.content and user is ctx.message.author:
+                raise exc.Right
+            else:
+                return False
+
+        def on_message(msg):
+            try:
+                if int(msg.content) <= len(posts) and msg.author is ctx.message.author and msg.channel is ctx.message.channel:
+                    return True
+            except ValueError:
+                pass
+            else:
+                return False
+
+        user = ctx.message.author
+        args = list(args)
+        limit = self.LIMIT / 5
+        starred = []
+        c = 1
+
+        try:
+            await ctx.trigger_typing()
+
+            posts = await self.check_return_posts(ctx=ctx, booru='e621', tags=args, limit=limit)
+            keys = list(posts.keys())
+            values = list(posts.values())
+
+            embed = d.Embed(
+                title='/post/{}'.format(keys[c - 1]), url='https://e621.net/post/show/{}'.format(keys[c - 1]), color=ctx.me.color).set_image(url=values[c - 1])
+            embed.set_author(name=formatter.tostring(args, random=True),
+                             url='https://e621.net/post?tags={}'.format(','.join(args)), icon_url=user.avatar_url)
+            embed.set_footer(text='{} / {}'.format(c, len(posts)),
+                             icon_url='http://ndl.mgccw.com/mu3/app/20141013/18/1413204353554/icon/icon_xl.png')
+
+            paginator = await ctx.send(embed=embed)
+
+            await paginator.add_reaction('🚫')
+            await paginator.add_reaction('📁')
+            await paginator.add_reaction('⬅')
+            await paginator.add_reaction('🔢')
+            await paginator.add_reaction('➡')
+            await asyncio.sleep(1)
+
+            while True:
+                try:
+                    await self.bot.wait_for('reaction_add', check=on_react, timeout=10 * 60)
+
+                except exc.Left:
+                    if c > 1:
+                        c -= 1
+                        embed.title = '/post/{}'.format(keys[c - 1])
+                        embed.url = 'https://e621.net/post/show/{}'.format(keys[c - 1])
+                        embed.set_footer(text='{} / {}'.format(c, len(posts)),
+                                         icon_url='http://ndl.mgccw.com/mu3/app/20141013/18/1413204353554/icon/icon_xl.png')
+                        embed.set_image(url=values[c - 1])
+                        await paginator.edit(content=None, embed=embed)
+                    else:
+                        await paginator.edit(content='❌ **First image.**')
+
+                except exc.GoTo:
+                    await paginator.edit(content='**Enter image number...**')
+                    number = await self.bot.wait_for('message', check=on_message, timeout=10 * 60)
+
+                    c = int(number.content)
+                    await number.delete()
+                    embed.title = '/post/{}'.format(keys[c - 1])
+                    embed.url = 'https://e621.net/post/show/{}'.format(keys[c - 1])
+                    embed.set_footer(text='{} / {}'.format(c, len(posts)),
+                                     icon_url='http://ndl.mgccw.com/mu3/app/20141013/18/1413204353554/icon/icon_xl.png')
+                    embed.set_image(url=values[c - 1])
+
+                    await paginator.edit(content=None, embed=embed)
+
+                except exc.Save:
+                    if values[c - 1] not in starred:
+                        starred.append(values[c - 1])
+
+                        await paginator.edit(content='**Image** `{}` **saved.**'.format(len(starred)))
+
                 except exc.Right:
                     if c % limit == 0:
                         await ctx.trigger_typing()
-                        try: posts.update(self.check_return_posts(ctx=ctx, booru='e621', tags=args, limit=limit, previous=posts))
+                        try:
+                            posts.update(await self.check_return_posts(ctx=ctx, booru='e621', tags=args, limit=limit, previous=posts))
                         except exc.NotFound:
                             await paginator.edit(content='❌ **No more images found.**')
+                        keys = list(posts.keys())
+                        values = list(posts.values())
 
                     c += 1
-                    embed.title = '/post/{}'.format(list(posts.keys())[c-1])
-                    embed.url = 'https://e621.net/post/show/{}'.format(list(posts.keys())[c-1])
-                    embed.set_image(url=list(posts.values())[c-1])
-                    await paginator.edit(embed=embed)
-        except exc.Abort: await paginator.edit(content='🚫 **Exited paginator.**')
-        except exc.TagBlacklisted as e: await ctx.send('❌ `{}` **blacklisted.**'.format(e), delete_after=10)
-        except exc.TagBoundsError as e: await ctx.send('❌ `{}` **out of bounds.** Tags limited to 5, currently.'.format(e), delete_after=10)
-        except exc.Timeout: await ctx.send('❌ **Request timed out.**')
-        except asyncio.TimeoutError: await paginator.edit(content='❌ **Paginator timed out.**')
-        except Exception:
-            await ctx.send('{}\n```{}```'.format(exc.base, tb.format_exc(limit=1)))
-            tb.print_exc()
+                    embed.title = '/post/{}'.format(keys[c - 1])
+                    embed.url = 'https://e621.net/post/show/{}'.format(keys[c - 1])
+                    embed.set_footer(text='{} / {}'.format(c, len(posts)),
+                                     icon_url='http://ndl.mgccw.com/mu3/app/20141013/18/1413204353554/icon/icon_xl.png')
+                    embed.set_image(url=values[c - 1])
+                    await paginator.edit(content=None, embed=embed)
+
+        except exc.Abort:
+            await paginator.edit(content='🚫 **Exited paginator.**')
+        except asyncio.TimeoutError:
+            await paginator.edit(content='❌ **Paginator timed out.**')
+        except exc.NotFound as e:
+            await ctx.send('❌ `{}` **not found.**'.format(e), delete_after=10)
+        except exc.TagBlacklisted as e:
+            await ctx.send('❌ `{}` **blacklisted.**'.format(e), delete_after=10)
+        except exc.TagBoundsError as e:
+            await ctx.send('❌ `{}` **out of bounds.** Tags limited to 5, currently.'.format(e), delete_after=10)
+        except exc.Timeout:
+            await ctx.send('❌ **Request timed out.**')
         finally:
-            if starred:
-                for url in starred:
-                    await user.send(url)
-                    if len(starred) > 5:
-                        await asyncio.sleep(2.1)
+            for url in starred:
+                await user.send(url)
+                if len(starred) > 5:
+                    await asyncio.sleep(2.1)
 
     @e621_paginator.error
     async def e621_paginator_error(self, ctx, error):
@@ -192,23 +423,31 @@ class MsG:
                     if int(arg) <= 6 and int(arg) >= 1:
                         limit = int(arg)
                         args.remove(arg)
-                    else: raise exc.BoundsError(arg)
-            posts = self.check_return_posts(ctx=ctx, booru='e621', tags=args, limit=limit)#, previous=temp_urls.get(ctx.message.author.id, []))
+                    else:
+                        raise exc.BoundsError(arg)
+            # , previous=temp_urls.get(ctx.message.author.id, []))
+            posts = await self.check_return_posts(ctx=ctx, booru='e621', tags=args, limit=limit)
             for ident, url in posts.items():
-                embed = d.Embed(title='/post/{}'.format(ident), url='https://e621.net/post/show/{}'.format(ident), color=ctx.me.color).set_image(url=url)
-                embed.set_author(name=formatter.tostring(args, random=True), url='https://e621.net/post?tags={}'.format(','.join(args)), icon_url=ctx.message.author.avatar_url)
-                embed.set_footer(text='e621', icon_url='http://ndl.mgccw.com/mu3/app/20141013/18/1413204353554/icon/icon_xl.png')
+                embed = d.Embed(title='/post/{}'.format(ident), url='https://e621.net/post/show/{}'.format(ident),
+                                color=ctx.me.color).set_image(url=url)
+                embed.set_author(name=formatter.tostring(args, random=True),
+                                 url='https://e621.net/post?tags={}'.format(','.join(args)), icon_url=ctx.message.author.avatar_url)
+                embed.set_footer(
+                    text='e621', icon_url='http://ndl.mgccw.com/mu3/app/20141013/18/1413204353554/icon/icon_xl.png')
                 await ctx.send(embed=embed)
             # temp_urls.setdefault(ctx.message.author.id, []).extend(posts.values())
-        except exc.TagBlacklisted as e: await ctx.send('❌ `' + str(e) + '` **blacklisted.**', delete_after=10)
-        except exc.BoundsError as e: await ctx.send('❌ `' + str(e) + '` **out of bounds.**', delete_after=10)
-        except exc.TagBoundsError as e: await ctx.send('❌ `' + str(e) + '` **out of bounds.** Tags limited to 5, currently.', delete_after=10)
-        except exc.NotFound as e: await ctx.send('❌ `' + str(e) + '` **not found.**', delete_after=10)
-        except exc.Timeout: await ctx.send('❌ **Request timed out.**')
-        except Exception:
-            await ctx.send('{}\n```{}```'.format(exc.base, tb.format_exc(limit=1)))
-            tb.print_exc()
-        tools.command_dict.setdefault(str(ctx.message.author.id), {}).update({'command': ctx.command, 'args': ctx.args})
+        except exc.TagBlacklisted as e:
+            await ctx.send('❌ `' + str(e) + '` **blacklisted.**', delete_after=10)
+        except exc.BoundsError as e:
+            await ctx.send('❌ `' + str(e) + '` **out of bounds.**', delete_after=10)
+        except exc.TagBoundsError as e:
+            await ctx.send('❌ `' + str(e) + '` **out of bounds.** Tags limited to 5, currently.', delete_after=10)
+        except exc.NotFound as e:
+            await ctx.send('❌ `' + str(e) + '` **not found.**', delete_after=10)
+        except exc.Timeout:
+            await ctx.send('❌ **Request timed out.**')
+        tools.command_dict.setdefault(str(ctx.message.author.id), {}).update(
+            {'command': ctx.command, 'args': ctx.args})
 
     @e621.error
     async def e621_error(self, ctx, error):
@@ -232,61 +471,29 @@ class MsG:
                     if int(arg) <= 6 and int(arg) >= 1:
                         limit = int(arg)
                         args.remove(arg)
-                    else: raise exc.BoundsError(arg)
-            posts = self.check_return_posts(ctx=ctx, booru='e926', tags=args, limit=limit)#, previous=temp_urls.get(ctx.message.author.id, []))
+                    else:
+                        raise exc.BoundsError(arg)
+            # , previous=temp_urls.get(ctx.message.author.id, []))
+            posts = await self.check_return_posts(ctx=ctx, booru='e926', tags=args, limit=limit)
             for ident, url in posts.items():
-                embed = d.Embed(title='/post/{}'.format(ident), url='https://e926.net/post/show/{}'.format(ident), color=ctx.me.color).set_image(url=url)
-                embed.set_author(name=formatter.tostring(args, random=True), url='https://e621.net/post?tags={}'.format(','.join(args)), icon_url=ctx.message.author.avatar_url)
-                embed.set_footer(text='e926', icon_url='http://ndl.mgccw.com/mu3/app/20141013/18/1413204353554/icon/icon_xl.png')
+                embed = d.Embed(title='/post/{}'.format(ident), url='https://e926.net/post/show/{}'.format(ident),
+                                color=ctx.me.color).set_image(url=url)
+                embed.set_author(name=formatter.tostring(args, random=True),
+                                 url='https://e621.net/post?tags={}'.format(','.join(args)), icon_url=ctx.message.author.avatar_url)
+                embed.set_footer(
+                    text='e926', icon_url='http://ndl.mgccw.com/mu3/app/20141013/18/1413204353554/icon/icon_xl.png')
                 await ctx.send(embed=embed)
             # temp_urls.setdefault(ctx.message.author.id, []).extend(posts.values())
-        except exc.TagBlacklisted as e: await ctx.send('❌ `' + str(e) + '` **blacklisted.**', delete_after=10)
-        except exc.BoundsError as e: await ctx.send('❌ `' + str(e) + '` **out of bounds.**', delete_after=10)
-        except exc.TagBoundsError as e: await ctx.send('❌ `' + str(e) + '` **out of bounds.** Tags limited to 5, currently.', delete_after=10)
-        except exc.NotFound as e: await ctx.send('❌ `' + str(e) + '` **not found.**', delete_after=10)
-        except exc.Timeout: await ctx.send('❌ **Request timed out.**')
-        except Exception:
-            await ctx.send('{}\n```{}```'.format(exc.base, tb.format_exc(limit=1)))
-            tb.print_exc()
-
-    # Messy code that checks image limit and tags in blacklists
-    def check_return_posts(self, *, ctx, booru='e621', tags=[], limit=1, previous=[]):
-        global blacklists, aliases, HEADERS
-
-        if isinstance(ctx.message.guild, d.Guild): guild = ctx.message.guild
-        else: guild = ctx.message.channel
-        channel = ctx.message.channel
-        user = ctx.message.author
-        blacklist = []
-
-        # Creates temp blacklist based on context
-        for k, v in aliases['global_blacklist'].items(): blacklist.extend([k] + v)
-        for k, v in aliases['guild_blacklist'].get(str(guild.id), {}).get(str(channel.id), {}).items(): blacklist.extend([k] + v)
-        for k, v in aliases['user_blacklist'].get(str(user.id), {}).items(): blacklist.extend([k] + v)
-        # Checks if tags are in local blacklists
-        if tags:
-            if len(tags) > 5: raise exc.TagBoundsError(formatter.tostring(tags[5:]))
-            for tag in tags:
-                if tag == 'swf' or tag == 'webm' or tag in blacklist: raise exc.TagBlacklisted(tag)
-
-        # Checks for blacklisted tags in endpoint blacklists - try/except is for continuing the parent loop
-        posts = {}
-        c = 0
-        while len(posts) < limit:
-            if c == 50 + limit: raise exc.Timeout
-            request = requests.get('https://{}.net/post/index.json?tags={}'.format(booru, ','.join(['order:random'] + tags)), headers=HEADERS).json()
-            if len(request) == 0: raise exc.NotFound(formatter.tostring(tags))
-            if len(request) < limit: limit = len(request)
-            for post in request:
-                if 'swf' in post['file_ext'] or 'webm' in post['file_ext']: continue
-                try:
-                    for tag in blacklist:
-                        if tag in post['tags']: raise exc.Continue
-                except exc.Continue: continue
-                if post['file_url'] not in posts.values() and post['file_url'] not in previous: posts[post['id']] = post['file_url']
-                if len(posts) == limit: break
-            c += 1
-        return posts
+        except exc.TagBlacklisted as e:
+            await ctx.send('❌ `' + str(e) + '` **blacklisted.**', delete_after=10)
+        except exc.BoundsError as e:
+            await ctx.send('❌ `' + str(e) + '` **out of bounds.**', delete_after=10)
+        except exc.TagBoundsError as e:
+            await ctx.send('❌ `' + str(e) + '` **out of bounds.** Tags limited to 5, currently.', delete_after=10)
+        except exc.NotFound as e:
+            await ctx.send('❌ `' + str(e) + '` **not found.**', delete_after=10)
+        except exc.Timeout:
+            await ctx.send('❌ **Request timed out.**')
 
     # Umbrella command structure to manage global, channel, and user blacklists
     @commands.group(aliases=['bl', 'b'], brief='Manage blacklists', description='Blacklist base command for managing blacklists\n\n`bl get [blacklist]` to show a blacklist\n`bl set [blacklist] [tags]` to replace a blacklist\n`bl clear [blacklist]` to clear a blacklist\n`bl add [blacklist] [tags]` to add tags to a blacklist\n`bl remove [blacklist] [tags]` to remove tags from a blacklist', usage='[flag] [blacklist] ([tags])')
@@ -294,6 +501,7 @@ class MsG:
     async def blacklist(self, ctx):
         if ctx.invoked_subcommand is None:
             await ctx.send('❌ **Use a flag to manage blacklists.**\n*Type* `' + ctx.prefix + 'help bl` *for more info.*', delete_after=10)
+
     @blacklist.error
     async def blacklist_error(self, ctx, error):
         if isinstance(error, commands.CheckFailure):
@@ -304,244 +512,173 @@ class MsG:
     @blacklist.group(name='get', aliases=['g'])
     async def _get_blacklist(self, ctx):
         if ctx.invoked_subcommand is None:
-            await ctx.send('❌ **Invalid blacklist.**')
+            await ctx.send('❌ **Invalid blacklist.**', delete_after=10)
+
     @_get_blacklist.command(name='global', aliases=['gl', 'g'])
     async def __get_global_blacklist(self, ctx):
-        global blacklists
-        await ctx.send('🚫 **Global blacklist:**\n```' + formatter.tostring(blacklists['global_blacklist']) + '```')
+        await ctx.send('🚫 **Global blacklist:**\n```\n' + formatter.tostring(self.blacklists['global_blacklist']) + '```')
+
     @_get_blacklist.command(name='channel', aliases=['ch', 'c'])
     async def __get_channel_blacklist(self, ctx):
-        global blacklists
-        if isinstance(ctx.message.guild, d.Guild):
-            guild = ctx.message.guild
-        else:
-            guild = ctx.message.channel
+        guild = ctx.message.guild if isinstance(
+            ctx.message.guild, d.Guild) else ctx.message.channel
         channel = ctx.message.channel
-        await ctx.send('🚫 <#' + str(channel.id) + '> **blacklist:**\n```' + formatter.tostring(blacklists['guild_blacklist'].get(str(guild.id), {}).get(str(channel.id), [])) + '```')
+        await ctx.send('🚫 <#' + channel.id + '> **blacklist:**\n```\n' + formatter.tostring(self.blacklists['guild_blacklist'].get(guild.id, {}).get(channel.id, set())) + '```')
+
     @_get_blacklist.command(name='me', aliases=['m'])
     async def __get_user_blacklist(self, ctx):
-        global blacklists
         user = ctx.message.author
-        await ctx.send('🚫 ' + user.mention + '**\'s blacklist:**\n```' + formatter.tostring(blacklists['user_blacklist'].get(str(user.id), [])) + '```', delete_after=10)
+        await ctx.send('🚫 ' + user.mention + '**\'s blacklist:**\n```\n' + formatter.tostring(self.blacklists['user_blacklist'].get(user.id, set())) + '```', delete_after=10)
+
     @_get_blacklist.command(name='here', aliases=['h'])
     async def __get_here_blacklists(self, ctx):
-        global blacklists
-        if isinstance(ctx.message.guild, d.Guild):
-            guild = ctx.message.guild
-        else:
-            guild = ctx.message.channel
+        guild = ctx.message.guild if isinstance(
+            ctx.message.guild, d.Guild) else ctx.message.channel
         channel = ctx.message.channel
-        await ctx.send('🚫 **__Blacklisted:__**\n\n**Global:**\n```' + formatter.tostring(blacklists['global_blacklist']) + '```\n**<#' + str(channel.id) + '>:**\n```' + formatter.tostring(blacklists['guild_blacklist'].get(str(guild.id), {}).get(str(channel.id), [])) + '```')
+        await ctx.send('🚫 **__Blacklisted:__**\n\n**Global:**\n```\n' + formatter.tostring(self.blacklists['global_blacklist']) + '```\n**<#' + channel.id + '>:**\n```\n' + formatter.tostring(self.blacklists['guild_blacklist'].get(guild.id, {}).get(channel.id, set())) + '```')
+
     @_get_blacklist.group(name='all', aliases=['a'])
     async def __get_all_blacklists(self, ctx):
         if ctx.invoked_subcommand is None:
             await ctx.send('❌ **Invalid blacklist.**')
+
     @__get_all_blacklists.command(name='guild', aliases=['g'])
     @commands.has_permissions(manage_channels=True)
     async def ___get_all_guild_blacklists(self, ctx):
-        global blacklists
-        if isinstance(ctx.message.guild, d.Guild):
-            guild = ctx.message.guild
-        else:
-            guild = ctx.message.channel
-        await ctx.send('🚫 **__' + guild.name + ' blacklists:__**\n\n' + formatter.dict_tostring(blacklists['guild_blacklist'].get(str(guild.id), {})))
+        guild = ctx.message.guild if isinstance(
+            ctx.message.guild, d.Guild) else ctx.message.channel
+        await ctx.send('🚫 **__' + guild.name + ' blacklists:__**\n\n' + formatter.dict_tostring(self.blacklists['guild_blacklist'].get(guild.id, {})))
+
     @__get_all_blacklists.command(name='user', aliases=['u', 'member', 'm'])
     @commands.is_owner()
     async def ___get_all_user_blacklists(self, ctx):
-        global blacklists
-        await ctx.send('🚫 **__User blacklists:__**\n\n' + formatter.dict_tostring(blacklists['user_blacklist']))
+        await ctx.send('🚫 **__User blacklists:__**\n\n' + formatter.dict_tostring(self.blacklists['user_blacklist']))
 
     @blacklist.group(name='add', aliases=['a'])
     async def _add_tags(self, ctx):
         if ctx.invoked_subcommand is None:
-            await ctx.send('❌ **Invalid blacklist.**')
+            await ctx.send('❌ **Invalid blacklist.**', delete_after=10)
+
     @_add_tags.command(name='global', aliases=['gl', 'g'])
     @commands.is_owner()
     async def __add_global_tags(self, ctx, *tags):
-        global blacklists, aliases, HEADERS
-        try:
-            for tag in tags:
-                if tag in blacklists['global_blacklist']:
-                    raise exc.TagExists(tag)
-            blacklists['global_blacklist'].extend(tags)
-            for tag in tags:
-                alias_request = requests.get('https://e621.net/tag_alias/index.json?aliased_to=' + tag + '&approved=true', headers=HEADERS).json()
+        self.blacklists['global_blacklist'].update(tags)
+        for tag in tags:
+            alias_request = await u.fetch('https://e621.net/tag_alias/index.json', params={'aliased_to': tag, 'approved': 'true'}, json=True)
+            if alias_request:
                 for dic in alias_request:
-                    aliases['global_blacklist'].setdefault(tag, []).append(dic['name'])
-            with open('blacklists.json', 'w') as outfile:
-                json.dump(blacklists, outfile, indent=4, sort_keys=True)
-            with open('aliases.json', 'w') as outfile:
-                json.dump(aliases, outfile, indent=4, sort_keys=True)
-            await ctx.send('✅ **Added to global blacklist:**\n```' + formatter.tostring(tags) + '```', delete_after=5)
-        except exc.TagExists as e:
-            await ctx.send('❌ `' + str(e) + '` **already in blacklist.**', delete_after=10)
-        except Exception:
-            await ctx.send('{}\n```{}```'.format(exc.base, tb.format_exc(limit=1)))
-            tb.print_exc()
+                    self.aliases.setdefault(tag, set()).add(dic['name'])
+        u.dump(self.blacklists, './cogs/blacklists.pkl')
+        u.dump(self.aliases, './cogs/aliases.pkl')
+        await ctx.send('✅ **Added to global blacklist:**\n```\n' + formatter.tostring(tags) + '```', delete_after=5)
+
     @_add_tags.command(name='channel', aliases=['ch', 'c'])
     @commands.has_permissions(manage_channels=True)
     async def __add_channel_tags(self, ctx, *tags):
-        global blacklists, aliases, HEADERS
-        if isinstance(ctx.message.guild, d.Guild):
-            guild = ctx.message.guild
-        else:
-            guild = ctx.message.channel
+        guild = ctx.message.guild if isinstance(
+            ctx.message.guild, d.Guild) else ctx.message.channel
         channel = ctx.message.channel
-        try:
-            for tag in tags:
-                if tag in blacklists['guild_blacklist'].get(str(guild.id), {}).get(str(channel.id), []):
-                    raise exc.TagExists(tag)
-            blacklists['guild_blacklist'].setdefault(str(guild.id), {}).setdefault(str(channel.id), []).extend(tags)
-            for tag in tags:
-                alias_request = requests.get('https://e621.net/tag_alias/index.json?aliased_to=' + tag + '&approved=true', headers=HEADERS).json()
+
+        self.blacklists['guild_blacklist'].setdefault(
+            guild.id, {}).setdefault(channel.id, set()).update(tags)
+        for tag in tags:
+            alias_request = await u.fetch('https://e621.net/tag_alias/index.json', params={'aliased_to': tag, 'approved': 'true'}, json=True)
+            if alias_request:
                 for dic in alias_request:
-                    aliases['guild_blacklist'].setdefault(str(guild.id), {}).setdefault(str(channel.id), {}).setdefault(tag, []).append(dic['name'])
-            with open('blacklists.json', 'w') as outfile:
-                json.dump(blacklists, outfile, indent=4, sort_keys=True)
-            with open('aliases.json', 'w') as outfile:
-                json.dump(aliases, outfile, indent=4, sort_keys=True)
-            await ctx.send('✅ **Added to** <#' + str(channel.id) + '> **blacklist:**\n```' + formatter.tostring(tags) + '```', delete_after=5)
-        except exc.TagExists as e:
-            await ctx.send('❌ `' + str(e) + '` **already in blacklist.**', delete_after=10)
-        except Exception:
-            await ctx.send('{}\n```{}```'.format(exc.base, tb.format_exc(limit=1)))
-            tb.print_exc()
+                    self.aliases.setdefault(tag, set()).add(dic['name'])
+        u.dump(self.blacklists, './cogs/blacklists.pkl')
+        u.dump(self.aliases, './cogs/aliases.pkl')
+        await ctx.send('✅ **Added to** <#' + channel.id + '> **blacklist:**\n```\n' + formatter.tostring(tags) + '```', delete_after=5)
+
     @_add_tags.command(name='me', aliases=['m'])
     async def __add_user_tags(self, ctx, *tags):
-        global blacklists, aliases, HEADERS
         user = ctx.message.author
-        try:
-            for tag in tags:
-                if tag in blacklists['user_blacklist'].get(str(user.id), []):
-                    raise exc.TagExists(tag)
-            blacklists['user_blacklist'].setdefault(str(user.id), []).extend(tags)
-            for tag in tags:
-                alias_request = requests.get('https://e621.net/tag_alias/index.json?aliased_to=' + tag + '&approved=true', headers=HEADERS).json()
+
+        self.blacklists['user_blacklist'].setdefault(user.id, set()).update(tags)
+        for tag in tags:
+            alias_request = await u.fetch('https://e621.net/tag_alias/index.json', params={'aliased_to': tag, 'approved': 'true'}, json=True)
+            if alias_request:
                 for dic in alias_request:
-                    aliases['user_blacklist'].setdefault(str(user.id), {}).setdefault(tag, []).append(dic['name'])
-            with open('blacklists.json', 'w') as outfile:
-                json.dump(blacklists, outfile, indent=4, sort_keys=True)
-            with open('aliases.json', 'w') as outfile:
-                json.dump(aliases, outfile, indent=4, sort_keys=True)
-            await ctx.send('✅ ' + user.mention + ' **added:**\n```' + formatter.tostring(tags) + '```', delete_after=5)
-        except exc.TagExists as e:
-            await ctx.send('❌ `' + str(e) + '` **already in blacklist.**', delete_after=10)
-        except Exception:
-            await ctx.send('{}\n```{}```'.format(exc.base, tb.format_exc(limit=1)))
-            tb.print_exc()
+                    self.aliases.setdefault(tag, set()).add(dic['name'])
+        u.dump(self.blacklists, './cogs/blacklists.pkl')
+        u.dump(self.aliases, './cogs/aliases.pkl')
+        await ctx.send('✅ ' + user.mention + ' **added:**\n```\n' + formatter.tostring(tags) + '```', delete_after=5)
 
     @blacklist.group(name='remove', aliases=['rm', 'r'])
     async def _remove_tags(self, ctx):
         if ctx.invoked_subcommand is None:
-            await ctx.send('❌ **Invalid blacklist.**')
+            await ctx.send('❌ **Invalid blacklist.**', delete_after=10)
+
     @_remove_tags.command(name='global', aliases=['gl', 'g'])
     @commands.is_owner()
     async def __remove_global_tags(self, ctx, *tags):
-        global blacklists, aliases
         try:
             for tag in tags:
-                if tag in blacklists['global_blacklist']:
-                    blacklists['global_blacklist'].remove(tag)
-                    del aliases['global_blacklist'][tag]
-                else:
+                try:
+                    self.blacklists['global_blacklist'].remove(tag)
+                except KeyError:
                     raise exc.TagError(tag)
-            with open('blacklists.json', 'w') as outfile:
-                json.dump(blacklists, outfile, indent=4, sort_keys=True)
-            with open('aliases.json', 'w') as outfile:
-                json.dump(aliases, outfile, indent=4, sort_keys=True)
-            await ctx.send('✅ **Removed from global blacklist:**\n```' + formatter.tostring(tags) + '```', delete_after=5)
+            u.dump(self.blacklists, './cogs/blacklists.pkl')
+            await ctx.send('✅ **Removed from global blacklist:**\n```\n' + formatter.tostring(tags) + '```', delete_after=5)
         except exc.TagError as e:
             await ctx.send('❌ `' + str(e) + '` **not in blacklist.**', delete_after=10)
-        except Exception:
-            await ctx.send('{}\n```{}```'.format(exc.base, tb.format_exc(limit=1)))
-            tb.print_exc()
+
     @_remove_tags.command(name='channel', aliases=['ch', 'c'])
     @commands.has_permissions(manage_channels=True)
     async def __remove_channel_tags(self, ctx, *tags):
-        global blacklists, aliases
-        if isinstance(ctx.message.guild, d.Guild):
-            guild = ctx.message.guild
-        else:
-            guild = ctx.message.channel
+        guild = ctx.message.guild if isinstance(
+            ctx.message.guild, d.Guild) else ctx.message.channel
         channel = ctx.message.channel
         try:
             for tag in tags:
-                if tag in blacklists['guild_blacklist'][str(guild.id)][str(channel.id)]:
-                    blacklists['guild_blacklist'][str(guild.id)][str(channel.id)].remove(tag)
-                    del aliases['guild_blacklist'][str(guild.id)][str(channel.id)][tag]
-                else:
+                try:
+                    self.blacklists['guild_blacklist'][guild.id][channel.id].remove(tag)
+                except KeyError:
                     raise exc.TagError(tag)
-            with open('blacklists.json', 'w') as outfile:
-                json.dump(blacklists, outfile, indent=4, sort_keys=True)
-            with open('aliases.json', 'w') as outfile:
-                json.dump(aliases, outfile, indent=4, sort_keys=True)
-            await ctx.send('✅ **Removed from** <#' + str(channel.id) + '> **blacklist:**\n```' + formatter.tostring(tags) + '```', delete_after=5)
+            u.dump(self.blacklists, './cogs/blacklists.pkl')
+            await ctx.send('✅ **Removed from** <#' + channel.id + '> **blacklist:**\n```\n' + formatter.tostring(tags) + '```', delete_after=5)
         except exc.TagError as e:
             await ctx.send('❌ `' + str(e) + '` **not in blacklist.**', delete_after=10)
-        except Exception:
-            await ctx.send('{}\n```{}```'.format(exc.base, tb.format_exc(limit=1)))
-            tb.print_exc()
+
     @_remove_tags.command(name='me', aliases=['m'])
     async def __remove_user_tags(self, ctx, *tags):
-        global blacklists, aliases
         user = ctx.message.author
         try:
             for tag in tags:
-                if tag in blacklists['user_blacklist'][str(user.id)]:
-                    blacklists['user_blacklist'][str(user.id)].remove(tag)
-                    del aliases['user_blacklist'][str(user.id)][tag]
-                else:
+                try:
+                    self.blacklists['user_blacklist'][user.id].remove(tag)
+                except KeyError:
                     raise exc.TagError(tag)
-            with open('blacklists.json', 'w') as outfile:
-                json.dump(blacklists, outfile, indent=4, sort_keys=True)
-            with open('aliases.json', 'w') as outfile:
-                json.dump(aliases, outfile, indent=4, sort_keys=True)
-            await ctx.send('✅ ' + user.mention + ' **removed:**\n```' + formatter.tostring(tags) + '```', delete_after=5)
+            u.dump(self.blacklists, './cogs/blacklists.pkl')
+            await ctx.send('✅ ' + user.mention + ' **removed:**\n```\n' + formatter.tostring(tags) + '```', delete_after=5)
         except exc.TagError as e:
             await ctx.send('❌ `' + str(e) + '` **not in blacklist.**', delete_after=10)
-        except Exception:
-            await ctx.send('{}\n```{}```'.format(exc.base, tb.format_exc(limit=1)))
-            tb.print_exc()
 
     @blacklist.group(name='clear', aliases=['cl', 'c'])
     async def _clear_blacklist(self, ctx):
         if ctx.invoked_subcommand is None:
-            await ctx.send('❌ **Invalid blacklist.**')
+            await ctx.send('❌ **Invalid blacklist.**', delete_after=10)
+
     @_clear_blacklist.command(name='global', aliases=['gl', 'g'])
     @commands.is_owner()
     async def __clear_global_blacklist(self, ctx):
-        global blacklists, aliases
-        del blacklists['global_blacklist']
-        del aliases['global_blacklist']
-        with open('blacklists.json', 'w') as outfile:
-            json.dump(blacklists, outfile, indent=4, sort_keys=True)
-        with open('aliases.json', 'w') as outfile:
-            json.dump(aliases, outfile, indent=4, sort_keys=True)
+        del self.blacklists['global_blacklist']
+        u.dump(self.blacklists, './cogs/blacklists.pkl')
         await ctx.send('✅ **Global blacklist cleared.**', delete_after=5)
+
     @_clear_blacklist.command(name='channel', aliases=['ch', 'c'])
     @commands.has_permissions(manage_channels=True)
     async def __clear_channel_blacklist(self, ctx):
-        global blacklists, aliases
-        if isinstance(ctx.message.guild, d.Guild):
-            guild = ctx.message.guild
-        else:
-            guild = ctx.message.channel
+        guild = ctx.message.guild if isinstance(
+            ctx.message.guild, d.Guild) else ctx.message.channel
         channel = ctx.message.channel
-        del blacklists['guild_blacklist'][str(guild.id)][str(channel.id)]
-        del aliases['guild_blacklist'][str(guild.id)][str(channel.id)]
-        with open('blacklists.json', 'w') as outfile:
-            json.dump(blacklists, outfile, indent=4, sort_keys=True)
-        with open('aliases.json', 'w') as outfile:
-            json.dump(aliases, outfile, indent=4, sort_keys=True)
-        await ctx.send('✅ <#' + str(channel.id) + '> **blacklist cleared.**', delete_after=5)
+        del self.blacklists['guild_blacklist'][str(guild.id)][channel.id]
+        u.dump(self.blacklists, './cogs/blacklists.pkl')
+        await ctx.send('✅ <#' + channel.id + '> **blacklist cleared.**', delete_after=5)
+
     @_clear_blacklist.command(name='me', aliases=['m'])
     async def __clear_user_blacklist(self, ctx):
-        global blacklists, aliases
         user = ctx.message.author
-        del blacklists['user_blacklist'][str(user.id)]
-        del aliases['user_blacklist'][str(user.id)]
-        with open('blacklists.json', 'w') as outfile:
-            json.dump(blacklists, outfile, indent=4, sort_keys=True)
-        with open('aliases.json', 'w') as outfile:
-            json.dump(aliases, outfile, indent=4, sort_keys=True)
+        del self.blacklists['user_blacklist'][user.id]
+        u.dump(self.blacklists, './cogs/blacklists.pkl')
         await ctx.send('✅ ' + user.mention + '**\'s blacklist cleared.**', delete_after=5)
