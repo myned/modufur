@@ -106,7 +106,7 @@ class Tools:
         try:
             console = await self.generate(ctx)
             exception = await self.generate_err(ctx)
-            while True:
+            while not self.bot.is_closed():
                 exe = await self.bot.wait_for('message', check=execute)
                 await exe.delete()
                 sys.stdout = io.StringIO()

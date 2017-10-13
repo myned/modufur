@@ -154,7 +154,7 @@ class MsG:
             await paginator.add_reaction('➡')
             await asyncio.sleep(1)
 
-            while True:
+            while not self.bot.is_closed():
                 try:
                     await self.bot.wait_for('reaction_add', check=on_react, timeout=10 * 60)
 
@@ -328,7 +328,7 @@ class MsG:
             await paginator.add_reaction('➡')
             await asyncio.sleep(1)
 
-            while True:
+            while not self.bot.is_closed():
                 try:
                     await self.bot.wait_for('reaction_add', check=on_react, timeout=10 * 60)
 
