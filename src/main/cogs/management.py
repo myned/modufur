@@ -8,22 +8,19 @@ from misc import exceptions as exc
 from misc import checks
 from utils import utils as u
 
-RATE_LIMIT = 2.1
-
 
 class Administration:
 
     def __init__(self, bot):
         self.bot = bot
+        self.RATE_LIMIT = 2.1
         self.queue = asyncio.Queue()
 
-        if u.background.get('management', {}):
-            if u.background['management'].get('auto_delete', {}):
-                for channel in u.background['management']['auto_delete']:
-                    temp = self.bot.get_channel(channel)
-                    self.bot.loop.create_task(self.on_message(temp))
-                    self.bot.loop.create_task(self.delete())
-                    print('Looping {}'.format(temp.id))
+        for channel in u.tasks.get('management', {}).get('auto_delete', []):
+            temp = self.bot.get_channel(channel)
+            self.bot.loop.create_task(self.on_message(temp))
+            self.bot.loop.create_task(self.delete())
+            print('Looping #{}'.format(temp.name))
 
     # @commands.group(aliases=['pr', 'clear', 'cl'])
     # @commands.is_owner()
@@ -45,12 +42,12 @@ class Administration:
     #         for channel in channels:
     #             bulk_history[channel] = await channel.history(limit=None, after=dt.datetime.utcnow() - dt.timedelta(days=14)).flatten()
     #             await ch_sent.edit(content='🗄 **Cached** `' + str(channels.index(channel) + 1) + '/' + str(len(channels)) + '` **channels.**')
-    #             await asyncio.sleep(RATE_LIMIT)
+    #             await asyncio.sleep(self.RATE_LIMIT)
     #         for channel, messages in bulk_history.items():
     #             bulk[channel] = [message for message in messages if message.author.id == int(uid)]
     #         for channel, messages in bulk_history.items():
     #             bulk[channel] = [bulk[channel][i:i+100] for i in range(0, len(bulk[channel]), 100)]
-    #         await ctx.send('⏱ **Estimated time to delete `bulk-history`:** `' + str(int(RATE_LIMIT * sum([len(v) for v in bulk.values()]) / 60)) + ' mins ' + str(int(RATE_LIMIT * sum([len(v) for v in bulk.values()]) % 60)) + ' secs`')
+    #         await ctx.send('⏱ **Estimated time to delete `bulk-history`:** `' + str(int(self.RATE_LIMIT * sum([len(v) for v in bulk.values()]) / 60)) + ' mins ' + str(int(self.RATE_LIMIT * sum([len(v) for v in bulk.values()]) % 60)) + ' secs`')
     #         check = await ctx.send(ctx.author.mention + ' **Continue?** `Y` or `N`')
     #         await self.bot.wait_for('message', check=yes, timeout=60)
     #         del_sent = await ctx.send('🗑 **Deleting messages...**')
@@ -64,14 +61,12 @@ class Administration:
     #         for channel in channels:
     #             history.extend(await channel.history(limit=None, before=dt.datetime.utcnow() - dt.timedelta(days=14)).flatten())
     #             await ch_sent.edit(content='🗄 **Cached** `' + str(channels.index(channel) + 1) + '/' + str(len(channels)) + '` **channels.**')
-    #             await asyncio.sleep(RATE_LIMIT)
+    #             await asyncio.sleep(self.RATE_LIMIT)
 
     @commands.command(name=',prunefromguild', aliases=[',pfg', ',prunefromserver', ',pfs'], brief='Prune a user\'s messages from the guild', description='about flag centers on message 50 of 101 messages\n\npfg \{user id\} [before|after|about] [\{message id\}]\n\nExample:\npfg \{user id\} before \{message id\}')
     @commands.is_owner()
     @checks.del_ctx()
     async def prune_all_user(self, ctx, uid, when=None, reference=None):
-        global RATE_LIMIT
-
         def yes(msg):
             if msg.content.lower() == 'y' and msg.channel is ctx.message.channel and msg.author is ctx.message.author:
                 return True
@@ -96,25 +91,25 @@ class Administration:
                 for channel in channels:
                     history.extend(await channel.history(limit=None).flatten())
                     await ch_sent.edit(content='🗄 **Cached** `{}/{}` **channels.**'.format(channels.index(channel) + 1, len(channels)))
-                    await asyncio.sleep(RATE_LIMIT)
+                    await asyncio.sleep(self.RATE_LIMIT)
             elif when == 'before':
                 for channel in channels:
                     history.extend(await channel.history(limit=None, before=ref.created_at).flatten())
                     await ch_sent.edit(content='🗄 **Cached** `{}/{}` **channels.**'.format(channels.index(channel) + 1, len(channels)))
-                    await asyncio.sleep(RATE_LIMIT)
+                    await asyncio.sleep(self.RATE_LIMIT)
             elif when == 'after':
                 for channel in channels:
                     history.extend(await channel.history(limit=None, after=ref.created_at).flatten())
                     await ch_sent.edit(content='🗄 **Cached** `{}/{}` **channels.**'.format(channels.index(channel) + 1, len(channels)))
-                    await asyncio.sleep(RATE_LIMIT)
+                    await asyncio.sleep(self.RATE_LIMIT)
             elif when == 'about':
                 for channel in channels:
                     history.extend(await channel.history(limit=101, about=ref.created_at).flatten())
                     await ch_sent.edit(content='🗄 **Cached** `{}/{}` **channels.**'.format(channels.index(channel) + 1, len(channels)))
-                    await asyncio.sleep(RATE_LIMIT)
+                    await asyncio.sleep(self.RATE_LIMIT)
 
             history = [message for message in history if message.author.id == int(uid)]
-            est_sent = await ctx.send('⏱ **Estimated time to delete history:** `{}m {}s`'.format(int(RATE_LIMIT * len(history) / 60), int(RATE_LIMIT * len(history) % 60)))
+            est_sent = await ctx.send('⏱ **Estimated time to delete history:** `{}m {}s`'.format(int(self.RATE_LIMIT * len(history) / 60), int(self.RATE_LIMIT * len(history) % 60)))
             cont_sent = await ctx.send('{} **Continue?** `Y` or `N`'.format(ctx.author.mention))
             await self.bot.wait_for('message', check=yes, timeout=60)
             await cont_sent.delete()
@@ -126,7 +121,7 @@ class Administration:
                     pass
                 # print('Deleted {}/{} messages.'.format(history.index(message) + 1, len(history)))
                 await del_sent.edit(content='🗑 **Deleted** `{}/{}` **messages.**'.format(history.index(message) + 1, len(history)))
-                await asyncio.sleep(RATE_LIMIT)
+                await asyncio.sleep(self.RATE_LIMIT)
             await del_sent.edit(content='🗑 `{}` **of** <@{}>**\'s messages deleted from** {}**.**'.format(len(history), uid, ctx.message.guild.name))
         except exc.CheckFail:
             await ctx.send('❌ **Deletion aborted.**', delete_after=10)
@@ -134,11 +129,12 @@ class Administration:
             await ctx.send('❌ **Deletion timed out.**', delete_after=10)
 
     async def delete(self):
-        while True:
+        while not self.bot.is_closed():
             message = await self.queue.get()
-            await asyncio.sleep(RATE_LIMIT)
+            await asyncio.sleep(self.RATE_LIMIT)
             try:
-                await message.delete()
+                if not message.pinned:
+                    await message.delete()
             except d.errors.NotFound:
                 pass
 
@@ -152,12 +148,12 @@ class Administration:
                 return False
 
         try:
-            while True:
+            while not self.bot.is_closed():
                 message = await self.bot.wait_for('message', check=check)
                 await self.queue.put(message)
         except exc.Abort:
-            u.background['management']['auto_delete'].remove(channel.id)
-            u.dump(u.background, 'background.pkl')
+            u.tasks['management']['auto_delete'].remove(channel.id)
+            u.dump(u.tasks, './cogs/tasks.pkl')
             print('Stopped looping {}'.format(channel.id))
             await channel.send('✅ **Stopped deleting messages in** {}**.**'.format(channel.mention), delete_after=5)
         except AttributeError:
@@ -170,12 +166,12 @@ class Administration:
         channel = ctx.message.channel
 
         try:
-            if channel.id not in u.background.setdefault('management', {}).setdefault('auto_delete', []):
-                u.background['management']['auto_delete'].append(channel.id)
-                u.dump(u.background, 'background.pkl')
+            if channel.id not in u.tasks.setdefault('management', {}).setdefault('auto_delete', []):
+                u.tasks['management']['auto_delete'].append(channel.id)
+                u.dump(u.tasks, './cogs/tasks.pkl')
                 self.bot.loop.create_task(self.on_message(channel))
                 self.bot.loop.create_task(self.delete())
-                print('Looping {}'.format(channel.id))
+                print('Looping #{}'.format(channel.name))
                 await ctx.send('✅ **Auto-deleting all messages in this channel.**', delete_after=5)
             else:
                 raise exc.Exists
