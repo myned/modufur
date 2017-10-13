@@ -1,26 +1,40 @@
+import asyncio
 import json
+import pickle as pkl
 
-try:
-    with open('background.json') as infile:
-        background = json.load(infile)
-        print('\"background.json\" loaded.')
-except FileNotFoundError:
-    with open('background.json', 'w+') as iofile:
-        print('Background file not found: \"background.json\" created and loaded.')
-        json.dump({}, iofile, indent=4, sort_keys=True)
-        iofile.seek(0)
-        background = json.load(iofile)
+import aiohttp as aio
+
+
+def setdefault(filename, default=None):
+    try:
+        with open(filename, 'rb') as infile:
+            print('\"{}\" loaded.'.format(filename))
+            return pkl.load(infile)
+    except FileNotFoundError:
+        with open(filename, 'wb+') as iofile:
+            print('File not found: \"{}\" created and loaded with default values.'.format(filename))
+            pkl.dump(default, iofile)
+            iofile.seek(0)
+            return pkl.load(iofile)
+
+
+def load(filename):
+    with open(filename, 'rb') as infile:
+        return pkl.load(infile)
+
+
+def dump(obj, filename):
+    with open(filename, 'wb') as outfile:
+        pkl.dump(obj, outfile)
+
+
+background = setdefault('./cogs/background.pkl', {})
 
 with open('config.json') as infile:
     config = json.load(infile)
 
-def update(out, file):
-    with open(file, 'w') as outfile:
-        json.dump(out, outfile, indent=4, sort_keys=True)
 
-import asyncio
-
-async def clear(obj, interval=10*60, replace=None):
+async def clear(obj, interval=10 * 60, replace=None):
     if replace is None:
         if type(obj) is list:
             replace = []
@@ -34,3 +48,16 @@ async def clear(obj, interval=10*60, replace=None):
     while True:
         obj = replace
         asyncio.sleep(interval)
+
+
+session = None
+
+HEADERS = {'user-agent': 'Modumind/0.0.1 (Myned)'}
+
+
+async def fetch(url, *, params={}, json=False):
+    global session, HEADERS
+    async with session.get(url, params=params, headers=HEADERS) as r:
+        if json is True:
+            return await r.json()
+        return r

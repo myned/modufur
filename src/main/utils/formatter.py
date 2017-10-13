@@ -10,6 +10,7 @@ def tostring(i, *, random=False):
         o = ' '
     return o
 
+
 def tostring_commas(i):
     if i:
         o = ','
@@ -18,12 +19,14 @@ def tostring_commas(i):
         return o[:-1]
     return ''
 
+
 def dict_tostring(i):
     o = ''
     if i:
         for k, v in i.items():
             o += '**' + k + ':** `' + tostring(v) + '`\n'
     return o
+
 
 def dictelem_tostring(i):
     o = ''
