@@ -1,12 +1,15 @@
 import asyncio
+import traceback as tb
+
 import discord as d
-import traceback
 from discord.ext import commands
-from misc import checks
+
 from misc import exceptions as exc
+from misc import checks
 from utils import utils as u
 
 RATE_LIMIT = 2.1
+
 
 class Administration:
 
@@ -94,7 +97,7 @@ class Administration:
                     history.extend(await channel.history(limit=None).flatten())
                     await ch_sent.edit(content='🗄 **Cached** `{}/{}` **channels.**'.format(channels.index(channel) + 1, len(channels)))
                     await asyncio.sleep(RATE_LIMIT)
-            elif when =='before':
+            elif when == 'before':
                 for channel in channels:
                     history.extend(await channel.history(limit=None, before=ref.created_at).flatten())
                     await ch_sent.edit(content='🗄 **Cached** `{}/{}` **channels.**'.format(channels.index(channel) + 1, len(channels)))
@@ -117,8 +120,10 @@ class Administration:
             await cont_sent.delete()
             del_sent = await ctx.send('🗑 **Deleting messages...**')
             for message in history:
-                try: await message.delete()
-                except d.NotFound: pass
+                try:
+                    await message.delete()
+                except d.NotFound:
+                    pass
                 # print('Deleted {}/{} messages.'.format(history.index(message) + 1, len(history)))
                 await del_sent.edit(content='🗑 **Deleted** `{}/{}` **messages.**'.format(history.index(message) + 1, len(history)))
                 await asyncio.sleep(RATE_LIMIT)
@@ -127,20 +132,19 @@ class Administration:
             await ctx.send('❌ **Deletion aborted.**', delete_after=10)
         except TimeoutError:
             await ctx.send('❌ **Deletion timed out.**', delete_after=10)
-        except Exception:
-            await ctx.send('{}\n```{}```'.format(exc.base, traceback.format_exc(limit=1)))
-            traceback.print_exc()
 
     async def delete(self):
         while True:
             message = await self.queue.get()
             await asyncio.sleep(RATE_LIMIT)
-            try: await message.delete()
-            except d.errors.NotFound: pass
+            try:
+                await message.delete()
+            except d.errors.NotFound:
+                pass
 
     async def on_message(self, channel):
         def check(msg):
-            if msg.content == 'stop' and msg.channel is channel and msg.author.guild_permissions.administrator:
+            if msg.content.lower() == 'stop' and msg.channel is channel and msg.author.guild_permissions.administrator:
                 raise exc.Abort
             elif msg.channel is channel and not msg.pinned:
                 return True
@@ -153,14 +157,11 @@ class Administration:
                 await self.queue.put(message)
         except exc.Abort:
             u.background['management']['auto_delete'].remove(channel.id)
-            u.update(u.background, 'background.json')
+            u.dump(u.background, 'background.pkl')
             print('Stopped looping {}'.format(channel.id))
             await channel.send('✅ **Stopped deleting messages in** {}**.**'.format(channel.mention), delete_after=5)
         except AttributeError:
             pass
-        except Exception:
-            await channel.send(exc.base + '\n```' + traceback.format_exc(limit=1) + '```')
-            traceback.print_exc()
 
     @commands.command(name='autodelete', aliases=['autodel', 'ad'])
     @commands.has_permissions(administrator=True)
@@ -171,13 +172,12 @@ class Administration:
         try:
             if channel.id not in u.background.setdefault('management', {}).setdefault('auto_delete', []):
                 u.background['management']['auto_delete'].append(channel.id)
-                u.update(u.background, 'background.json')
+                u.dump(u.background, 'background.pkl')
                 self.bot.loop.create_task(self.on_message(channel))
                 self.bot.loop.create_task(self.delete())
                 print('Looping {}'.format(channel.id))
                 await ctx.send('✅ **Auto-deleting all messages in this channel.**', delete_after=5)
-            else: raise exc.Exists
-        except exc.Exists: await ctx.send('❌ **Already auto-deleting in this channel.** Type `stop` to stop.', delete_after=10)
-        except Exception:
-            await channel.send(exc.base + '\n```' + traceback.format_exc(limit=1) + '```')
-            traceback.print_exc()
+            else:
+                raise exc.Exists
+        except exc.Exists:
+            await ctx.send('❌ **Already auto-deleting in this channel.** Type `stop` to stop.', delete_after=10)
