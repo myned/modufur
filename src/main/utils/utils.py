@@ -28,7 +28,7 @@ def dump(obj, filename):
         pkl.dump(obj, outfile)
 
 
-background = setdefault('./cogs/background.pkl', {})
+tasks = setdefault('./cogs/tasks.pkl', {})
 
 with open('config.json') as infile:
     config = json.load(infile)
