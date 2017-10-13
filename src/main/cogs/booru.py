@@ -403,7 +403,7 @@ class MsG:
     @e621_paginator.error
     async def e621_paginator_error(self, ctx, error):
         if isinstance(error, errext.CheckFailure):
-            return await ctx.send('❌ <#' + str(ctx.message.channel.id) + '> **is not an NSFW channel.**', delete_after=10)
+            return await ctx.send('❌ <#' + str(ctx.message.channel.mention) + '> **is not an NSFW channel.**', delete_after=10)
 
     # Searches for and returns images from e621.net given tags when not blacklisted
     @commands.command(aliases=['e6', '6'], brief='e621 | NSFW', description='e621 | NSFW\nTag-based search for e621.net\n\nYou can only search 5 tags and 6 images at once for now.\ne6 [tags...] ([# of images])')
@@ -452,7 +452,7 @@ class MsG:
     @e621.error
     async def e621_error(self, ctx, error):
         if isinstance(error, errext.CheckFailure):
-            return await ctx.send('❌ <#' + str(ctx.message.channel.id) + '> **is not an NSFW channel.**', delete_after=10)
+            return await ctx.send('❌ <#' + str(ctx.message.channel.mention) + '> **is not an NSFW channel.**', delete_after=10)
 
     # Searches for and returns images from e926.net given tags when not blacklisted
     @commands.command(aliases=['e9', '9'], brief='e926 | SFW', description='e926 | SFW\nTag-based search for e926.net\n\nYou can only search 5 tags and 6 images at once for now.\ne9 [tags...] ([# of images])')
@@ -523,7 +523,7 @@ class MsG:
         guild = ctx.message.guild if isinstance(
             ctx.message.guild, d.Guild) else ctx.message.channel
         channel = ctx.message.channel
-        await ctx.send('🚫 <#' + channel.id + '> **blacklist:**\n```\n' + formatter.tostring(self.blacklists['guild_blacklist'].get(guild.id, {}).get(channel.id, set())) + '```')
+        await ctx.send('🚫 ' + channel.mention + ' **blacklist:**\n```\n' + formatter.tostring(self.blacklists['guild_blacklist'].get(guild.id, {}).get(channel.id, set())) + '```')
 
     @_get_blacklist.command(name='me', aliases=['m'])
     async def __get_user_blacklist(self, ctx):
@@ -535,7 +535,7 @@ class MsG:
         guild = ctx.message.guild if isinstance(
             ctx.message.guild, d.Guild) else ctx.message.channel
         channel = ctx.message.channel
-        await ctx.send('🚫 **__Blacklisted:__**\n\n**Global:**\n```\n' + formatter.tostring(self.blacklists['global_blacklist']) + '```\n**<#' + channel.id + '>:**\n```\n' + formatter.tostring(self.blacklists['guild_blacklist'].get(guild.id, {}).get(channel.id, set())) + '```')
+        await ctx.send('🚫 **__Blacklisted:__**\n\n**Global:**\n```\n' + formatter.tostring(self.blacklists['global_blacklist']) + '```\n**' + channel.mention + ':**\n```\n' + formatter.tostring(self.blacklists['guild_blacklist'].get(guild.id, {}).get(channel.id, set())) + '```')
 
     @_get_blacklist.group(name='all', aliases=['a'])
     async def __get_all_blacklists(self, ctx):
@@ -588,7 +588,7 @@ class MsG:
                     self.aliases.setdefault(tag, set()).add(dic['name'])
         u.dump(self.blacklists, './cogs/blacklists.pkl')
         u.dump(self.aliases, './cogs/aliases.pkl')
-        await ctx.send('✅ **Added to** <#' + channel.id + '> **blacklist:**\n```\n' + formatter.tostring(tags) + '```', delete_after=5)
+        await ctx.send('✅ **Added to** ' + channel.mention + ' **blacklist:**\n```\n' + formatter.tostring(tags) + '```', delete_after=5)
 
     @_add_tags.command(name='me', aliases=['m'])
     async def __add_user_tags(self, ctx, *tags):
@@ -636,7 +636,7 @@ class MsG:
                 except KeyError:
                     raise exc.TagError(tag)
             u.dump(self.blacklists, './cogs/blacklists.pkl')
-            await ctx.send('✅ **Removed from** <#' + channel.id + '> **blacklist:**\n```\n' + formatter.tostring(tags) + '```', delete_after=5)
+            await ctx.send('✅ **Removed from** ' + channel.mention + ' **blacklist:**\n```\n' + formatter.tostring(tags) + '```', delete_after=5)
         except exc.TagError as e:
             await ctx.send('❌ `' + str(e) + '` **not in blacklist.**', delete_after=10)
 
@@ -674,7 +674,7 @@ class MsG:
         channel = ctx.message.channel
         del self.blacklists['guild_blacklist'][str(guild.id)][channel.id]
         u.dump(self.blacklists, './cogs/blacklists.pkl')
-        await ctx.send('✅ <#' + channel.id + '> **blacklist cleared.**', delete_after=5)
+        await ctx.send('✅ <#' + channel.mention + '> **blacklist cleared.**', delete_after=5)
 
     @_clear_blacklist.command(name='me', aliases=['m'])
     async def __clear_user_blacklist(self, ctx):
