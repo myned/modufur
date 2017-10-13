@@ -67,7 +67,7 @@ class MsG:
                 return False
 
         posts = {}
-        pool_id = None
+        pool = {}
 
         pools = []
         pool_request = await u.fetch('https://{}.net/pool/index.json'.format(booru), params={'query': ' '.join(query)}, json=True)
@@ -81,24 +81,24 @@ class MsG:
                 raise exc.Abort
             finally:
                 await match.delete()
-            pool = [pool for pool in pool_request if pool['name']
-                    == pools[int(selection.content) - 1]][0]
+            tempool = [pool for pool in pool_request if pool['name']
+                       == pools[int(selection.content) - 1]][0]
             await selection.delete()
-            pool_id = pool['id']
+            pool = {'name': tempool['name'], 'id': tempool['id']}
         elif request:
-            pool = pool_request[0]
-            pool_id = pool_request[0]['id']
+            temppool = pool_request[0]
+            pool = {'name': pool_request[0]['name'], 'id': pool_request[0]['id']}
         else:
             raise exc.NotFound
 
         page = 1
-        while len(posts) < pool['post_count']:
-            posts_request = await u.fetch('https://{}.net/pool/show.json'.format(booru), params={'id': pool['id'], 'page': page}, json=True)
+        while len(posts) < tempool['post_count']:
+            posts_request = await u.fetch('https://{}.net/pool/show.json'.format(booru), params={'id': tempool['id'], 'page': page}, json=True)
             for post in posts_request['posts']:
-                posts[post['id']] = post['file_url']
+                posts[post['id']] = {'author': post['author'], 'url': post['file_url']}
             page += 1
 
-        return posts, pool_id
+        return pool, posts
 
     # Creates reaction-based paginator for linked pools
     @commands.command(name='pool', aliases=['e6pp'], brief='e621 pool paginator', description='e621 | NSFW\nShow pools in a page format', hidden=True)
@@ -134,14 +134,14 @@ class MsG:
         try:
             await ctx.trigger_typing()
 
-            posts, pool_id = await self.return_pool(ctx=ctx, booru='e621', query=kwords)
+            pool, posts = await self.return_pool(ctx=ctx, booru='e621', query=kwords)
             keys = list(posts.keys())
             values = list(posts.values())
 
             embed = d.Embed(
-                title='/post/{}'.format(keys[c - 1]), url='https://e621.net/post/show/{}'.format(keys[c - 1]), color=ctx.me.color).set_image(url=values[c - 1])
-            embed.set_author(name='/pool/{}'.format(pool_id),
-                             url='https://e621.net/pool/show?id={}'.format(pool_id), icon_url=user.avatar_url)
+                title=values[c - 1]['author'], url='https://e621.net/post/show/{}'.format(keys[c - 1]), color=ctx.me.color).set_image(url=values[c - 1]['url'])
+            embed.set_author(name=pool['name'],
+                             url='https://e621.net/pool/show?id={}'.format(pool['id']), icon_url=user.avatar_url)
             embed.set_footer(text='{} / {}'.format(c, len(posts)),
                              icon_url='http://ndl.mgccw.com/mu3/app/20141013/18/1413204353554/icon/icon_xl.png')
 
@@ -161,11 +161,11 @@ class MsG:
                 except exc.Left:
                     if c > 1:
                         c -= 1
-                        embed.title = '/post/{}'.format(keys[c - 1])
+                        embed.title = values[c - 1]['author']
                         embed.url = 'https://e621.net/post/show/{}'.format(keys[c - 1])
                         embed.set_footer(text='{} / {}'.format(c, len(posts)),
                                          icon_url='http://ndl.mgccw.com/mu3/app/20141013/18/1413204353554/icon/icon_xl.png')
-                        embed.set_image(url=values[c - 1])
+                        embed.set_image(url=values[c - 1]['url'])
 
                         await paginator.edit(content=None, embed=embed)
                     else:
@@ -177,28 +177,28 @@ class MsG:
 
                     c = int(number.content)
                     await number.delete()
-                    embed.title = '/post/{}'.format(keys[c - 1])
+                    embed.title = values[c - 1]['author']
                     embed.url = 'https://e621.net/post/show/{}'.format(keys[c - 1])
                     embed.set_footer(text='{} / {}'.format(c, len(posts)),
                                      icon_url='http://ndl.mgccw.com/mu3/app/20141013/18/1413204353554/icon/icon_xl.png')
-                    embed.set_image(url=values[c - 1])
+                    embed.set_image(url=values[c - 1]['url'])
 
                     await paginator.edit(content=None, embed=embed)
 
                 except exc.Save:
-                    if values[c - 1] not in starred:
-                        starred.append(values[c - 1])
+                    if values[c - 1]['url'] not in starred:
+                        starred.append(values[c - 1]['url'])
 
                         await paginator.edit(content='**Image** `{}` **saved.**'.format(len(starred)))
 
                 except exc.Right:
                     if c < len(keys):
                         c += 1
-                        embed.title = '/post/{}'.format(keys[c - 1])
+                        embed.title = values[c - 1]['author']
                         embed.url = 'https://e621.net/post/show/{}'.format(keys[c - 1])
                         embed.set_footer(text='{} / {}'.format(c, len(posts)),
                                          icon_url='http://ndl.mgccw.com/mu3/app/20141013/18/1413204353554/icon/icon_xl.png')
-                        embed.set_image(url=values[c - 1])
+                        embed.set_image(url=values[c - 1]['url'])
 
                         await paginator.edit(content=None, embed=embed)
 
@@ -223,7 +223,7 @@ class MsG:
                     await asyncio.sleep(2.1)
 
     # Messy code that checks image limit and tags in blacklists
-    async def check_return_posts(self, *, ctx, booru='e621', tags=[], limit=1, previous=[]):
+    async def check_return_posts(self, *, ctx, booru='e621', tags=[], limit=1, previous={}):
         guild = ctx.message.guild if isinstance(
             ctx.message.guild, d.Guild) else ctx.message.channel
         channel = ctx.message.channel
@@ -265,8 +265,8 @@ class MsG:
                             raise exc.Continue
                 except exc.Continue:
                     continue
-                if post['file_url'] not in posts.values() and post['file_url'] not in previous:
-                    posts[post['id']] = post['file_url']
+                if post['id'] not in posts.keys() and post['id'] not in previous.keys():
+                    posts[post['id']] = {'author': post['author'], 'url': post['file_url']}
                 if len(posts) == limit:
                     break
             c += 1
@@ -313,7 +313,7 @@ class MsG:
             values = list(posts.values())
 
             embed = d.Embed(
-                title='/post/{}'.format(keys[c - 1]), url='https://e621.net/post/show/{}'.format(keys[c - 1]), color=ctx.me.color).set_image(url=values[c - 1])
+                title=values[c - 1]['author'], url='https://e621.net/post/show/{}'.format(keys[c - 1]), color=ctx.me.color).set_image(url=values[c - 1]['url'])
             embed.set_author(name=formatter.tostring(args, random=True),
                              url='https://e621.net/post?tags={}'.format(','.join(args)), icon_url=user.avatar_url)
             embed.set_footer(text='{} / {}'.format(c, len(posts)),
@@ -335,11 +335,11 @@ class MsG:
                 except exc.Left:
                     if c > 1:
                         c -= 1
-                        embed.title = '/post/{}'.format(keys[c - 1])
+                        embed.title = values[c - 1]['author']
                         embed.url = 'https://e621.net/post/show/{}'.format(keys[c - 1])
                         embed.set_footer(text='{} / {}'.format(c, len(posts)),
                                          icon_url='http://ndl.mgccw.com/mu3/app/20141013/18/1413204353554/icon/icon_xl.png')
-                        embed.set_image(url=values[c - 1])
+                        embed.set_image(url=values[c - 1]['url'])
                         await paginator.edit(content=None, embed=embed)
                     else:
                         await paginator.edit(content='❌ **First image.**')
@@ -350,17 +350,17 @@ class MsG:
 
                     c = int(number.content)
                     await number.delete()
-                    embed.title = '/post/{}'.format(keys[c - 1])
+                    embed.title = values[c - 1]['author']
                     embed.url = 'https://e621.net/post/show/{}'.format(keys[c - 1])
                     embed.set_footer(text='{} / {}'.format(c, len(posts)),
                                      icon_url='http://ndl.mgccw.com/mu3/app/20141013/18/1413204353554/icon/icon_xl.png')
-                    embed.set_image(url=values[c - 1])
+                    embed.set_image(url=values[c - 1]['url'])
 
                     await paginator.edit(content=None, embed=embed)
 
                 except exc.Save:
-                    if values[c - 1] not in starred:
-                        starred.append(values[c - 1])
+                    if values[c - 1]['url'] not in starred:
+                        starred.append(values[c - 1]['url'])
 
                         await paginator.edit(content='**Image** `{}` **saved.**'.format(len(starred)))
 
@@ -375,11 +375,11 @@ class MsG:
                         values = list(posts.values())
 
                     c += 1
-                    embed.title = '/post/{}'.format(keys[c - 1])
+                    embed.title = values[c - 1]['author']
                     embed.url = 'https://e621.net/post/show/{}'.format(keys[c - 1])
                     embed.set_footer(text='{} / {}'.format(c, len(posts)),
                                      icon_url='http://ndl.mgccw.com/mu3/app/20141013/18/1413204353554/icon/icon_xl.png')
-                    embed.set_image(url=values[c - 1])
+                    embed.set_image(url=values[c - 1]['url'])
                     await paginator.edit(content=None, embed=embed)
 
         except exc.Abort:
@@ -427,15 +427,15 @@ class MsG:
                         raise exc.BoundsError(arg)
             # , previous=temp_urls.get(ctx.message.author.id, []))
             posts = await self.check_return_posts(ctx=ctx, booru='e621', tags=args, limit=limit)
-            for ident, url in posts.items():
-                embed = d.Embed(title='/post/{}'.format(ident), url='https://e621.net/post/show/{}'.format(ident),
-                                color=ctx.me.color).set_image(url=url)
+            for ident, post in posts.items():
+                embed = d.Embed(title=post['author'], url='https://e621.net/post/show/{}'.format(ident),
+                                color=ctx.me.color).set_image(url=post['url'])
                 embed.set_author(name=formatter.tostring(args, random=True),
                                  url='https://e621.net/post?tags={}'.format(','.join(args)), icon_url=ctx.message.author.avatar_url)
                 embed.set_footer(
-                    text='e621', icon_url='http://ndl.mgccw.com/mu3/app/20141013/18/1413204353554/icon/icon_xl.png')
+                    text=str(ident), icon_url='http://ndl.mgccw.com/mu3/app/20141013/18/1413204353554/icon/icon_xl.png')
                 await ctx.send(embed=embed)
-            # temp_urls.setdefault(ctx.message.author.id, []).extend(posts.values())
+            # temp_urls.setdefault(ctx.message.author.id, []).extend(posts.keys())
         except exc.TagBlacklisted as e:
             await ctx.send('❌ `' + str(e) + '` **blacklisted.**', delete_after=10)
         except exc.BoundsError as e:
@@ -475,13 +475,13 @@ class MsG:
                         raise exc.BoundsError(arg)
             # , previous=temp_urls.get(ctx.message.author.id, []))
             posts = await self.check_return_posts(ctx=ctx, booru='e926', tags=args, limit=limit)
-            for ident, url in posts.items():
-                embed = d.Embed(title='/post/{}'.format(ident), url='https://e926.net/post/show/{}'.format(ident),
-                                color=ctx.me.color).set_image(url=url)
+            for ident, post in posts.items():
+                embed = d.Embed(title=post['author'], url='https://e926.net/post/show/{}'.format(ident),
+                                color=ctx.me.color).set_image(url=post['url'])
                 embed.set_author(name=formatter.tostring(args, random=True),
                                  url='https://e621.net/post?tags={}'.format(','.join(args)), icon_url=ctx.message.author.avatar_url)
                 embed.set_footer(
-                    text='e926', icon_url='http://ndl.mgccw.com/mu3/app/20141013/18/1413204353554/icon/icon_xl.png')
+                    text=str(ident), icon_url='http://ndl.mgccw.com/mu3/app/20141013/18/1413204353554/icon/icon_xl.png')
                 await ctx.send(embed=embed)
             # temp_urls.setdefault(ctx.message.author.id, []).extend(posts.values())
         except exc.TagBlacklisted as e:
