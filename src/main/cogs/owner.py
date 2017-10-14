@@ -62,6 +62,18 @@ class Bot:
     async def invite(self, ctx):
         await ctx.send('🔗 https://discordapp.com/oauth2/authorize?&client_id={}&scope=bot&permissions={}'.format(self.config['client_id'], self.config['permissions']), delete_after=10)
 
+    @commands.command(aliases=['presence', 'game'], hidden=True)
+    @commands.is_owner()
+    @checks.del_ctx()
+    async def status(self, ctx, game):
+        try:
+            if game is not None:
+                await self.bot.change_presence(game=d.Game(name=game))
+            else:
+                raise exc.NotFound
+        except exc.NotFound:
+            await ctx.send('❌ **No game given.**', delete_after=10)
+
 
 class Tools:
 
@@ -96,8 +108,8 @@ class Tools:
     @checks.del_ctx()
     async def console(self, ctx):
         def execute(msg):
-            if msg.content == ',exit' and msg.author is ctx.message.author:
-                raise exc.CheckFail
+            if msg.content == 'exit' and msg.author is ctx.message.author:
+                raise exc.Abort
             elif msg.author is ctx.message.author and msg.channel is ctx.message.channel:
                 return True
             else:
@@ -107,20 +119,23 @@ class Tools:
             console = await self.generate(ctx)
             exception = await self.generate_err(ctx)
             while not self.bot.is_closed():
-                exe = await self.bot.wait_for('message', check=execute)
-                await exe.delete()
-                sys.stdout = io.StringIO()
-                sys.stderr = io.StringIO()
                 try:
+                    exe = await self.bot.wait_for('message', check=execute)
+                except exc.Abort:
+                    raise exc.Abort
+                finally:
+                    await exe.delete()
+                try:
+                    sys.stdout = io.StringIO()
+                    sys.stderr = io.StringIO()
                     exec(exe.content)
                 except Exception:
-                    tb.print_exc(limit=1)
-                await self.refresh(console, exe.content, sys.stdout.getvalue())
-                await self.refresh_err(exception, sys.stderr.getvalue())
-                await ctx.send(console.content[10:-3])
-                sys.stdout = sys.__stdout__
-                sys.stderr = sys.__stderr__
-        except exc.CheckFail:
+                    await self.refresh_err(exception, tb.format_exc(limit=1))
+                finally:
+                    await self.refresh(console, exe.content, sys.stdout.getvalue())
+                    sys.stdout = sys.__stdout__
+                    sys.stderr = sys.__stderr__
+        except exc.Abort:
             await ctx.send('↩️ **Exited console.**')
         finally:
             sys.stdout = sys.__stdout__

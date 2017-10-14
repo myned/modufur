@@ -6,11 +6,10 @@ import discord
 from discord.ext import commands
 from discord.ext.commands import errors
 
-with open('config.json') as infile:
-    config = json.load(infile)
+from utils import utils as u
 
-owner_id = config['owner_id']
-listed_ids = config['listed_ids']
+owner_id = u.config['owner_id']
+listed_ids = u.config['listed_ids']
 
 
 def is_owner():
