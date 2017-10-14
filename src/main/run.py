@@ -44,9 +44,20 @@ async def on_ready():
 
 
 @bot.event
+async def on_error(error):
+    if u.session:
+        await u.session.close()
+    await bot.logout()
+    await bot.close()
+    print('- - - - - - -')
+    print('ERROR')
+    tb.print_exc()
+
+
+@bot.event
 async def on_command_error(ctx, error):
     if not isinstance(error, commands.errors.CommandNotFound):
-        print(error)
+        tb.print_exception(type(error), error, error.__traceback__, file=sys.stderr)
         await ctx.send('{}\n```\n{}```'.format(exc.base, error))
 
 
