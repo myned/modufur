@@ -48,7 +48,7 @@ class Utils:
     async def ping(self, ctx):
         global command_dict
 
-        await ctx.send(ctx.message.author.mention + '  🏓  `' + str(int(self.bot.latency * 1000)) + 'ms`', delete_after=5)
+        await ctx.send(ctx.message.author.mention + '  🏓  `' + str(round(self.bot.latency * 1000)) + 'ms`', delete_after=5)
         command_dict.setdefault(str(ctx.message.author.id), {}).update({'command': ctx.command})
 
     @commands.command(aliases=['pre'], brief='List bot prefixes', description='Shows all used prefixes')
