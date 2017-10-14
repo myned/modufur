@@ -42,7 +42,7 @@ def dump(obj, filename):
         pkl.dump(obj, outfile)
 
 
-tasks = setdefault('./cogs/tasks.pkl', {})
+tasks = setdefault('cogs/tasks.pkl', {})
 
 
 async def clear(obj, interval=10 * 60, replace=None):
