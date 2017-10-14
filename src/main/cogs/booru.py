@@ -21,9 +21,10 @@ class MsG:
         self.bot = bot
         self.LIMIT = 100
 
+        self.favorites = u.setdefault('cogs/favorites.pkl', {})
         self.blacklists = u.setdefault(
-            './cogs/blacklists.pkl', {'global_blacklist': set(), 'guild_blacklist': {}, 'user_blacklist': {}})
-        self.aliases = u.setdefault('./cogs/aliases.pkl', {})
+            'cogs/blacklists.pkl', {'global_blacklist': set(), 'guild_blacklist': {}, 'user_blacklist': {}})
+        self.aliases = u.setdefault('cogs/aliases.pkl', {})
 
     # Tag search
     @commands.command(aliases=['tag', 't'], brief='e621 Tag search', description='e621 | NSFW\nReturn a link search for given tags')
@@ -87,8 +88,10 @@ class MsG:
             try:
                 if int(msg.content) <= len(pools) and int(msg.content) > 0 and msg.author is user and msg.channel is channel:
                     return True
+
             except ValueError:
                 pass
+
             else:
                 return False
 
@@ -234,12 +237,14 @@ class MsG:
         except exc.Abort:
             try:
                 await paginator.edit(content='🚫 **Exited paginator.**')
+
             except UnboundLocalError:
                 await ctx.send('🚫 **Exited paginator.**')
 
         except asyncio.TimeoutError:
             try:
                 await ctx.send(content='❌ **Paginator timed out.**')
+
             except UnboundLocalError:
                 await ctx.send('❌ **Paginator timed out.**')
 
@@ -289,6 +294,7 @@ class MsG:
                 raise exc.NotFound(formatter.tostring(tags))
             if len(request) < limit:
                 limit = len(request)
+
             for post in request:
                 if 'swf' in post['file_ext'] or 'webm' in post['file_ext']:
                     continue
@@ -303,6 +309,7 @@ class MsG:
                 if len(posts) == limit:
                     break
             c += 1
+
         return posts
 
     @commands.command(name='e621p', aliases=['e6p', '6p'])
@@ -550,6 +557,57 @@ class MsG:
         except exc.Timeout:
             await ctx.send('❌ **Request timed out.**')
 
+    @commands.group(name='favorites', aliases=['faves', 'f'])
+    @checks.del_ctx()
+    async def favorites(self, ctx):
+        pass
+
+    @favorites.error
+    async def favorites_error(self, ctx, error):
+        pass
+
+    @favorites.command(name='get', aliases=['g'])
+    async def _get_favorites(self, ctx):
+        user = ctx.message.author
+
+        await ctx.send('⭐ {}**\'s favorites:**\n```\n{}```'.format(user.mention, formatter.tostring(self.favorites.get(user.id, set()))))
+
+    @favorites.command(name='add', aliases=['a'])
+    async def _add_favorites(self, ctx, *tags):
+        user = ctx.message.author
+
+        self.favorites.setdefault(user.id, set()).update(tags)
+        u.dump(self.favorites, 'cogs/favorites.pkl')
+
+        await ctx.send('✅ {} **added:**\n```\n{}```'.format(user.mention, formatter.tostring(tags)))
+
+    @favorites.command(name='remove', aliases=['r'])
+    async def _remove_favorites(self, ctx, *tags):
+        user = ctx.message.author
+
+        try:
+            for tag in tags:
+                try:
+                    self.favorites[user.id].remove(tag)
+
+                except KeyError:
+                    raise exc.TagError(tag)
+
+            u.dump(self.favorites, 'cogs/favorites.pkl')
+
+            await ctx.send('✅ {} **removed:**\n```\n{}```'.format(user.mention, formatter.tostring(tags)), delete_after=5)
+
+        except exc.TagError as e:
+            await ctx.send('❌ `{}` **not in favorites.**'.format(e), delete_after=10)
+
+    @favorites.command(name='clear', aliases=['c'])
+    async def _clear_favorites(self, ctx):
+        user = ctx.message.author
+
+        del self.favorites[user.id]
+
+        await ctx.send('✅ {}**\'s favorites cleared.**'.format(user.mention))
+
     # Umbrella command structure to manage global, channel, and user blacklists
     @commands.group(aliases=['bl', 'b'], brief='Manage blacklists', description='Blacklist base command for managing blacklists\n\n`bl get [blacklist]` to show a blacklist\n`bl set [blacklist] [tags]` to replace a blacklist\n`bl clear [blacklist]` to clear a blacklist\n`bl add [blacklist] [tags]` to add tags to a blacklist\n`bl remove [blacklist] [tags]` to remove tags from a blacklist', usage='[flag] [blacklist] ([tags])')
     @checks.del_ctx()
@@ -627,8 +685,8 @@ class MsG:
             if alias_request:
                 for dic in alias_request:
                     self.aliases.setdefault(tag, set()).add(dic['name'])
-        u.dump(self.blacklists, './cogs/blacklists.pkl')
-        u.dump(self.aliases, './cogs/aliases.pkl')
+        u.dump(self.blacklists, 'cogs/blacklists.pkl')
+        u.dump(self.aliases, 'cogs/aliases.pkl')
 
         await ctx.send('✅ **Added to global blacklist:**\n```\n{}```'.format(formatter.tostring(tags)), delete_after=5)
 
@@ -646,8 +704,8 @@ class MsG:
             if alias_request:
                 for dic in alias_request:
                     self.aliases.setdefault(tag, set()).add(dic['name'])
-        u.dump(self.blacklists, './cogs/blacklists.pkl')
-        u.dump(self.aliases, './cogs/aliases.pkl')
+        u.dump(self.blacklists, 'cogs/blacklists.pkl')
+        u.dump(self.aliases, 'cogs/aliases.pkl')
 
         await ctx.send('✅ **Added to** {} **blacklist:**\n```\n{}```'.format(channel.mention, formatter.tostring(tags)), delete_after=5)
 
@@ -661,8 +719,8 @@ class MsG:
             if alias_request:
                 for dic in alias_request:
                     self.aliases.setdefault(tag, set()).add(dic['name'])
-        u.dump(self.blacklists, './cogs/blacklists.pkl')
-        u.dump(self.aliases, './cogs/aliases.pkl')
+        u.dump(self.blacklists, 'cogs/blacklists.pkl')
+        u.dump(self.aliases, 'cogs/aliases.pkl')
 
         await ctx.send('✅ {} **added:**\n```\n{}```'.format(user.mention, formatter.tostring(tags)), delete_after=5)
 
@@ -681,9 +739,10 @@ class MsG:
 
                 except KeyError:
                     raise exc.TagError(tag)
-            u.dump(self.blacklists, './cogs/blacklists.pkl')
 
-            await ctx.send('✅ **Removed from global blacklist:**\n```\n' + formatter.tostring(tags) + '```', delete_after=5)
+            u.dump(self.blacklists, 'cogs/blacklists.pkl')
+
+            await ctx.send('✅ **Removed from global blacklist:**\n```\n{}```'.format(formatter.tostring(tags)), delete_after=5)
 
         except exc.TagError as e:
             await ctx.send('❌ `{}` **not in blacklist.**'.format(e), delete_after=10)
@@ -702,9 +761,10 @@ class MsG:
 
                 except KeyError:
                     raise exc.TagError(tag)
-            u.dump(self.blacklists, './cogs/blacklists.pkl')
 
-            await ctx.send('✅ **Removed from** ' + channel.mention + ' **blacklist:**\n```\n' + formatter.tostring(tags) + '```', delete_after=5)
+            u.dump(self.blacklists, 'cogs/blacklists.pkl')
+
+            await ctx.send('✅ **Removed from** {} **blacklist:**\n```\n{}```'.format(channel.mention, formatter.tostring(tags), delete_after=5))
 
         except exc.TagError as e:
             await ctx.send('❌ `{}` **not in blacklist.**'.format(e), delete_after=10)
@@ -720,7 +780,8 @@ class MsG:
 
                 except KeyError:
                     raise exc.TagError(tag)
-            u.dump(self.blacklists, './cogs/blacklists.pkl')
+
+            u.dump(self.blacklists, 'cogs/blacklists.pkl')
 
             await ctx.send('✅ {} **removed:**\n```\n{}```'.format(user.mention, formatter.tostring(tags)), delete_after=5)
 
@@ -736,7 +797,7 @@ class MsG:
     @commands.is_owner()
     async def __clear_global_blacklist(self, ctx):
         del self.blacklists['global_blacklist']
-        u.dump(self.blacklists, './cogs/blacklists.pkl')
+        u.dump(self.blacklists, 'cogs/blacklists.pkl')
 
         await ctx.send('✅ **Global blacklist cleared.**', delete_after=5)
 
@@ -748,7 +809,7 @@ class MsG:
         channel = ctx.message.channel
 
         del self.blacklists['guild_blacklist'][str(guild.id)][channel.id]
-        u.dump(self.blacklists, './cogs/blacklists.pkl')
+        u.dump(self.blacklists, 'cogs/blacklists.pkl')
 
         await ctx.send('✅ {} **blacklist cleared.**'.format(channel.mention), delete_after=5)
 
@@ -757,6 +818,6 @@ class MsG:
         user = ctx.message.author
 
         del self.blacklists['user_blacklist'][user.id]
-        u.dump(self.blacklists, './cogs/blacklists.pkl')
+        u.dump(self.blacklists, 'cogs/blacklists.pkl')
 
         await ctx.send('✅ {}**\'s blacklist cleared.**'.format(user.mention), delete_after=5)

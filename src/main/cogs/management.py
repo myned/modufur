@@ -2,6 +2,7 @@ import asyncio
 import traceback as tb
 
 import discord as d
+from discord import errors as err
 from discord.ext import commands
 
 from misc import exceptions as exc
@@ -80,7 +81,7 @@ class Administration:
             for channel in channels:
                 try:
                     ref = await channel.get_message(reference)
-                except d.errors.NotFound:
+                except err.NotFound:
                     continue
         history = []
         try:
@@ -135,7 +136,7 @@ class Administration:
             try:
                 if not message.pinned:
                     await message.delete()
-            except d.errors.NotFound:
+            except err.NotFound:
                 pass
 
     async def on_message(self, channel):
@@ -153,7 +154,7 @@ class Administration:
                 await self.queue.put(message)
         except exc.Abort:
             u.tasks['management']['auto_delete'].remove(channel.id)
-            u.dump(u.tasks, './cogs/tasks.pkl')
+            u.dump(u.tasks, 'cogs/tasks.pkl')
             print('Stopped looping {}'.format(channel.id))
             await channel.send('✅ **Stopped deleting messages in** {}**.**'.format(channel.mention), delete_after=5)
         except AttributeError:
@@ -168,7 +169,7 @@ class Administration:
         try:
             if channel.id not in u.tasks.setdefault('management', {}).setdefault('auto_delete', []):
                 u.tasks['management']['auto_delete'].append(channel.id)
-                u.dump(u.tasks, './cogs/tasks.pkl')
+                u.dump(u.tasks, 'cogs/tasks.pkl')
                 self.bot.loop.create_task(self.on_message(channel))
                 self.bot.loop.create_task(self.delete())
                 print('Looping #{}'.format(channel.name))
