@@ -32,11 +32,12 @@ class Bot:
         # loop = self.bot.loop.all_tasks()
         # for task in loop:
         #     task.cancel()
-        await u.session.close()
+        if u.session:
+            await u.session.close()
         await self.bot.logout()
         await self.bot.close()
         print('- - - - - - -')
-        print('CLOSED')
+        print('DISCONNECTED')
 
     @commands.command(name=',restart', aliases=[',res', ',r'], hidden=True)
     @commands.is_owner()
@@ -49,7 +50,8 @@ class Bot:
         # loop = self.bot.loop.all_tasks()
         # for task in loop:
         #     task.cancel()
-        await u.session.close()
+        if u.session:
+            await u.session.close()
         await self.bot.logout()
         await self.bot.close()
         os.execl(sys.executable, 'python3', 'run.py')
