@@ -60,16 +60,29 @@ async def on_ready():
 
 @bot.event
 async def on_command_error(ctx, error):
-    print(error)
-    await ctx.send('{}\n```\n{}```'.format(exc.base, error))
+    if not isinstance(error, commands.errors.CommandNotFound):
+        print(error)
+        await ctx.send('{}\n```\n{}```'.format(exc.base, error))
 
 
 async def on_reaction_add(r, u):
-    print('Reacted')
+    pass
 
 
 async def on_reaction_remove(r, u):
+    pass
+
+
+async def reaction_add(r, u):
+    bot.add_listener(on_reaction_add)
+    print('Reacted')
+    bot.remove_listener(on_reaction_remove)
+
+
+async def reaction_remove(r, u):
+    bot.add_listener(on_reaction_remove)
     print('Removed')
+    bot.remove_listener(on_reaction_remove)
 
 
 @bot.command(name=',test', hidden=True)
