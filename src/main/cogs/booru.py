@@ -31,18 +31,29 @@ class MsG:
     @commands.command(aliases=['tag', 't'], brief='e621 Tag search', description='e621 | NSFW\nReturn a link search for given tags')
     @checks.del_ctx()
     async def tags(self, ctx, *tags):
-        await ctx.send('✅ `{}`\nhttps://e621.net/post?tags={}'.format(formatter.tostring(tags), ','.join(tags)))
+        try:
+            if tags:
+                await ctx.send('✅ `{}`\nhttps://e621.net/post?tags={}'.format(formatter.tostring(tags), ','.join(tags)))
+            else:
+                raise exc.TagError
+        except exc.TagError:
+            await ctx.send('❌ **No tags given.**', delete_after=10)
 
     # Tag aliases
-    @commands.command(aliases=['alias', 'a'], brief='e621 Tag aliases', description='e621 | NSFW\nSearch aliases for given tag')
+    @commands.command(name='aliases', aliases=['alias', 'a'], brief='e621 Tag aliases', description='e621 | NSFW\nSearch aliases for given tag')
     @checks.del_ctx()
-    async def aliases(self, ctx, tag):
+    async def tag_aliases(self, ctx, tag=None):
         aliases = []
-
-        alias_request = await u.fetch('https://e621.net/tag_alias/index.json', params={'aliased_to': tag, 'approved': 'true'}, json=True)
-        for dic in alias_request:
-            aliases.append(dic['name'])
-        await ctx.send('✅ `' + tag + '` **aliases:**\n```' + formatter.tostring(aliases) + '```')
+        try:
+            if tag is not None:
+                alias_request = await u.fetch('https://e621.net/tag_alias/index.json', params={'aliased_to': tag, 'approved': 'true'}, json=True)
+                for dic in alias_request:
+                    aliases.append(dic['name'])
+                await ctx.send('✅ `' + tag + '` **aliases:**\n```' + formatter.tostring(aliases) + '```')
+            else:
+                raise exc.TagError
+        except exc.TagError:
+            await ctx.send('❌ **No tags given.**', delete_after=10)
 
     # Reverse image searches a linked image using the public iqdb
     @commands.command(name='reverse', aliases=['rev', 'ris'], brief='e621 Reverse image search', description='e621 | NSFW\nReverse-search an image with given URL')
@@ -420,11 +431,14 @@ class MsG:
             # Checks for, defines, and removes limit from args
             for arg in args:
                 if len(arg) == 1:
-                    if int(arg) <= 6 and int(arg) >= 1:
-                        limit = int(arg)
-                        args.remove(arg)
-                    else:
-                        raise exc.BoundsError(arg)
+                    try
+                        if int(arg) <= 6 and int(arg) >= 1:
+                            limit = int(arg)
+                            args.remove(arg)
+                        else:
+                            raise exc.BoundsError(arg)
+                    except ValueError:
+                        pass
             # , previous=temp_urls.get(ctx.message.author.id, []))
             posts = await self.check_return_posts(ctx=ctx, booru='e621', tags=args, limit=limit)
             for ident, post in posts.items():
@@ -468,11 +482,14 @@ class MsG:
             # Checks for, defines, and removes limit from args
             for arg in args:
                 if len(arg) == 1:
-                    if int(arg) <= 6 and int(arg) >= 1:
-                        limit = int(arg)
-                        args.remove(arg)
-                    else:
-                        raise exc.BoundsError(arg)
+                    try:
+                        if int(arg) <= 6 and int(arg) >= 1:
+                            limit = int(arg)
+                            args.remove(arg)
+                        else:
+                            raise exc.BoundsError(arg)
+                    except ValueError:
+                        pass
             # , previous=temp_urls.get(ctx.message.author.id, []))
             posts = await self.check_return_posts(ctx=ctx, booru='e926', tags=args, limit=limit)
             for ident, post in posts.items():
