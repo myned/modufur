@@ -2,7 +2,6 @@ import asyncio
 import datetime as dt
 import json
 import logging
-import os
 import subprocess
 import sys
 import traceback as tb
@@ -12,14 +11,11 @@ import discord as d
 from discord import utils
 from discord.ext import commands
 
-from cogs import booru, info, management, owner, tools
 from misc import exceptions as exc
 from misc import checks
 from utils import utils as u
 
 logging.basicConfig(level=logging.INFO)
-
-print('PID {}'.format(os.getpid()))
 
 bot = commands.Bot(command_prefix=u.config['prefix'], description='Experimental booru bot')
 
@@ -27,6 +23,8 @@ bot = commands.Bot(command_prefix=u.config['prefix'], description='Experimental 
 # Send and print ready message to #testing and console after logon
 @bot.event
 async def on_ready():
+    from cogs import booru, info, management, owner, tools
+
     bot.add_cog(tools.Utils(bot))
     bot.add_cog(owner.Bot(bot))
     bot.add_cog(owner.Tools(bot))
@@ -42,7 +40,7 @@ async def on_ready():
         await bot.get_channel(u.config['startup_channel']).send('**Started.** ☀️')
     print('CONNECTED')
     print(bot.user.name)
-    print('-------')
+    print('- - - - - - -')
 
 
 @bot.event
