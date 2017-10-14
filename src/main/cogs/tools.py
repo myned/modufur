@@ -35,19 +35,21 @@ class Utils:
 
     @commands.command(name='last', aliases=['l', ','], brief='Reinvokes last command', description='Reinvokes previous command executed', hidden=True)
     async def last_command(self, ctx):
+        global command_dict
+
         if command_dict.get(str(ctx.message.author.id), {}).get('args', None) is not None:
             args = command_dict.get(str(ctx.message.author.id), {})['args']
         print(command_dict)
-
         await ctx.invoke(command_dict.get(str(ctx.message.author.id), {}).get('command', None), args)
 
     # [prefix]ping -> Pong!
     @commands.command(aliases=['p'], brief='Pong!', description='Returns latency from bot to Discord servers, not to user')
     @checks.del_ctx()
     async def ping(self, ctx):
-        user = ctx.message.author
+        global command_dict
 
-        await ctx.send('{}  🏓  `{}ms`'.format(round(self.bot.latency * 1000)), delete_after=5)
+        await ctx.send(ctx.message.author.mention + '  🏓  `' + str(round(self.bot.latency * 1000)) + 'ms`', delete_after=5)
+        command_dict.setdefault(str(ctx.message.author.id), {}).update({'command': ctx.command})
 
     @commands.command(aliases=['pre'], brief='List bot prefixes', description='Shows all used prefixes')
     @checks.del_ctx()
@@ -68,7 +70,7 @@ class Utils:
     async def send_user(self, ctx, user, *message):
         await discord.utils.get(self.bot.get_all_members(), id=int(user)).send(formatter.tostring(message))
 
-    @commands.command(aliases=['authupload', 'auth'])
+    @commands.command(aliases=['authenticateupload', 'authupload', 'authup', 'auth'])
     async def authenticate_upload(self, ctx):
         global youtube
         flow = flow_from_clientsecrets('client_secrets.json', scope='https://www.googleapis.com/auth/youtube.upload',
@@ -95,12 +97,12 @@ class Utils:
                     await attachments[0].save(temp)
             else:
                 raise exc.InvalidVideoFile(mime)
-            print('https://www.youtube.com/watch?v={}'.format(youtube.videos().insert(part='snippet',
-                                                                                      body={'categoryId': '24', 'title': 'Test'}, media_body=http.MediaFileUpload(temp.name, chunksize=-1))))
+            print('https://www.youtube.com/watch?v=' + youtube.videos().insert(part='snippet',
+                                                                               body={'categoryId': '24', 'title': 'Test'}, media_body=http.MediaFileUpload(temp.name, chunksize=-1)))
         except exc.InvalidVideoFile as e:
-            await ctx.send('❌ `{}` **not valid video type.**'.format(e), delete_after=10)
+            await ctx.send('❌ `' + str(e) + '` **not valid video type.**', delete_after=10)
         except exc.TooManyAttachments as e:
-            await ctx.send('❌ `{}` **too many attachments.** Only one attachment is permitted to upload.'.format(e), delete_after=10)
+            await ctx.send('❌ `' + str(e) + '` **too many attachments.** Only one attachment is permitted to upload.', delete_after=10)
         except exc.MissingAttachment:
             await ctx.send('❌ **Missing attachment.**', delete_after=10)
 
