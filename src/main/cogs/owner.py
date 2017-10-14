@@ -19,17 +19,16 @@ nl = re.compile('\n')
 
 class Bot:
 
-    def __init__(self, bot, config):
+    def __init__(self, bot):
         self.bot = bot
-        self.config = config
 
     # Close connection to Discord - immediate offline
     @commands.command(name=',die', aliases=[',d'], brief='Kills the bot', description='BOT OWNER ONLY\nCloses the connection to Discord', hidden=True)
     @commands.is_owner()
     @checks.del_ctx()
     async def die(self, ctx):
-        if isinstance(self.bot.get_channel(self.config['startup_channel']), d.TextChannel):
-            await self.bot.get_channel(self.config['shutdown_channel']).send('**Shutting down...** 🌙')
+        if isinstance(self.bot.get_channel(u.config['startup_channel']), d.TextChannel):
+            await self.bot.get_channel(u.config['shutdown_channel']).send('**Shutting down...** 🌙')
         # loop = self.bot.loop.all_tasks()
         # for task in loop:
         #     task.cancel()
@@ -45,8 +44,8 @@ class Bot:
     async def restart(self, ctx):
         print('RESTARTING')
         print('-------')
-        if isinstance(self.bot.get_channel(self.config['startup_channel']), d.TextChannel):
-            await self.bot.get_channel(self.config['shutdown_channel']).send('**Restarting...** 💤')
+        if isinstance(self.bot.get_channel(u.config['startup_channel']), d.TextChannel):
+            await self.bot.get_channel(u.config['shutdown_channel']).send('**Restarting...** 💤')
         # loop = self.bot.loop.all_tasks()
         # for task in loop:
         #     task.cancel()
@@ -60,7 +59,7 @@ class Bot:
     @commands.is_owner()
     @checks.del_ctx()
     async def invite(self, ctx):
-        await ctx.send('🔗 https://discordapp.com/oauth2/authorize?&client_id={}&scope=bot&permissions={}'.format(self.config['client_id'], self.config['permissions']), delete_after=10)
+        await ctx.send('🔗 https://discordapp.com/oauth2/authorize?&client_id={}&scope=bot&permissions={}'.format(u.config['client_id'], u.config['permissions']), delete_after=10)
 
     @commands.command(aliases=['presence', 'game'], hidden=True)
     @commands.is_owner()
