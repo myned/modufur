@@ -35,7 +35,7 @@ class Bot:
         await u.session.close()
         await self.bot.logout()
         await self.bot.close()
-        print('-------')
+        print('- - - - - - -')
         print('CLOSED')
 
     @commands.command(name=',restart', aliases=[',res', ',r'], hidden=True)
@@ -43,7 +43,7 @@ class Bot:
     @checks.del_ctx()
     async def restart(self, ctx):
         print('RESTARTING')
-        print('-------')
+        print('- - - - - - -')
         if isinstance(self.bot.get_channel(u.config['startup_channel']), d.TextChannel):
             await self.bot.get_channel(u.config['shutdown_channel']).send('**Restarting...** 💤')
         # loop = self.bot.loop.all_tasks()
