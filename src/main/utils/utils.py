@@ -30,8 +30,16 @@ def dump(obj, filename):
 
 tasks = setdefault('./cogs/tasks.pkl', {})
 
-with open('config.json') as infile:
-    config = json.load(infile)
+try:
+    with open('config.json') as infile:
+        config = json.load(infile)
+        print('\"config.json\" loaded.')
+except FileNotFoundError:
+    with open('config.json', 'w') as outfile:
+        json.dump({'client_id': 0, 'listed_ids': [0], 'owner_id': 0, 'permissions': 126016, 'prefix': ',',
+                   'shutdown_channel': 0, 'startup_channel': 0, 'token': 'str'}, outfile, indent=4, sort_keys=True)
+        raise FileNotFoundError(
+            'Config file not found: \"config.json\" created with abstract values. Restart \"run.py\" with correct values.')
 
 
 async def clear(obj, interval=10 * 60, replace=None):
