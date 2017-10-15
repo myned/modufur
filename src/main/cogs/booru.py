@@ -175,7 +175,7 @@ class MsG:
             embed.set_author(name=pool['name'],
                              url='https://e621.net/pool/show?id={}'.format(pool['id']), icon_url=user.avatar_url)
             embed.set_footer(text='{} / {}'.format(c, len(posts)),
-                             icon_url='http://ndl.mgccw.com/mu3/app/20141013/18/1413204353554/icon/icon_xl.png')
+                             icon_url='icon_e6.png')
 
             paginator = await ctx.send(embed=embed)
 
@@ -196,7 +196,7 @@ class MsG:
                         embed.title = values[c - 1]['author']
                         embed.url = 'https://e621.net/post/show/{}'.format(keys[c - 1])
                         embed.set_footer(text='{} / {}'.format(c, len(posts)),
-                                         icon_url='http://ndl.mgccw.com/mu3/app/20141013/18/1413204353554/icon/icon_xl.png')
+                                         icon_url='icon_e6.png')
                         embed.set_image(url=values[c - 1]['url'])
 
                         await paginator.edit(content=None, embed=embed)
@@ -212,7 +212,7 @@ class MsG:
                     embed.title = values[c - 1]['author']
                     embed.url = 'https://e621.net/post/show/{}'.format(keys[c - 1])
                     embed.set_footer(text='{} / {}'.format(c, len(posts)),
-                                     icon_url='http://ndl.mgccw.com/mu3/app/20141013/18/1413204353554/icon/icon_xl.png')
+                                     icon_url='icon_e6.png')
                     embed.set_image(url=values[c - 1]['url'])
 
                     await paginator.edit(content=None, embed=embed)
@@ -229,7 +229,7 @@ class MsG:
                         embed.title = values[c - 1]['author']
                         embed.url = 'https://e621.net/post/show/{}'.format(keys[c - 1])
                         embed.set_footer(text='{} / {}'.format(c, len(posts)),
-                                         icon_url='http://ndl.mgccw.com/mu3/app/20141013/18/1413204353554/icon/icon_xl.png')
+                                         icon_url='icon_e6.png')
                         embed.set_image(url=values[c - 1]['url'])
 
                         await paginator.edit(content=None, embed=embed)
@@ -360,7 +360,7 @@ class MsG:
             embed.set_author(name=formatter.tostring(args, random=True),
                              url='https://e621.net/post?tags={}'.format(','.join(args)), icon_url=user.avatar_url)
             embed.set_footer(text='{} / {}'.format(c, len(posts)),
-                             icon_url='http://ndl.mgccw.com/mu3/app/20141013/18/1413204353554/icon/icon_xl.png')
+                             icon_url='icon_e6.png')
 
             paginator = await ctx.send(embed=embed)
 
@@ -381,7 +381,7 @@ class MsG:
                         embed.title = values[c - 1]['author']
                         embed.url = 'https://e621.net/post/show/{}'.format(keys[c - 1])
                         embed.set_footer(text='{} / {}'.format(c, len(posts)),
-                                         icon_url='http://ndl.mgccw.com/mu3/app/20141013/18/1413204353554/icon/icon_xl.png')
+                                         icon_url='icon_e6.png')
                         embed.set_image(url=values[c - 1]['url'])
                         await paginator.edit(content=None, embed=embed)
                     else:
@@ -396,7 +396,7 @@ class MsG:
                     embed.title = values[c - 1]['author']
                     embed.url = 'https://e621.net/post/show/{}'.format(keys[c - 1])
                     embed.set_footer(text='{} / {}'.format(c, len(posts)),
-                                     icon_url='http://ndl.mgccw.com/mu3/app/20141013/18/1413204353554/icon/icon_xl.png')
+                                     icon_url='icon_e6.png')
                     embed.set_image(url=values[c - 1]['url'])
 
                     await paginator.edit(content=None, embed=embed)
@@ -423,7 +423,7 @@ class MsG:
                     embed.title = values[c - 1]['author']
                     embed.url = 'https://e621.net/post/show/{}'.format(keys[c - 1])
                     embed.set_footer(text='{} / {}'.format(c, len(posts)),
-                                     icon_url='http://ndl.mgccw.com/mu3/app/20141013/18/1413204353554/icon/icon_xl.png')
+                                     icon_url='icon_e6.png')
                     embed.set_image(url=values[c - 1]['url'])
                     await paginator.edit(content=None, embed=embed)
 
@@ -486,7 +486,7 @@ class MsG:
                 embed.set_author(name=formatter.tostring(args, random=True),
                                  url='https://e621.net/post?tags={}'.format(','.join(args)), icon_url=user.avatar_url)
                 embed.set_footer(
-                    text=str(ident), icon_url='http://ndl.mgccw.com/mu3/app/20141013/18/1413204353554/icon/icon_xl.png')
+                    text=str(ident), icon_url='icon_e6.png')
                 await ctx.send(embed=embed)
 
         except exc.TagBlacklisted as e:
@@ -541,7 +541,7 @@ class MsG:
                 embed.set_author(name=formatter.tostring(args, random=True),
                                  url='https://e621.net/post?tags={}'.format(','.join(args)), icon_url=user.avatar_url)
                 embed.set_footer(
-                    text=str(ident), icon_url='http://ndl.mgccw.com/mu3/app/20141013/18/1413204353554/icon/icon_xl.png')
+                    text=str(ident), icon_url='icon_e6.png')
                 await ctx.send(embed=embed)
 
         except exc.TagBlacklisted as e:
