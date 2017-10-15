@@ -68,10 +68,20 @@ async def clear(obj, interval=10 * 60, replace=None):
         obj = replace
         asyncio.sleep(interval)
 
+session = aiohttp.ClientSession()
+
+
+def close():
+    global session
+
+    if session:
+        session.close()
+
 
 async def fetch(url, *, params={}, json=False):
-    async with aiohttp.ClientSession() as session:
-        async with session.get(url, params=params, headers={'user-agent': 'Modumind/0.0.1 (Myned)'}) as r:
-            if json is True:
-                return await r.json()
-            return r
+    global session
+
+    async with session.get(url, params=params, headers={'user-agent': 'Modumind/0.0.1 (Myned)'}) as r:
+        if json is True:
+            return await r.json()
+        return await r.read()

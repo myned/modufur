@@ -32,6 +32,7 @@ class Bot:
         # loop = self.bot.loop.all_tasks()
         # for task in loop:
         #     task.cancel()
+        u.close()
         await self.bot.logout()
         await self.bot.close()
         print('\n/ / / / / / / / / / / /\nD I S C O N N E C T E D\n\\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\\n')
@@ -48,6 +49,7 @@ class Bot:
         # loop = self.bot.loop.all_tasks()
         # for task in loop:
         #     task.cancel()
+        u.close()
         await self.bot.logout()
         await self.bot.close()
         os.execl(sys.executable, 'python3', 'run.py')

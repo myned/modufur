@@ -41,6 +41,7 @@ async def on_ready():
 
 @bot.event
 async def on_error(error):
+    u.close()
     await bot.logout()
     await bot.close()
     print('\n! ! ! ! !\nE R R O R : {}\n! ! ! ! !\n'.format(error), file=sys.stderr)

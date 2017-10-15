@@ -6,10 +6,10 @@ from utils import utils as u
 
 
 async def check_match(url):
-    r = await u.fetch('http://iqdb.harry.lu/?url={}'.format(url))
+    content = await u.fetch('http://iqdb.harry.lu', params={'url': url})
 
     try:
-        value = BeautifulSoup(await r.read(), 'html.parser').find_all('a')[1].get('href')
+        value = BeautifulSoup(content, 'html.parser').find_all('a')[1].get('href')
     except IndexError:
         raise exc.MatchError
 
