@@ -28,13 +28,12 @@ class Bot:
     @checks.del_ctx()
     async def die(self, ctx):
         if isinstance(self.bot.get_channel(u.config['shutdown_channel']), d.TextChannel):
-            await self.bot.get_channel(u.config['shutdown_channel']).send('**Shutting down . . .** 🌙')
+            await self.bot.get_channel(u.config['shutdown_channel']).send('**Shutting down 🌙 . . .**')
         # loop = self.bot.loop.all_tasks()
         # for task in loop:
         #     task.cancel()
-        u.close()
         await self.bot.logout()
-        await self.bot.close()
+        u.close(self.bot.loop)
         print('\n/ / / / / / / / / / / /\nD I S C O N N E C T E D\n\\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\\n')
         # u.notify('D I S C O N N E C T E D')
 
@@ -44,14 +43,13 @@ class Bot:
     async def restart(self, ctx):
         print('\n| | | | | | | | | |\nR E S T A R T I N G\n| | | | | | | | | |\n')
         if isinstance(self.bot.get_channel(u.config['shutdown_channel']), d.TextChannel):
-            await self.bot.get_channel(u.config['shutdown_channel']).send('**Restarting . . .** 💤')
+            await self.bot.get_channel(u.config['shutdown_channel']).send('**Restarting 💤 . . .**')
         # u.notify('R E S T A R T I N G')
         # loop = self.bot.loop.all_tasks()
         # for task in loop:
         #     task.cancel()
-        u.close()
         await self.bot.logout()
-        await self.bot.close()
+        u.close(self.bot.loop)
         os.execl(sys.executable, 'python3', 'run.py')
 
     # Invite bot to bot owner's server

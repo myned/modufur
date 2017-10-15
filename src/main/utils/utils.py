@@ -3,6 +3,7 @@ import json
 import os
 import pickle as pkl
 import subprocess
+from contextlib import suppress
 
 import aiohttp
 from pync import Notifier
@@ -72,11 +73,21 @@ async def clear(obj, interval=10 * 60, replace=None):
 session = aiohttp.ClientSession()
 
 
-def close():
+def close(loop):
     global session
 
     if session:
         session.close()
+
+    loop.stop()
+    pending = asyncio.Task.all_tasks()
+    for task in pending:
+        task.cancel()
+        # with suppress(asyncio.CancelledError):
+        #     loop.run_until_complete(task)
+    # loop.close()
+
+    print('Finished cancelling tasks.')
 
 
 async def fetch(url, *, params={}, json=False):
