@@ -29,10 +29,10 @@ class MsG:
         self.aliases = u.setdefault('cogs/aliases.pkl', {})
 
     # Tag search
-    @commands.command(aliases=['tag', 't'], brief='e621 Tag search', description='e621 | NSFW\nReturn a link search for given tags')
+    @commands.command(aliases=['rel'], brief='e621 Tag search', description='e621 | NSFW\nReturn a link search for given tags')
     @checks.del_ctx()
-    async def tags(self, ctx, tag=None):
-        tags = []
+    async def related(self, ctx, tag=None):
+        related = []
 
         try:
             if tag is None:
@@ -41,16 +41,16 @@ class MsG:
             await ctx.trigger_typing()
 
             tag_request = await u.fetch('https://e621.net/tag/related.json', params={'tags': tag, 'type': 'general'}, json=True)
-            for tag in tag_request.get('wolf', []):
-                tags.append(tag[0])
+            for rel in tag_request.get(tag, []):
+                related.append(rel[0])
 
-            await ctx.send('✅ `{}` **related tags:**\n```\n{}```'.format(tag, formatter.tostring(tags)))
+            await ctx.send('✅ `{}` **related tags:**\n```\n{}```'.format(tag, formatter.tostring(related)))
 
         except exc.MissingArgument:
             await ctx.send('❌ **No tags given.**', delete_after=10)
 
     # Tag aliases
-    @commands.command(name='aliases', aliases=['alias', 'a'], brief='e621 Tag aliases', description='e621 | NSFW\nSearch aliases for given tag')
+    @commands.command(name='aliases', aliases=['alias'], brief='e621 Tag aliases', description='e621 | NSFW\nSearch aliases for given tag')
     @checks.del_ctx()
     async def tag_aliases(self, ctx, tag=None):
         aliases = []
