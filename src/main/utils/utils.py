@@ -50,6 +50,7 @@ def dump(obj, filename):
         pkl.dump(obj, outfile)
 
 
+settings = setdefault('settings.pkl', {'del_ctx': []})
 tasks = setdefault('cogs/tasks.pkl', {})
 
 
