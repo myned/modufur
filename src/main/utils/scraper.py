@@ -1,3 +1,5 @@
+import re
+
 from bs4 import BeautifulSoup
 from lxml import html
 
@@ -10,10 +12,13 @@ async def check_match(url):
 
     try:
         value = BeautifulSoup(content, 'html.parser').find_all('a')[1].get('href')
+        if value != '#':
+            return value
+        else:
+            raise IndexError
     except IndexError:
-        raise exc.MatchError(url)
+        try:
+            raise exc.MatchError(re.search('\/([^\/]+)$', url).group(1))
 
-    if value != '#':
-        return value
-    else:
-        raise exc.MatchError(url)
+        except AttributeError:
+            raise exc.MissingArgument
