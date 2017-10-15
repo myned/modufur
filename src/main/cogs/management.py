@@ -156,7 +156,7 @@ class Administration:
 
         try:
             async for message in channel.history():
-                if not msg.pinned:
+                if not message.pinned:
                     await self.queue.put(message)
 
             while not self.bot.is_closed():
