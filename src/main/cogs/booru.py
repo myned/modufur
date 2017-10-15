@@ -71,7 +71,7 @@ class MsG:
             await ctx.send('✅ **Probable match:**\n{}'.format(await scraper.check_match(url)))
 
         except exc.MatchError:
-            await ctx.send('❌ **No probable match.**', delete_after=10)
+            await ctx.send('❌ **No probable match.** Make sure the URL directs to an image file.', delete_after=10)
 
     @reverse_image_search.error
     async def reverse_image_search_error(self, ctx, error):
@@ -79,8 +79,8 @@ class MsG:
             return await ctx.send('❌ **Invalid url.**', delete_after=10)
 
     async def return_pool(self, *, ctx, booru='e621', query=[]):
-        channel = ctx.message.channel
-        user = ctx.message.author
+        channel = ctx.channel
+        user = ctx.author
 
         def on_message(msg):
             if msg.content.lower() == 'cancel' and msg.author is user and msg.channel is channel:
@@ -133,8 +133,8 @@ class MsG:
     @commands.command(name='pool', aliases=['e6pp'], brief='e621 pool paginator', description='e621 | NSFW\nShow pools in a page format', hidden=True)
     @checks.del_ctx()
     async def pool_paginator(self, ctx, *kwords):
-        channel = ctx.message.channel
-        user = ctx.message.author
+        channel = ctx.channel
+        user = ctx.author
 
         def on_react(reaction, user):
             if reaction.emoji == '🚫' and reaction.message.content == paginator.content and (user is user or user.id == u.config['owner_id']):
@@ -262,10 +262,10 @@ class MsG:
 
     # Messy code that checks image limit and tags in blacklists
     async def check_return_posts(self, *, ctx, booru='e621', tags=[], limit=1, previous={}):
-        guild = ctx.message.guild if isinstance(
-            ctx.message.guild, d.Guild) else ctx.message.channel
-        channel = ctx.message.channel
-        user = ctx.message.author
+        guild = ctx.guild if isinstance(
+            ctx.guild, d.Guild) else ctx.channel
+        channel = ctx.channel
+        user = ctx.author
 
         blacklist = set()
         # Creates temp blacklist based on context
@@ -316,8 +316,8 @@ class MsG:
     @checks.del_ctx()
     @checks.is_nsfw()
     async def e621_paginator(self, ctx, *args):
-        channel = ctx.message.channel
-        user = ctx.message.author
+        channel = ctx.channel
+        user = ctx.author
 
         def on_react(reaction, user):
             if reaction.emoji == '🚫' and reaction.message.content == paginator.content and (user is user or user.id == u.config['owner_id']):
@@ -454,13 +454,14 @@ class MsG:
     @e621_paginator.error
     async def e621_paginator_error(self, ctx, error):
         if isinstance(error, errext.CheckFailure):
-            return await ctx.send('❌ {} **is not an NSFW channel.**'.format(ctx.message.channel.mention), delete_after=10)
+            return await ctx.send('❌ {} **is not an NSFW channel.**'.format(ctx.channel.mention), delete_after=10)
 
     # Searches for and returns images from e621.net given tags when not blacklisted
     @commands.command(aliases=['e6', '6'], brief='e621 | NSFW', description='e621 | NSFW\nTag-based search for e621.net\n\nYou can only search 5 tags and 6 images at once for now.\ne6 [tags...] ([# of images])')
     @checks.del_ctx()
     @checks.is_nsfw()
     async def e621(self, ctx, *args):
+        user = ctx.author
         args = list(args)
         limit = 1
 
@@ -509,12 +510,13 @@ class MsG:
     @e621.error
     async def e621_error(self, ctx, error):
         if isinstance(error, errext.CheckFailure):
-            return await ctx.send('❌ {} **is not an NSFW channel.**'.format(ctx.message.channel.mention), delete_after=10)
+            return await ctx.send('❌ {} **is not an NSFW channel.**'.format(ctx.channel.mention), delete_after=10)
 
     # Searches for and returns images from e926.net given tags when not blacklisted
     @commands.command(aliases=['e9', '9'], brief='e926 | SFW', description='e926 | SFW\nTag-based search for e926.net\n\nYou can only search 5 tags and 6 images at once for now.\ne9 [tags...] ([# of images])')
     @checks.del_ctx()
     async def e926(self, ctx, *args):
+        user = ctx.author
         args = list(args)
         limit = 1
 
@@ -568,13 +570,13 @@ class MsG:
 
     @favorites.command(name='get', aliases=['g'])
     async def _get_favorites(self, ctx):
-        user = ctx.message.author
+        user = ctx.author
 
         await ctx.send('⭐ {}**\'s favorites:**\n```\n{}```'.format(user.mention, formatter.tostring(self.favorites.get(user.id, set()))))
 
     @favorites.command(name='add', aliases=['a'])
     async def _add_favorites(self, ctx, *tags):
-        user = ctx.message.author
+        user = ctx.author
 
         self.favorites.setdefault(user.id, set()).update(tags)
         u.dump(self.favorites, 'cogs/favorites.pkl')
@@ -583,7 +585,7 @@ class MsG:
 
     @favorites.command(name='remove', aliases=['r'])
     async def _remove_favorites(self, ctx, *tags):
-        user = ctx.message.author
+        user = ctx.author
 
         try:
             for tag in tags:
@@ -602,7 +604,7 @@ class MsG:
 
     @favorites.command(name='clear', aliases=['c'])
     async def _clear_favorites(self, ctx):
-        user = ctx.message.author
+        user = ctx.author
 
         del self.favorites[user.id]
 
@@ -633,23 +635,23 @@ class MsG:
 
     @_get_blacklist.command(name='channel', aliases=['ch', 'c'])
     async def __get_channel_blacklist(self, ctx):
-        guild = ctx.message.guild if isinstance(
-            ctx.message.guild, d.Guild) else ctx.message.channel
-        channel = ctx.message.channel
+        guild = ctx.guild if isinstance(
+            ctx.guild, d.Guild) else ctx.channel
+        channel = ctx.channel
 
         await ctx.send('🚫 {} **blacklist:**\n```\n{}```'.format(channel.mention, formatter.tostring(self.blacklists['guild_blacklist'].get(guild.id, {}).get(channel.id, set()))))
 
     @_get_blacklist.command(name='me', aliases=['m'])
     async def __get_user_blacklist(self, ctx):
-        user = ctx.message.author
+        user = ctx.author
 
         await ctx.send('🚫 {}**\'s blacklist:**\n```\n{}```'.format(user.mention, formatter.tostring(self.blacklists['user_blacklist'].get(user.id, set()))), delete_after=10)
 
     @_get_blacklist.command(name='here', aliases=['h'])
     async def __get_here_blacklists(self, ctx):
-        guild = ctx.message.guild if isinstance(
-            ctx.message.guild, d.Guild) else ctx.message.channel
-        channel = ctx.message.channel
+        guild = ctx.guild if isinstance(
+            ctx.guild, d.Guild) else ctx.channel
+        channel = ctx.channel
 
         await ctx.send('🚫 **__Blacklisted:__**\n\n**Global:**\n```\n{}```\n**{}:**\n```\n{}```'.format(formatter.tostring(self.blacklists['global_blacklist']), channel.mention, formatter.tostring(self.blacklists['guild_blacklist'].get(guild.id, {}).get(channel.id, set()))))
 
@@ -661,8 +663,8 @@ class MsG:
     @__get_all_blacklists.command(name='guild', aliases=['g'])
     @commands.has_permissions(manage_channels=True)
     async def ___get_all_guild_blacklists(self, ctx):
-        guild = ctx.message.guild if isinstance(
-            ctx.message.guild, d.Guild) else ctx.message.channel
+        guild = ctx.guild if isinstance(
+            ctx.guild, d.Guild) else ctx.channel
 
         await ctx.send('🚫 **__{} blacklists:__**\n\n{}'.format(guild.name, formatter.dict_tostring(self.blacklists['guild_blacklist'].get(guild.id, {}))))
 
@@ -693,9 +695,9 @@ class MsG:
     @_add_tags.command(name='channel', aliases=['ch', 'c'])
     @commands.has_permissions(manage_channels=True)
     async def __add_channel_tags(self, ctx, *tags):
-        guild = ctx.message.guild if isinstance(
-            ctx.message.guild, d.Guild) else ctx.message.channel
-        channel = ctx.message.channel
+        guild = ctx.guild if isinstance(
+            ctx.guild, d.Guild) else ctx.channel
+        channel = ctx.channel
 
         self.blacklists['guild_blacklist'].setdefault(
             guild.id, {}).setdefault(channel.id, set()).update(tags)
@@ -711,7 +713,7 @@ class MsG:
 
     @_add_tags.command(name='me', aliases=['m'])
     async def __add_user_tags(self, ctx, *tags):
-        user = ctx.message.author
+        user = ctx.author
 
         self.blacklists['user_blacklist'].setdefault(user.id, set()).update(tags)
         for tag in tags:
@@ -750,9 +752,9 @@ class MsG:
     @_remove_tags.command(name='channel', aliases=['ch', 'c'])
     @commands.has_permissions(manage_channels=True)
     async def __remove_channel_tags(self, ctx, *tags):
-        guild = ctx.message.guild if isinstance(
-            ctx.message.guild, d.Guild) else ctx.message.channel
-        channel = ctx.message.channel
+        guild = ctx.guild if isinstance(
+            ctx.guild, d.Guild) else ctx.channel
+        channel = ctx.channel
 
         try:
             for tag in tags:
@@ -771,7 +773,7 @@ class MsG:
 
     @_remove_tags.command(name='me', aliases=['m'])
     async def __remove_user_tags(self, ctx, *tags):
-        user = ctx.message.author
+        user = ctx.author
 
         try:
             for tag in tags:
@@ -804,9 +806,9 @@ class MsG:
     @_clear_blacklist.command(name='channel', aliases=['ch', 'c'])
     @commands.has_permissions(manage_channels=True)
     async def __clear_channel_blacklist(self, ctx):
-        guild = ctx.message.guild if isinstance(
-            ctx.message.guild, d.Guild) else ctx.message.channel
-        channel = ctx.message.channel
+        guild = ctx.guild if isinstance(
+            ctx.guild, d.Guild) else ctx.channel
+        channel = ctx.channel
 
         del self.blacklists['guild_blacklist'][str(guild.id)][channel.id]
         u.dump(self.blacklists, 'cogs/blacklists.pkl')
@@ -815,7 +817,7 @@ class MsG:
 
     @_clear_blacklist.command(name='me', aliases=['m'])
     async def __clear_user_blacklist(self, ctx):
-        user = ctx.message.author
+        user = ctx.author
 
         del self.blacklists['user_blacklist'][user.id]
         u.dump(self.blacklists, 'cogs/blacklists.pkl')

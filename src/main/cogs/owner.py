@@ -32,26 +32,22 @@ class Bot:
         # loop = self.bot.loop.all_tasks()
         # for task in loop:
         #     task.cancel()
-        if u.session:
-            await u.session.close()
         await self.bot.logout()
         await self.bot.close()
-        print('- - - - - - -')
-        print('DISCONNECTED')
+        print('\n/ / / / / / / / / / / /\nD I S C O N N E C T E D\n\\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\\n')
+        # u.notify('D I S C O N N E C T E D')
 
     @commands.command(name=',restart', aliases=[',res', ',r'], hidden=True)
     @commands.is_owner()
     @checks.del_ctx()
     async def restart(self, ctx):
-        print('RESTARTING')
-        print('- - - - - - -')
+        print('\n| | | | | | | | | |\nR E S T A R T I N G\n| | | | | | | | | |\n')
         if isinstance(self.bot.get_channel(u.config['startup_channel']), d.TextChannel):
             await self.bot.get_channel(u.config['shutdown_channel']).send('**Restarting...** 💤')
+        # u.notify('R E S T A R T I N G')
         # loop = self.bot.loop.all_tasks()
         # for task in loop:
         #     task.cancel()
-        if u.session:
-            await u.session.close()
         await self.bot.logout()
         await self.bot.close()
         os.execl(sys.executable, 'python3', 'run.py')
@@ -109,9 +105,9 @@ class Tools:
     @checks.del_ctx()
     async def console(self, ctx):
         def execute(msg):
-            if msg.content == 'exit' and msg.author is ctx.message.author:
+            if msg.content == 'exit' and msg.author is ctx.author:
                 raise exc.Abort
-            elif msg.author is ctx.message.author and msg.channel is ctx.message.channel:
+            elif msg.author is ctx.author and msg.channel is ctx.channel:
                 return True
             else:
                 return False

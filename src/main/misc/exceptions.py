@@ -1,6 +1,10 @@
 base = '⚠️ **An internal error has occurred.** Please notify my master! 🐺'
 
 
+async def send_error(ctx, error):
+    await ctx.send('{}\n```\n{}```'.format(base, error))
+
+
 class Left(Exception):
     pass
 

@@ -34,7 +34,7 @@ class Administration:
     #     pass
     # @_all.group(name='user')
     # async def __user(self, ctx, user: d.Member):
-    #     channels = ctx.message.guild.text_channels
+    #     channels = ctx.guild.text_channels
     #     bulk_history = {}
     #     bulk = {}
     #     history = []
@@ -58,7 +58,7 @@ class Administration:
     #                 await channel.delete_messages(chunk)
     #                 await del_sent.edit(content='🗑 **Deleted** `' + str(c) + '/' + str(sum([len(v) for v in bulk.values()])) + '` **messages.**')
     #                 await asyncio.sleep(5)
-    #         await ctx.send('✅ `' + str(sum([len(v) for v in bulk.values()])) + '` **of** <@' + uid + '>**\'s messages deleted from** ' + ctx.message.guild.name + '**.**')
+    #         await ctx.send('✅ `' + str(sum([len(v) for v in bulk.values()])) + '` **of** <@' + uid + '>**\'s messages deleted from** ' + ctx.guild.name + '**.**')
     #         for channel in channels:
     #             history.extend(await channel.history(limit=None, before=dt.datetime.utcnow() - dt.timedelta(days=14)).flatten())
     #             await ch_sent.edit(content='🗄 **Cached** `' + str(channels.index(channel) + 1) + '/' + str(len(channels)) + '` **channels.**')
@@ -69,14 +69,14 @@ class Administration:
     @checks.del_ctx()
     async def prune_all_user(self, ctx, uid, when=None, reference=None):
         def yes(msg):
-            if msg.content.lower() == 'y' and msg.channel is ctx.message.channel and msg.author is ctx.message.author:
+            if msg.content.lower() == 'y' and msg.channel is ctx.channel and msg.author is ctx.author:
                 return True
-            elif msg.content.lower() == 'n' and msg.channel is ctx.message.channel and msg.author is ctx.message.author:
+            elif msg.content.lower() == 'n' and msg.channel is ctx.channel and msg.author is ctx.author:
                 raise exc.CheckFail
             else:
                 return False
 
-        channels = ctx.message.guild.text_channels
+        channels = ctx.guild.text_channels
         if reference is not None:
             for channel in channels:
                 try:
@@ -123,7 +123,7 @@ class Administration:
                 # print('Deleted {}/{} messages.'.format(history.index(message) + 1, len(history)))
                 await del_sent.edit(content='🗑 **Deleted** `{}/{}` **messages.**'.format(history.index(message) + 1, len(history)))
                 await asyncio.sleep(self.RATE_LIMIT)
-            await del_sent.edit(content='🗑 `{}` **of** <@{}>**\'s messages deleted from** {}**.**'.format(len(history), uid, ctx.message.guild.name))
+            await del_sent.edit(content='🗑 `{}` **of** <@{}>**\'s messages deleted from** {}**.**'.format(len(history), uid, ctx.guild.name))
         except exc.CheckFail:
             await ctx.send('❌ **Deletion aborted.**', delete_after=10)
         except TimeoutError:
@@ -164,7 +164,7 @@ class Administration:
     @commands.has_permissions(administrator=True)
     @checks.del_ctx()
     async def auto_delete(self, ctx):
-        channel = ctx.message.channel
+        channel = ctx.channel
 
         try:
             if channel.id not in u.tasks.setdefault('management', {}).setdefault('auto_delete', []):
