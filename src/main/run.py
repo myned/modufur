@@ -35,7 +35,7 @@ async def on_ready():
     # bot.loop.create_task(u.clear(booru.temp_urls, 30*60))
 
     if isinstance(bot.get_channel(u.config['startup_channel']), d.TextChannel):
-        await bot.get_channel(u.config['startup_channel']).send('**Started.** ☀️')
+        await bot.get_channel(u.config['startup_channel']).send('**Started ☀️ .**')
     print('\n\\ \\ \\ \\ \\ \\ \\ \\ \\\nC O N N E C T E D : {}\n/ / / / / / / / /\n'.format(bot.user.name))
     # u.notify('C O N N E C T E D')
 
@@ -44,9 +44,8 @@ async def on_ready():
 async def on_error(error, *args, **kwargs):
     if isinstance(bot.get_channel(u.config['shutdown_channel']), d.TextChannel):
         await bot.get_channel(u.config['shutdown_channel']).send('**ERROR** ⚠️ {}'.format(error))
-    u.close()
     await bot.logout()
-    await bot.close()
+    u.close(bot.loop)
     print('\n! ! ! ! !\nE R R O R : {}\n! ! ! ! !\n'.format(error), file=sys.stderr)
     tb.print_exc()
     # u.notify('E R R O R')
