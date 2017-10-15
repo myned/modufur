@@ -66,18 +66,22 @@ class MsG:
     # Reverse image searches a linked image using the public iqdb
     @commands.command(name='reverse', aliases=['rev', 'ris'], brief='e621 Reverse image search', description='e621 | NSFW\nReverse-search an image with given URL')
     @checks.del_ctx()
-    async def reverse_image_search(self, ctx, url):
+    async def reverse_image_search(self, ctx, url=None):
         try:
             await ctx.trigger_typing()
+
+            if url is None and ctx.message.attachments:
+                url = ctx.message.attachments[0].url
+            elif url is None:
+                raise exc.MissingArgument
+
             await ctx.send('✅ **Probable match:**\n{}'.format(await scraper.check_match(url)))
 
         except exc.MatchError:
             await ctx.send('❌ **No probable match.** Make sure the URL directs to an image file.', delete_after=10)
 
-    @reverse_image_search.error
-    async def reverse_image_search_error(self, ctx, error):
-        if isinstance(error, errext.MissingRequiredArgument):
-            return await ctx.send('❌ **Invalid url.**', delete_after=10)
+        except exc.MissingArgument:
+            await ctx.send('❌ **Invalid url or file.**', delete_after=10)
 
     async def return_pool(self, *, ctx, booru='e621', query=[]):
         def on_message(msg):

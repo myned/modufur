@@ -25,6 +25,10 @@ class Exists(Exception):
     pass
 
 
+class MissingArgument(Exception):
+    pass
+
+
 class PostError(Exception):
     pass
 
