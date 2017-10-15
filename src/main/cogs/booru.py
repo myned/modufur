@@ -1,6 +1,7 @@
 import asyncio
 import json
 import traceback as tb
+from contextlib import suppress
 
 import discord as d
 from discord import errors as err
@@ -79,21 +80,13 @@ class MsG:
             return await ctx.send('❌ **Invalid url.**', delete_after=10)
 
     async def return_pool(self, *, ctx, booru='e621', query=[]):
-        channel = ctx.channel
-        user = ctx.author
-
         def on_message(msg):
-            if msg.content.lower() == 'cancel' and msg.author is user and msg.channel is channel:
+            if msg.content.lower() == 'cancel' and msg.author is ctx.author and msg.channel is ctx.channel:
                 raise exc.Abort
-            try:
-                if int(msg.content) <= len(pools) and int(msg.content) > 0 and msg.author is user and msg.channel is channel:
+            with suppress(ValueError):
+                if int(msg.content) <= len(pools) and int(msg.content) > 0 and msg.author is ctx.author and msg.channel is ctx.channel:
                     return True
-
-            except ValueError:
-                pass
-
-            else:
-                return False
+            return False
 
         posts = {}
         pool = {}
@@ -133,33 +126,25 @@ class MsG:
     @commands.command(name='pool', aliases=['e6pp'], brief='e621 pool paginator', description='e621 | NSFW\nShow pools in a page format', hidden=True)
     @checks.del_ctx()
     async def pool_paginator(self, ctx, *kwords):
-        channel = ctx.channel
-        user = ctx.author
-
         def on_react(reaction, user):
-            if reaction.emoji == '🚫' and reaction.message.content == paginator.content and (user is user or user.id == u.config['owner_id']):
+            if reaction.emoji == '🚫' and reaction.message.content == paginator.content and (user is ctx.author or user.id == u.config['owner_id']):
                 raise exc.Abort
-            elif reaction.emoji == '📁' and reaction.message.content == paginator.content and (user is user or user.id == u.config['owner_id']):
+            elif reaction.emoji == '📁' and reaction.message.content == paginator.content and (user is ctx.author or user.id == u.config['owner_id']):
                 raise exc.Save
-            elif reaction.emoji == '⬅' and reaction.message.content == paginator.content and (user is user or user.id == u.config['owner_id']):
+            elif reaction.emoji == '⬅' and reaction.message.content == paginator.content and (user is ctx.author or user.id == u.config['owner_id']):
                 raise exc.Left
-            elif reaction.emoji == '🔢' and reaction.message.content == paginator.content and (user is user or user.id == u.config['owner_id']):
+            elif reaction.emoji == '🔢' and reaction.message.content == paginator.content and (user is ctx.author or user.id == u.config['owner_id']):
                 raise exc.GoTo
-            elif reaction.emoji == '➡' and reaction.message.content == paginator.content and (user is user or user.id == u.config['owner_id']):
+            elif reaction.emoji == '➡' and reaction.message.content == paginator.content and (user is ctx.author or user.id == u.config['owner_id']):
                 raise exc.Right
             else:
                 return False
 
         def on_message(msg):
-            try:
-                if int(msg.content) <= len(posts) and msg.author is user and msg.channel is channel:
+            with suppress(ValueError):
+                if int(msg.content) <= len(posts) and msg.author is ctx.author and msg.channel is ctx.channel:
                     return True
-
-            except ValueError:
-                pass
-
-            else:
-                return False
+            return False
 
         starred = []
         c = 1
@@ -173,7 +158,7 @@ class MsG:
             embed = d.Embed(
                 title=values[c - 1]['author'], url='https://e621.net/post/show/{}'.format(keys[c - 1]), color=ctx.me.color).set_image(url=values[c - 1]['url'])
             embed.set_author(name=pool['name'],
-                             url='https://e621.net/pool/show?id={}'.format(pool['id']), icon_url=user.avatar_url)
+                             url='https://e621.net/pool/show?id={}'.format(pool['id']), icon_url=ctx.author.avatar_url)
             embed.set_footer(text='{} / {}'.format(c, len(posts)),
                              icon_url='icon_e6.png')
 
@@ -256,7 +241,7 @@ class MsG:
 
         finally:
             for url in starred:
-                await user.send(url)
+                await ctx.author.send(url)
                 if len(starred) > 5:
                     await asyncio.sleep(2.1)
 
@@ -264,16 +249,14 @@ class MsG:
     async def check_return_posts(self, *, ctx, booru='e621', tags=[], limit=1, previous={}):
         guild = ctx.guild if isinstance(
             ctx.guild, d.Guild) else ctx.channel
-        channel = ctx.channel
-        user = ctx.author
 
         blacklist = set()
         # Creates temp blacklist based on context
         for tag in self.blacklists['global_blacklist']:
             blacklist.update(list(self.aliases[tag]) + [tag])
-        for tag in self.blacklists['guild_blacklist'].get(guild.id, {}).get(channel.id, set()):
+        for tag in self.blacklists['guild_blacklist'].get(guild.id, {}).get(ctx.channel.id, set()):
             blacklist.update(list(self.aliases[tag]) + [tag])
-        for tag in self.blacklists['user_blacklist'].get(user.id, set()):
+        for tag in self.blacklists['user_blacklist'].get(ctx.author.id, set()):
             blacklist.update(list(self.aliases[tag]) + [tag])
         # Checks if tags are in local blacklists
         if tags:
@@ -316,33 +299,25 @@ class MsG:
     @checks.del_ctx()
     @checks.is_nsfw()
     async def e621_paginator(self, ctx, *args):
-        channel = ctx.channel
-        user = ctx.author
-
         def on_react(reaction, user):
-            if reaction.emoji == '🚫' and reaction.message.content == paginator.content and (user is user or user.id == u.config['owner_id']):
+            if reaction.emoji == '🚫' and reaction.message.content == paginator.content and (user is ctx.author or user.id == u.config['owner_id']):
                 raise exc.Abort
-            elif reaction.emoji == '📁' and reaction.message.content == paginator.content and (user is user or user.id == u.config['owner_id']):
+            elif reaction.emoji == '📁' and reaction.message.content == paginator.content and (user is ctx.author or user.id == u.config['owner_id']):
                 raise exc.Save
-            elif reaction.emoji == '⬅' and reaction.message.content == paginator.content and (user is user or user.id == u.config['owner_id']):
+            elif reaction.emoji == '⬅' and reaction.message.content == paginator.content and (user is ctx.author or user.id == u.config['owner_id']):
                 raise exc.Left
-            elif reaction.emoji == '🔢' and reaction.message.content == paginator.content and (user is user or user.id == u.config['owner_id']):
+            elif reaction.emoji == '🔢' and reaction.message.content == paginator.content and (user is ctx.author or user.id == u.config['owner_id']):
                 raise exc.GoTo
-            elif reaction.emoji == '➡' and reaction.message.content == paginator.content and (user is user or user.id == u.config['owner_id']):
+            elif reaction.emoji == '➡' and reaction.message.content == paginator.content and (user is ctx.author or user.id == u.config['owner_id']):
                 raise exc.Right
             else:
                 return False
 
         def on_message(msg):
-            try:
-                if int(msg.content) <= len(posts) and msg.author is user and msg.channel is channel:
+            with suppress(ValueError):
+                if int(msg.content) <= len(posts) and msg.author is ctx.author and msg.channel is ctx.channel:
                     return True
-
-            except ValueError:
-                pass
-
-            else:
-                return False
+            return False
 
         args = list(args)
         limit = self.LIMIT / 5
@@ -358,7 +333,7 @@ class MsG:
             embed = d.Embed(
                 title=values[c - 1]['author'], url='https://e621.net/post/show/{}'.format(keys[c - 1]), color=ctx.me.color).set_image(url=values[c - 1]['url'])
             embed.set_author(name=formatter.tostring(args, random=True),
-                             url='https://e621.net/post?tags={}'.format(','.join(args)), icon_url=user.avatar_url)
+                             url='https://e621.net/post?tags={}'.format(','.join(args)), icon_url=ctx.author.avatar_url)
             embed.set_footer(text='{} / {}'.format(c, len(posts)),
                              icon_url='icon_e6.png')
 
@@ -447,7 +422,7 @@ class MsG:
 
         finally:
             for url in starred:
-                await user.send(url)
+                await ctx.author.send(url)
                 if len(starred) > 5:
                     await asyncio.sleep(2.1)
 
@@ -461,7 +436,6 @@ class MsG:
     @checks.del_ctx()
     @checks.is_nsfw()
     async def e621(self, ctx, *args):
-        user = ctx.author
         args = list(args)
         limit = 1
 
@@ -470,21 +444,18 @@ class MsG:
             # Checks for, defines, and removes limit from args
             for arg in args:
                 if len(arg) == 1:
-                    try:
+                    with suppress(ValueError):
                         if int(arg) <= 6 and int(arg) >= 1:
                             limit = int(arg)
                             args.remove(arg)
                         else:
                             raise exc.BoundsError(arg)
-
-                    except ValueError:
-                        pass
             posts = await self.check_return_posts(ctx=ctx, booru='e621', tags=args, limit=limit)
             for ident, post in posts.items():
                 embed = d.Embed(title=post['author'], url='https://e621.net/post/show/{}'.format(ident),
                                 color=ctx.me.color).set_image(url=post['url'])
                 embed.set_author(name=formatter.tostring(args, random=True),
-                                 url='https://e621.net/post?tags={}'.format(','.join(args)), icon_url=user.avatar_url)
+                                 url='https://e621.net/post?tags={}'.format(','.join(args)), icon_url=ctx.author.avatar_url)
                 embed.set_footer(
                     text=str(ident), icon_url='icon_e6.png')
                 await ctx.send(embed=embed)
@@ -504,7 +475,7 @@ class MsG:
         except exc.Timeout:
             await ctx.send('❌ **Request timed out.**')
 
-        tools.command_dict.setdefault(str(user.id), {}).update(
+        tools.command_dict.setdefault(str(ctx.author.id), {}).update(
             {'command': ctx.command, 'args': ctx.args})
 
     @e621.error
@@ -516,7 +487,6 @@ class MsG:
     @commands.command(aliases=['e9', '9'], brief='e926 | SFW', description='e926 | SFW\nTag-based search for e926.net\n\nYou can only search 5 tags and 6 images at once for now.\ne9 [tags...] ([# of images])')
     @checks.del_ctx()
     async def e926(self, ctx, *args):
-        user = ctx.author
         args = list(args)
         limit = 1
 
@@ -525,21 +495,18 @@ class MsG:
             # Checks for, defines, and removes limit from args
             for arg in args:
                 if len(arg) == 1:
-                    try:
+                    with suppress(ValueError):
                         if int(arg) <= 6 and int(arg) >= 1:
                             limit = int(arg)
                             args.remove(arg)
                         else:
                             raise exc.BoundsError(arg)
-
-                    except ValueError:
-                        pass
             posts = await self.check_return_posts(ctx=ctx, booru='e926', tags=args, limit=limit)
             for ident, post in posts.items():
                 embed = d.Embed(title=post['author'], url='https://e926.net/post/show/{}'.format(ident),
                                 color=ctx.me.color).set_image(url=post['url'])
                 embed.set_author(name=formatter.tostring(args, random=True),
-                                 url='https://e621.net/post?tags={}'.format(','.join(args)), icon_url=user.avatar_url)
+                                 url='https://e621.net/post?tags={}'.format(','.join(args)), icon_url=ctx.author.avatar_url)
                 embed.set_footer(
                     text=str(ident), icon_url='icon_e6.png')
                 await ctx.send(embed=embed)
@@ -570,45 +537,39 @@ class MsG:
 
     @favorites.command(name='get', aliases=['g'])
     async def _get_favorites(self, ctx):
-        user = ctx.author
-
-        await ctx.send('⭐ {}**\'s favorites:**\n```\n{}```'.format(user.mention, formatter.tostring(self.favorites.get(user.id, set()))))
+        await ctx.send('⭐ {}**\'s favorites:**\n```\n{}```'.format(ctx.author.mention, formatter.tostring(self.favorites.get(ctx.author.id, set()))))
 
     @favorites.command(name='add', aliases=['a'])
     async def _add_favorites(self, ctx, *tags):
-        user = ctx.author
-
-        self.favorites.setdefault(user.id, set()).update(tags)
+        self.favorites.setdefault(ctx.author.id, set()).update(tags)
         u.dump(self.favorites, 'cogs/favorites.pkl')
 
-        await ctx.send('✅ {} **added:**\n```\n{}```'.format(user.mention, formatter.tostring(tags)))
+        await ctx.send('✅ {} **added:**\n```\n{}```'.format(ctx.author.mention, formatter.tostring(tags)))
 
     @favorites.command(name='remove', aliases=['r'])
     async def _remove_favorites(self, ctx, *tags):
-        user = ctx.author
-
         try:
             for tag in tags:
                 try:
-                    self.favorites[user.id].remove(tag)
+                    self.favorites[ctx.author.id].remove(tag)
 
                 except KeyError:
                     raise exc.TagError(tag)
 
             u.dump(self.favorites, 'cogs/favorites.pkl')
 
-            await ctx.send('✅ {} **removed:**\n```\n{}```'.format(user.mention, formatter.tostring(tags)), delete_after=5)
+            await ctx.send('✅ {} **removed:**\n```\n{}```'.format(ctx.author.mention, formatter.tostring(tags)), delete_after=5)
 
         except exc.TagError as e:
             await ctx.send('❌ `{}` **not in favorites.**'.format(e), delete_after=10)
 
     @favorites.command(name='clear', aliases=['c'])
     async def _clear_favorites(self, ctx):
-        user = ctx.author
+        with suppress(KeyError):
+            del self.favorites[ctx.author.id]
+            u.dump(self.favorites, 'cogs/favorites.pkl')
 
-        del self.favorites[user.id]
-
-        await ctx.send('✅ {}**\'s favorites cleared.**'.format(user.mention))
+        await ctx.send('✅ {}**\'s favorites cleared.**'.format(ctx.author.mention))
 
     # Umbrella command structure to manage global, channel, and user blacklists
     @commands.group(aliases=['bl', 'b'], brief='Manage blacklists', description='Blacklist base command for managing blacklists\n\n`bl get [blacklist]` to show a blacklist\n`bl set [blacklist] [tags]` to replace a blacklist\n`bl clear [blacklist]` to clear a blacklist\n`bl add [blacklist] [tags]` to add tags to a blacklist\n`bl remove [blacklist] [tags]` to remove tags from a blacklist', usage='[flag] [blacklist] ([tags])')
@@ -637,23 +598,19 @@ class MsG:
     async def __get_channel_blacklist(self, ctx):
         guild = ctx.guild if isinstance(
             ctx.guild, d.Guild) else ctx.channel
-        channel = ctx.channel
 
-        await ctx.send('🚫 {} **blacklist:**\n```\n{}```'.format(channel.mention, formatter.tostring(self.blacklists['guild_blacklist'].get(guild.id, {}).get(channel.id, set()))))
+        await ctx.send('🚫 {} **blacklist:**\n```\n{}```'.format(ctx.channel.mention, formatter.tostring(self.blacklists['guild_blacklist'].get(guild.id, {}).get(ctx.channel.id, set()))))
 
     @_get_blacklist.command(name='me', aliases=['m'])
     async def __get_user_blacklist(self, ctx):
-        user = ctx.author
-
-        await ctx.send('🚫 {}**\'s blacklist:**\n```\n{}```'.format(user.mention, formatter.tostring(self.blacklists['user_blacklist'].get(user.id, set()))), delete_after=10)
+        await ctx.send('🚫 {}**\'s blacklist:**\n```\n{}```'.format(ctx.author.mention, formatter.tostring(self.blacklists['user_blacklist'].get(ctx.author.id, set()))), delete_after=10)
 
     @_get_blacklist.command(name='here', aliases=['h'])
     async def __get_here_blacklists(self, ctx):
         guild = ctx.guild if isinstance(
             ctx.guild, d.Guild) else ctx.channel
-        channel = ctx.channel
 
-        await ctx.send('🚫 **__Blacklisted:__**\n\n**Global:**\n```\n{}```\n**{}:**\n```\n{}```'.format(formatter.tostring(self.blacklists['global_blacklist']), channel.mention, formatter.tostring(self.blacklists['guild_blacklist'].get(guild.id, {}).get(channel.id, set()))))
+        await ctx.send('🚫 **__Blacklisted:__**\n\n**Global:**\n```\n{}```\n**{}:**\n```\n{}```'.format(formatter.tostring(self.blacklists['global_blacklist']), ctx.channel.mention, formatter.tostring(self.blacklists['guild_blacklist'].get(guild.id, {}).get(ctx.channel.id, set()))))
 
     @_get_blacklist.group(name='all', aliases=['a'])
     async def __get_all_blacklists(self, ctx):
@@ -681,6 +638,8 @@ class MsG:
     @_add_tags.command(name='global', aliases=['gl', 'g'])
     @commands.is_owner()
     async def __add_global_tags(self, ctx, *tags):
+        await ctx.trigger_typing()
+
         self.blacklists['global_blacklist'].update(tags)
         for tag in tags:
             alias_request = await u.fetch('https://e621.net/tag_alias/index.json', params={'aliased_to': tag, 'approved': 'true'}, json=True)
@@ -697,10 +656,11 @@ class MsG:
     async def __add_channel_tags(self, ctx, *tags):
         guild = ctx.guild if isinstance(
             ctx.guild, d.Guild) else ctx.channel
-        channel = ctx.channel
+
+        await ctx.trigger_typing()
 
         self.blacklists['guild_blacklist'].setdefault(
-            guild.id, {}).setdefault(channel.id, set()).update(tags)
+            guild.id, {}).setdefault(ctx.channel.id, set()).update(tags)
         for tag in tags:
             alias_request = await u.fetch('https://e621.net/tag_alias/index.json', params={'aliased_to': tag, 'approved': 'true'}, json=True)
             if alias_request:
@@ -709,13 +669,13 @@ class MsG:
         u.dump(self.blacklists, 'cogs/blacklists.pkl')
         u.dump(self.aliases, 'cogs/aliases.pkl')
 
-        await ctx.send('✅ **Added to** {} **blacklist:**\n```\n{}```'.format(channel.mention, formatter.tostring(tags)), delete_after=5)
+        await ctx.send('✅ **Added to** {} **blacklist:**\n```\n{}```'.format(ctx.channel.mention, formatter.tostring(tags)), delete_after=5)
 
     @_add_tags.command(name='me', aliases=['m'])
     async def __add_user_tags(self, ctx, *tags):
-        user = ctx.author
+        await ctx.trigger_typing()
 
-        self.blacklists['user_blacklist'].setdefault(user.id, set()).update(tags)
+        self.blacklists['user_blacklist'].setdefault(ctx.author.id, set()).update(tags)
         for tag in tags:
             alias_request = await u.fetch('https://e621.net/tag_alias/index.json', params={'aliased_to': tag, 'approved': 'true'}, json=True)
             if alias_request:
@@ -724,7 +684,7 @@ class MsG:
         u.dump(self.blacklists, 'cogs/blacklists.pkl')
         u.dump(self.aliases, 'cogs/aliases.pkl')
 
-        await ctx.send('✅ {} **added:**\n```\n{}```'.format(user.mention, formatter.tostring(tags)), delete_after=5)
+        await ctx.send('✅ {} **added:**\n```\n{}```'.format(ctx.author.mention, formatter.tostring(tags)), delete_after=5)
 
     @blacklist.group(name='remove', aliases=['rm', 'r'])
     async def _remove_tags(self, ctx):
@@ -754,38 +714,35 @@ class MsG:
     async def __remove_channel_tags(self, ctx, *tags):
         guild = ctx.guild if isinstance(
             ctx.guild, d.Guild) else ctx.channel
-        channel = ctx.channel
 
         try:
             for tag in tags:
                 try:
-                    self.blacklists['guild_blacklist'][guild.id][channel.id].remove(tag)
+                    self.blacklists['guild_blacklist'][guild.id][ctx.channel.id].remove(tag)
 
                 except KeyError:
                     raise exc.TagError(tag)
 
             u.dump(self.blacklists, 'cogs/blacklists.pkl')
 
-            await ctx.send('✅ **Removed from** {} **blacklist:**\n```\n{}```'.format(channel.mention, formatter.tostring(tags), delete_after=5))
+            await ctx.send('✅ **Removed from** {} **blacklist:**\n```\n{}```'.format(ctx.channel.mention, formatter.tostring(tags), delete_after=5))
 
         except exc.TagError as e:
             await ctx.send('❌ `{}` **not in blacklist.**'.format(e), delete_after=10)
 
     @_remove_tags.command(name='me', aliases=['m'])
     async def __remove_user_tags(self, ctx, *tags):
-        user = ctx.author
-
         try:
             for tag in tags:
                 try:
-                    self.blacklists['user_blacklist'][user.id].remove(tag)
+                    self.blacklists['user_blacklist'][ctx.author.id].remove(tag)
 
                 except KeyError:
                     raise exc.TagError(tag)
 
             u.dump(self.blacklists, 'cogs/blacklists.pkl')
 
-            await ctx.send('✅ {} **removed:**\n```\n{}```'.format(user.mention, formatter.tostring(tags)), delete_after=5)
+            await ctx.send('✅ {} **removed:**\n```\n{}```'.format(ctx.author.mention, formatter.tostring(tags)), delete_after=5)
 
         except exc.TagError as e:
             await ctx.send('❌ `{}` **not in blacklist.**'.format(e), delete_after=10)
@@ -798,7 +755,7 @@ class MsG:
     @_clear_blacklist.command(name='global', aliases=['gl', 'g'])
     @commands.is_owner()
     async def __clear_global_blacklist(self, ctx):
-        del self.blacklists['global_blacklist']
+        self.blacklists['global_blacklist'].clear()
         u.dump(self.blacklists, 'cogs/blacklists.pkl')
 
         await ctx.send('✅ **Global blacklist cleared.**', delete_after=5)
@@ -808,18 +765,17 @@ class MsG:
     async def __clear_channel_blacklist(self, ctx):
         guild = ctx.guild if isinstance(
             ctx.guild, d.Guild) else ctx.channel
-        channel = ctx.channel
 
-        del self.blacklists['guild_blacklist'][str(guild.id)][channel.id]
-        u.dump(self.blacklists, 'cogs/blacklists.pkl')
+        with suppress(KeyError):
+            del self.blacklists['guild_blacklist'][guild.id][ctx.channel.id]
+            u.dump(self.blacklists, 'cogs/blacklists.pkl')
 
-        await ctx.send('✅ {} **blacklist cleared.**'.format(channel.mention), delete_after=5)
+        await ctx.send('✅ {} **blacklist cleared.**'.format(ctx.channel.mention), delete_after=5)
 
     @_clear_blacklist.command(name='me', aliases=['m'])
     async def __clear_user_blacklist(self, ctx):
-        user = ctx.author
+        with suppress(KeyError):
+            del self.blacklists['user_blacklist'][ctx.author.id]
+            u.dump(self.blacklists, 'cogs/blacklists.pkl')
 
-        del self.blacklists['user_blacklist'][user.id]
-        u.dump(self.blacklists, 'cogs/blacklists.pkl')
-
-        await ctx.send('✅ {}**\'s blacklist cleared.**'.format(user.mention), delete_after=5)
+        await ctx.send('✅ {}**\'s blacklist cleared.**'.format(ctx.author.mention), delete_after=5)

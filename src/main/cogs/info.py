@@ -24,14 +24,12 @@ class Info:
 
     @commands.command(hidden=True)
     async def hi(self, ctx):
-        user = ctx.author
-
-        hello = 'Hewwo, {}.'.format(user.mention)
-        if user.id == checks.owner_id:
+        hello = 'Hewwo, {}.'.format(ctx.author.mention)
+        if ctx.author.id == checks.owner_id:
             hello += '.. ***Master.*** uwu'
-        elif user.guild_permissions.administrator:
+        elif ctx.author.guild_permissions.administrator:
             hello = '{} **Admin** {}'.format(hello[:7], hello[7:])
-        elif user.guild_permissions.ban_members:
+        elif ctx.author.guild_permissions.ban_members:
             hello = '{} **Mod** {}'.format(hello[:7], hello[7:])
         await ctx.send(hello)
 

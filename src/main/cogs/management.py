@@ -1,5 +1,6 @@
 import asyncio
 import traceback as tb
+from contextlib import suppress
 
 import discord as d
 from discord import errors as err
@@ -25,47 +26,6 @@ class Administration:
                 print('Looping #{}'.format(temp.name))
             self.bot.loop.create_task(self.delete())
             self.deleting = True
-
-    # @commands.group(aliases=['pr', 'clear', 'cl'])
-    # @commands.is_owner()
-    # @checks.del_ctx()
-    # async def prune(self, ctx):
-    #     pass
-    #
-    # @prune.group(name='all', aliases=['a'])
-    # async def _all(self, ctx):
-    #     pass
-    # @_all.group(name='user')
-    # async def __user(self, ctx, user: d.Member):
-    #     channels = ctx.guild.text_channels
-    #     bulk_history = {}
-    #     bulk = {}
-    #     history = []
-    #     c = 0
-    #     if ctx.invoked_subcommand is None:
-    #         for channel in channels:
-    #             bulk_history[channel] = await channel.history(limit=None, after=dt.datetime.utcnow() - dt.timedelta(days=14)).flatten()
-    #             await ch_sent.edit(content='🗄 **Cached** `' + str(channels.index(channel) + 1) + '/' + str(len(channels)) + '` **channels.**')
-    #             await asyncio.sleep(self.RATE_LIMIT)
-    #         for channel, messages in bulk_history.items():
-    #             bulk[channel] = [message for message in messages if message.author.id == int(uid)]
-    #         for channel, messages in bulk_history.items():
-    #             bulk[channel] = [bulk[channel][i:i+100] for i in range(0, len(bulk[channel]), 100)]
-    #         await ctx.send('⏱ **Estimated time to delete `bulk-history`:** `' + str(int(self.RATE_LIMIT * sum([len(v) for v in bulk.values()]) / 60)) + ' mins ' + str(int(self.RATE_LIMIT * sum([len(v) for v in bulk.values()]) % 60)) + ' secs`')
-    #         check = await ctx.send(ctx.author.mention + ' **Continue?** `Y` or `N`')
-    #         await self.bot.wait_for('message', check=yes, timeout=60)
-    #         del_sent = await ctx.send('🗑 **Deleting messages...**')
-    #         for channel, messages in bulk.items():
-    #             for chunk in messages:
-    #                 c += len(chunk)
-    #                 await channel.delete_messages(chunk)
-    #                 await del_sent.edit(content='🗑 **Deleted** `' + str(c) + '/' + str(sum([len(v) for v in bulk.values()])) + '` **messages.**')
-    #                 await asyncio.sleep(5)
-    #         await ctx.send('✅ `' + str(sum([len(v) for v in bulk.values()])) + '` **of** <@' + uid + '>**\'s messages deleted from** ' + ctx.guild.name + '**.**')
-    #         for channel in channels:
-    #             history.extend(await channel.history(limit=None, before=dt.datetime.utcnow() - dt.timedelta(days=14)).flatten())
-    #             await ch_sent.edit(content='🗄 **Cached** `' + str(channels.index(channel) + 1) + '/' + str(len(channels)) + '` **channels.**')
-    #             await asyncio.sleep(self.RATE_LIMIT)
 
     @commands.command(name=',prunefromguild', aliases=[',pfg', ',prunefromserver', ',pfs'], brief='Prune a user\'s messages from the guild', description='about flag centers on message 50 of 101 messages\n\npfg \{user id\} [before|after|about] [\{message id\}]\n\nExample:\npfg \{user id\} before \{message id\}')
     @commands.is_owner()
@@ -121,11 +81,8 @@ class Administration:
             await cont_sent.delete()
             del_sent = await ctx.send('🗑 **Deleting messages...**')
             for message in history:
-                try:
+                with suppress(err.NotFound):
                     await message.delete()
-
-                except d.NotFound:
-                    pass
 
                 # print('Deleted {}/{} messages.'.format(history.index(message) + 1, len(history)))
                 await del_sent.edit(content='🗑 **Deleted** `{}/{}` **messages.**'.format(history.index(message) + 1, len(history)))
@@ -142,11 +99,9 @@ class Administration:
         while self.deleting:
             message = await self.queue.get()
             await asyncio.sleep(self.RATE_LIMIT)
-            try:
+            with suppress(err.NotFound):
                 if not message.pinned:
                     await message.delete()
-            except err.NotFound:
-                pass
 
     async def queue_on_message(self, channel):
         def check(msg):
@@ -159,6 +114,8 @@ class Administration:
 
         try:
             async for message in channel.history():
+                if message.content.lower() == 'stop' and message.author.guild_permissions.administrator:
+                    raise exc.Abort
                 if not message.pinned:
                     await self.queue.put(message)
 
@@ -171,8 +128,9 @@ class Administration:
             u.dump(u.tasks, 'cogs/tasks.pkl')
             if not u.tasks['auto_del']:
                 self.deleting = False
-            print('Stopped looping {}'.format(channel.id))
-            await channel.send('✅ **Stopped deleting messages in** {}**.**'.format(channel.mention), delete_after=5)
+                print('Stopped deleting.')
+            print('Stopped looping #{}'.format(channel.name))
+            await channel.send('✅ **Stopped queueing messages for deletion in** {}**.**'.format(channel.mention), delete_after=5)
 
         except AttributeError:
             pass
@@ -181,17 +139,15 @@ class Administration:
     @commands.has_permissions(administrator=True)
     @checks.del_ctx()
     async def auto_delete(self, ctx):
-        channel = ctx.channel
-
         try:
-            if channel.id not in u.tasks['auto_del']:
-                u.tasks['auto_del'].append(channel.id)
+            if ctx.channel.id not in u.tasks['auto_del']:
+                u.tasks['auto_del'].append(ctx.channel.id)
                 u.dump(u.tasks, 'cogs/tasks.pkl')
-                self.bot.loop.create_task(self.queue_on_message(channel))
+                self.bot.loop.create_task(self.queue_on_message(ctx.channel))
                 if not self.deleting:
                     self.bot.loop.create_task(self.delete())
                     self.deleting = True
-                print('Looping #{}'.format(channel.name))
+                print('Looping #{}'.format(ctx.channel.name))
                 await ctx.send('✅ **Auto-deleting all messages in this channel.**', delete_after=5)
             else:
                 raise exc.Exists
@@ -202,12 +158,10 @@ class Administration:
     @commands.command(name='deletecommands', aliases=['delcmds'])
     @commands.has_permissions(administrator=True)
     async def delete_commands(self, ctx):
-        guild = ctx.guild
-
-        if guild.id not in u.settings['del_ctx']:
-            u.settings['del_ctx'].append(guild.id)
+        if ctx.guild.id not in u.settings['del_ctx']:
+            u.settings['del_ctx'].append(ctx.guild.id)
         else:
-            u.settings['del_ctx'].remove(guild.id)
+            u.settings['del_ctx'].remove(ctx.guild.id)
         u.dump(u.settings, 'settings.pkl')
 
-        await ctx.send('✅ **Delete command invocations:** `{}`'.format(guild.id in u.settings['del_ctx']))
+        await ctx.send('✅ **Delete command invocations:** `{}`'.format(ctx.guild.id in u.settings['del_ctx']))
