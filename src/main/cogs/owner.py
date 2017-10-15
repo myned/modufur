@@ -27,8 +27,8 @@ class Bot:
     @commands.is_owner()
     @checks.del_ctx()
     async def die(self, ctx):
-        if isinstance(self.bot.get_channel(u.config['startup_channel']), d.TextChannel):
-            await self.bot.get_channel(u.config['shutdown_channel']).send('**Shutting down...** 🌙')
+        if isinstance(self.bot.get_channel(u.config['shutdown_channel']), d.TextChannel):
+            await self.bot.get_channel(u.config['shutdown_channel']).send('**Shutting down. . .** 🌙')
         # loop = self.bot.loop.all_tasks()
         # for task in loop:
         #     task.cancel()
@@ -43,8 +43,8 @@ class Bot:
     @checks.del_ctx()
     async def restart(self, ctx):
         print('\n| | | | | | | | | |\nR E S T A R T I N G\n| | | | | | | | | |\n')
-        if isinstance(self.bot.get_channel(u.config['startup_channel']), d.TextChannel):
-            await self.bot.get_channel(u.config['shutdown_channel']).send('**Restarting...** 💤')
+        if isinstance(self.bot.get_channel(u.config['shutdown_channel']), d.TextChannel):
+            await self.bot.get_channel(u.config['shutdown_channel']).send('**Restarting. . .** 💤')
         # u.notify('R E S T A R T I N G')
         # loop = self.bot.loop.all_tasks()
         # for task in loop:

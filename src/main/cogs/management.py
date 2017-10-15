@@ -81,8 +81,10 @@ class Administration:
             for channel in channels:
                 try:
                     ref = await channel.get_message(reference)
+
                 except err.NotFound:
                     continue
+
         history = []
         try:
             pru_sent = await ctx.send('⌛️ **Pruning** <@{}>**\'s messages will take some time.**'.format(uid))
@@ -118,14 +120,18 @@ class Administration:
             for message in history:
                 try:
                     await message.delete()
+
                 except d.NotFound:
                     pass
+
                 # print('Deleted {}/{} messages.'.format(history.index(message) + 1, len(history)))
                 await del_sent.edit(content='🗑 **Deleted** `{}/{}` **messages.**'.format(history.index(message) + 1, len(history)))
                 await asyncio.sleep(self.RATE_LIMIT)
             await del_sent.edit(content='🗑 `{}` **of** <@{}>**\'s messages deleted from** {}**.**'.format(len(history), uid, ctx.guild.name))
+
         except exc.CheckFail:
             await ctx.send('❌ **Deletion aborted.**', delete_after=10)
+
         except TimeoutError:
             await ctx.send('❌ **Deletion timed out.**', delete_after=10)
 
@@ -152,11 +158,13 @@ class Administration:
             while not self.bot.is_closed():
                 message = await self.bot.wait_for('message', check=check)
                 await self.queue.put(message)
+
         except exc.Abort:
             u.tasks['management']['auto_delete'].remove(channel.id)
             u.dump(u.tasks, 'cogs/tasks.pkl')
             print('Stopped looping {}'.format(channel.id))
             await channel.send('✅ **Stopped deleting messages in** {}**.**'.format(channel.mention), delete_after=5)
+
         except AttributeError:
             pass
 
@@ -176,5 +184,19 @@ class Administration:
                 await ctx.send('✅ **Auto-deleting all messages in this channel.**', delete_after=5)
             else:
                 raise exc.Exists
+
         except exc.Exists:
             await ctx.send('❌ **Already auto-deleting in this channel.** Type `stop` to stop.', delete_after=10)
+
+    @commands.command(name='deletecommands', aliases=['delcmds'])
+    @commands.has_permissions(administrator=True)
+    async def delete_commands(self, ctx):
+        guild = ctx.guild
+
+        if guild.id not in u.settings['del_ctx']:
+            u.settings['del_ctx'].append(guild.id)
+        else:
+            u.settings['del_ctx'].remove(guild.id)
+        u.dump(u.settings, 'settings.pkl')
+
+        await ctx.send('✅ **Delete command invocations:** `{}`'.format(guild.id in u.settings['del_ctx']))

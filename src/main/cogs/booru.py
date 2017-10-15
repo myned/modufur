@@ -37,7 +37,7 @@ class MsG:
         for tag in tag_request.get('wolf', []):
             tags.append(tag[0])
 
-        await ctx.send('✅ ``{}` **tags:**\n```\n{}```'.format(tag, formatter.tostring(tags)))
+        await ctx.send('✅ `{}` **related tags:**\n```\n{}```'.format(tag, formatter.tostring(tags)))
 
     @tags.error
     async def tags_error(self, ctx, error):
