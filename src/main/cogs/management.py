@@ -16,12 +16,15 @@ class Administration:
         self.bot = bot
         self.RATE_LIMIT = 2.1
         self.queue = asyncio.Queue()
+        self.deleting = False
 
-        for channel in u.tasks.get('management', {}).get('auto_delete', []):
-            temp = self.bot.get_channel(channel)
-            self.bot.loop.create_task(self.queue_on_message(temp))
+        if u.tasks['auto_del']:
+            for channel in u.tasks['auto_del']:
+                temp = self.bot.get_channel(channel)
+                self.bot.loop.create_task(self.queue_on_message(temp))
+                print('Looping #{}'.format(temp.name))
             self.bot.loop.create_task(self.delete())
-            print('Looping #{}'.format(temp.name))
+            self.deleting = True
 
     # @commands.group(aliases=['pr', 'clear', 'cl'])
     # @commands.is_owner()
@@ -136,7 +139,7 @@ class Administration:
             await ctx.send('❌ **Deletion timed out.**', delete_after=10)
 
     async def delete(self):
-        while not self.bot.is_closed():
+        while self.deleting:
             message = await self.queue.get()
             await asyncio.sleep(self.RATE_LIMIT)
             try:
@@ -164,8 +167,10 @@ class Administration:
                 await self.queue.put(message)
 
         except exc.Abort:
-            u.tasks['management']['auto_delete'].remove(channel.id)
+            u.tasks['auto_del'].remove(channel.id)
             u.dump(u.tasks, 'cogs/tasks.pkl')
+            if not u.tasks['auto_del']:
+                self.deleting = False
             print('Stopped looping {}'.format(channel.id))
             await channel.send('✅ **Stopped deleting messages in** {}**.**'.format(channel.mention), delete_after=5)
 
@@ -179,11 +184,13 @@ class Administration:
         channel = ctx.channel
 
         try:
-            if channel.id not in u.tasks.setdefault('management', {}).setdefault('auto_delete', []):
-                u.tasks['management']['auto_delete'].append(channel.id)
+            if channel.id not in u.tasks['auto_del']:
+                u.tasks['auto_del'].append(channel.id)
                 u.dump(u.tasks, 'cogs/tasks.pkl')
                 self.bot.loop.create_task(self.queue_on_message(channel))
-                self.bot.loop.create_task(self.delete())
+                if not self.deleting:
+                    self.bot.loop.create_task(self.delete())
+                    self.deleting = True
                 print('Looping #{}'.format(channel.name))
                 await ctx.send('✅ **Auto-deleting all messages in this channel.**', delete_after=5)
             else:

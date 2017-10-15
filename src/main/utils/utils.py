@@ -51,7 +51,7 @@ def dump(obj, filename):
 
 
 settings = setdefault('settings.pkl', {'del_ctx': []})
-tasks = setdefault('cogs/tasks.pkl', {})
+tasks = setdefault('cogs/tasks.pkl', {'auto_del': []})
 
 
 async def clear(obj, interval=10 * 60, replace=None):
