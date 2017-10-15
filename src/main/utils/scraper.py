@@ -11,9 +11,9 @@ async def check_match(url):
     try:
         value = BeautifulSoup(content, 'html.parser').find_all('a')[1].get('href')
     except IndexError:
-        raise exc.MatchError
+        raise exc.MatchError(url)
 
     if value != '#':
         return value
     else:
-        raise exc.MatchError
+        raise exc.MatchError(url)

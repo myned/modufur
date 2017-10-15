@@ -21,6 +21,7 @@ class MsG:
     def __init__(self, bot):
         self.bot = bot
         self.LIMIT = 100
+        self.RATE_LIMIT = 2.1
 
         self.favorites = u.setdefault('cogs/favorites.pkl', {})
         self.blacklists = u.setdefault(
@@ -30,55 +31,77 @@ class MsG:
     # Tag search
     @commands.command(aliases=['tag', 't'], brief='e621 Tag search', description='e621 | NSFW\nReturn a link search for given tags')
     @checks.del_ctx()
-    async def tags(self, ctx, tag):
+    async def tags(self, ctx, tag=None):
         tags = []
 
-        await ctx.trigger_typing()
-        tag_request = await u.fetch('https://e621.net/tag/related.json', params={'tags': tag, 'type': 'general'}, json=True)
-        for tag in tag_request.get('wolf', []):
-            tags.append(tag[0])
+        try:
+            if tag is None:
+                raise exc.MissingArgument
 
-        await ctx.send('✅ `{}` **related tags:**\n```\n{}```'.format(tag, formatter.tostring(tags)))
+            await ctx.trigger_typing()
 
-    @tags.error
-    async def tags_error(self, ctx, error):
-        if isinstance(error, errext.MissingRequiredArgument):
-            return await ctx.send('❌ **No tags given.**', delete_after=10)
+            tag_request = await u.fetch('https://e621.net/tag/related.json', params={'tags': tag, 'type': 'general'}, json=True)
+            for tag in tag_request.get('wolf', []):
+                tags.append(tag[0])
+
+            await ctx.send('✅ `{}` **related tags:**\n```\n{}```'.format(tag, formatter.tostring(tags)))
+
+        except exc.MissingArgument:
+            await ctx.send('❌ **No tags given.**', delete_after=10)
 
     # Tag aliases
     @commands.command(name='aliases', aliases=['alias', 'a'], brief='e621 Tag aliases', description='e621 | NSFW\nSearch aliases for given tag')
     @checks.del_ctx()
-    async def tag_aliases(self, ctx, tag):
+    async def tag_aliases(self, ctx, tag=None):
         aliases = []
 
-        await ctx.trigger_typing()
-        alias_request = await u.fetch('https://e621.net/tag_alias/index.json', params={'aliased_to': tag, 'approved': 'true'}, json=True)
-        for dic in alias_request:
-            aliases.append(dic['name'])
+        try:
+            if tag is None:
+                raise exc.MissingArgument
 
-        await ctx.send('✅ `{}` **aliases:**\n```\n{}```'.format(tag, formatter.tostring(aliases)))
+            await ctx.trigger_typing()
 
-    @tag_aliases.error
-    async def tag_aliases_error(self, ctx, error):
-        if isinstance(error, errext.MissingRequiredArgument):
-            return await ctx.send('❌ **No tags given.**', delete_after=10)
+            alias_request = await u.fetch('https://e621.net/tag_alias/index.json', params={'aliased_to': tag, 'approved': 'true'}, json=True)
+            for dic in alias_request:
+                aliases.append(dic['name'])
+
+            await ctx.send('✅ `{}` **aliases:**\n```\n{}```'.format(tag, formatter.tostring(aliases)))
+
+        except exc.MissingArgument:
+            await ctx.send('❌ **No tags given.**', delete_after=10)
 
     # Reverse image searches a linked image using the public iqdb
     @commands.command(name='reverse', aliases=['rev', 'ris'], brief='e621 Reverse image search', description='e621 | NSFW\nReverse-search an image with given URL')
     @checks.del_ctx()
-    async def reverse_image_search(self, ctx, url=None):
+    async def reverse_image_search(self, ctx, *urls):
         try:
-            await ctx.trigger_typing()
-
-            if url is None and ctx.message.attachments:
-                url = ctx.message.attachments[0].url
-            elif url is None:
+            if not urls and not ctx.message.attachments:
                 raise exc.MissingArgument
 
-            await ctx.send('✅ **Probable match:**\n{}'.format(await scraper.check_match(url)))
+            await ctx.trigger_typing()
 
-        except exc.MatchError:
-            await ctx.send('❌ **No probable match.** Make sure the URL directs to an image file.', delete_after=10)
+            for url in urls:
+                try:
+                    await ctx.trigger_typing()
+
+                    await ctx.send('✅ **Probable match:**\n{}'.format(await scraper.check_match(url)))
+
+                except exc.MatchError as e:
+                    await ctx.send('❌ **No probable match for** `{}`**.** Make sure URLs direct to an image file.'.format(e), delete_after=10)
+
+                finally:
+                    await asyncio.sleep(self.RATE_LIMIT)
+            for attachment in ctx.message.attachments:
+                try:
+                    await ctx.trigger_typing()
+
+                    await ctx.send('✅ **Probable match:**\n{}'.format(await scraper.check_match(attachment.url)))
+
+                except exc.MatchError as e:
+                    await ctx.send('❌ **No probable match for** `{}`**.** Make sure URLs direct to an image file.'.format(e), delete_after=10)
+
+                finally:
+                    await asyncio.sleep(self.RATE_LIMIT)
 
         except exc.MissingArgument:
             await ctx.send('❌ **Invalid url or file.**', delete_after=10)
