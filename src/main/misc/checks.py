@@ -3,8 +3,9 @@ import json
 import traceback
 
 import discord
+from discord import errors as err
 from discord.ext import commands
-from discord.ext.commands import errors
+from discord.ext.commands import errors as errext
 
 from utils import utils as u
 
@@ -59,6 +60,11 @@ def is_nsfw():
 def del_ctx():
     async def predicate(ctx):
         if ctx.me.permissions_in(ctx.channel).manage_messages is True and isinstance(ctx.message.channel, discord.TextChannel) and ctx.guild.id in u.settings['del_ctx']:
-            await ctx.message.delete()
+            try:
+                await ctx.message.delete()
+
+            except err.NotFound:
+                pass
+
         return True
     return commands.check(predicate)

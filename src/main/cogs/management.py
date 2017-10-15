@@ -19,7 +19,7 @@ class Administration:
 
         for channel in u.tasks.get('management', {}).get('auto_delete', []):
             temp = self.bot.get_channel(channel)
-            self.bot.loop.create_task(self.on_message(temp))
+            self.bot.loop.create_task(self.queue_on_message(temp))
             self.bot.loop.create_task(self.delete())
             print('Looping #{}'.format(temp.name))
 
@@ -145,7 +145,7 @@ class Administration:
             except err.NotFound:
                 pass
 
-    async def on_message(self, channel):
+    async def queue_on_message(self, channel):
         def check(msg):
             if msg.content.lower() == 'stop' and msg.channel is channel and msg.author.guild_permissions.administrator:
                 raise exc.Abort
@@ -155,6 +155,10 @@ class Administration:
                 return False
 
         try:
+            async for message in channel.history():
+                if not msg.pinned:
+                    await self.queue.put(message)
+
             while not self.bot.is_closed():
                 message = await self.bot.wait_for('message', check=check)
                 await self.queue.put(message)
@@ -178,7 +182,7 @@ class Administration:
             if channel.id not in u.tasks.setdefault('management', {}).setdefault('auto_delete', []):
                 u.tasks['management']['auto_delete'].append(channel.id)
                 u.dump(u.tasks, 'cogs/tasks.pkl')
-                self.bot.loop.create_task(self.on_message(channel))
+                self.bot.loop.create_task(self.queue_on_message(channel))
                 self.bot.loop.create_task(self.delete())
                 print('Looping #{}'.format(channel.name))
                 await ctx.send('✅ **Auto-deleting all messages in this channel.**', delete_after=5)

@@ -43,7 +43,7 @@ async def on_ready():
 @bot.event
 async def on_error(error, *args, **kwargs):
     if isinstance(bot.get_channel(u.config['shutdown_channel']), d.TextChannel):
-        await bot.get_channel(u.config['shutdown_channel']).send('**__ERROR__** ⚠️ {}\n**Exiting. . .**'.format(error))
+        await bot.get_channel(u.config['shutdown_channel']).send('**ERROR** ⚠️ {}'.format(error))
     u.close()
     await bot.logout()
     await bot.close()

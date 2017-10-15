@@ -1,10 +1,11 @@
 import asyncio
 import traceback as tb
 
-import discord
+import discord as d
 from discord.ext import commands
 
 from misc import exceptions as exc
+from utils import utils as u
 
 
 class Info:
@@ -12,8 +13,17 @@ class Info:
     def __init__(self, bot):
         self.bot = bot
 
+    # @commands.command(name='helptest', aliases=['h'], hidden=True)
+    # async def list_commands(self, ctx):
+    #     embed = d.Embed(title='All possible commands:', color=ctx.me.color)
+    #     embed.set_author(name=ctx.me.display_name, icon_url=ctx.me.avatar_url)
+    #     embed.add_field(
+    #         name='Booru', value='\n{}bl umbrella command for managing blacklists'.format(u.config['prefix']))
+    #
+    #     await ctx.send(embed=embed)
+
     @commands.command(hidden=True)
-    async def hi(ctx):
+    async def hi(self, ctx):
         user = ctx.author
 
         hello = 'Hewwo, {}.'.format(user.mention)
