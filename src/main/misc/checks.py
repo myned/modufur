@@ -59,7 +59,7 @@ def is_nsfw():
 
 def del_ctx():
     async def predicate(ctx):
-        if ctx.me.permissions_in(ctx.channel).manage_messages is True and isinstance(ctx.message.channel, discord.TextChannel) and ctx.guild.id in u.settings['del_ctx']:
+        if ctx.me.permissions_in(ctx.channel).manage_messages and isinstance(ctx.message.channel, discord.TextChannel) and ctx.guild.id in u.settings['del_ctx']:
             try:
                 await ctx.message.delete()
 
