@@ -14,7 +14,7 @@ class Info:
 
     @commands.command(hidden=True)
     async def hi(ctx):
-        user = ctx.message.author
+        user = ctx.author
 
         hello = 'Hewwo, {}.'.format(user.mention)
         if user.id == checks.owner_id:

@@ -6,7 +6,6 @@ import subprocess
 import sys
 import traceback as tb
 
-import aiohttp as aio
 import discord as d
 from discord import utils
 from discord.ext import commands
@@ -32,33 +31,33 @@ async def on_ready():
     bot.add_cog(info.Info(bot))
     bot.add_cog(booru.MsG(bot))
 
-    u.session = aio.ClientSession(loop=bot.loop)
-
     # bot.loop.create_task(u.clear(booru.temp_urls, 30*60))
 
     if isinstance(bot.get_channel(u.config['startup_channel']), d.TextChannel):
         await bot.get_channel(u.config['startup_channel']).send('**Started.** ☀️')
-    print('CONNECTED')
-    print(bot.user.name)
-    print('- - - - - - -')
+    print('\n\\ \\ \\ \\ \\ \\ \\ \\ \\\nC O N N E C T E D : {}\n/ / / / / / / / /\n'.format(bot.user.name))
+    # u.notify('C O N N E C T E D')
 
 
 @bot.event
 async def on_error(error):
-    if u.session:
-        await u.session.close()
     await bot.logout()
     await bot.close()
-    print('- - - - - - -')
-    print('ERROR')
+    print('\n! ! ! ! !\nE R R O R : {}\n! ! ! ! !\n'.format(error), file=sys.stderr)
     tb.print_exc()
+    # u.notify('E R R O R')
 
 
 @bot.event
 async def on_command_error(ctx, error):
     if not isinstance(error, commands.errors.CommandNotFound):
+        print('\n! ! ! ! ! ! !  ! ! ! ! !\nC O M M A N D  E R R O R : {}\n! ! ! ! ! ! !  ! ! ! ! !\n'.format(
+            error), file=sys.stderr)
         tb.print_exception(type(error), error, error.__traceback__, file=sys.stderr)
-        await ctx.send('{}\n```\n{}```'.format(exc.base, error))
+        await exc.send_error(ctx, error)
+        # u.notify('C O M M A N D  E R R O R')
+    else:
+        print('INVALID COMMAND : {}'.format(error), file=sys.stderr)
 
 
 async def on_reaction_add(r, u):

@@ -37,10 +37,10 @@ class Utils:
     async def last_command(self, ctx):
         global command_dict
 
-        if command_dict.get(str(ctx.message.author.id), {}).get('args', None) is not None:
-            args = command_dict.get(str(ctx.message.author.id), {})['args']
+        if command_dict.get(str(ctx.author.id), {}).get('args', None) is not None:
+            args = command_dict.get(str(ctx.author.id), {})['args']
         print(command_dict)
-        await ctx.invoke(command_dict.get(str(ctx.message.author.id), {}).get('command', None), args)
+        await ctx.invoke(command_dict.get(str(ctx.author.id), {}).get('command', None), args)
 
     # [prefix]ping -> Pong!
     @commands.command(aliases=['p'], brief='Pong!', description='Returns latency from bot to Discord servers, not to user')
@@ -48,8 +48,8 @@ class Utils:
     async def ping(self, ctx):
         global command_dict
 
-        await ctx.send(ctx.message.author.mention + '  🏓  `' + str(round(self.bot.latency * 1000)) + 'ms`', delete_after=5)
-        command_dict.setdefault(str(ctx.message.author.id), {}).update({'command': ctx.command})
+        await ctx.send(ctx.author.mention + '  🏓  `' + str(round(self.bot.latency * 1000)) + 'ms`', delete_after=5)
+        command_dict.setdefault(str(ctx.author.id), {}).update({'command': ctx.command})
 
     @commands.command(aliases=['pre'], brief='List bot prefixes', description='Shows all used prefixes')
     @checks.del_ctx()
