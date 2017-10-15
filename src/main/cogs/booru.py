@@ -23,13 +23,13 @@ class MsG:
         self.LIMIT = 100
         self.RATE_LIMIT = 2.1
 
-        self.favorites = u.setdefault('cogs/favorites.pkl', {})
+        self.favorites = u.setdefault('cogs/favorites.pkl', {'tags': set(), 'posts': set()})
         self.blacklists = u.setdefault(
             'cogs/blacklists.pkl', {'global_blacklist': set(), 'guild_blacklist': {}, 'user_blacklist': {}})
         self.aliases = u.setdefault('cogs/aliases.pkl', {})
 
     # Tag search
-    @commands.command(aliases=['rel'], brief='e621 Tag search', description='e621 | NSFW\nReturn a link search for given tags')
+    @commands.command(aliases=['rel'], brief='e621 Related tag search', description='e621 | NSFW\nReturn a link search for given tags')
     @checks.del_ctx()
     async def related(self, ctx, tag=None):
         related = []
@@ -187,7 +187,7 @@ class MsG:
             embed.set_author(name=pool['name'],
                              url='https://e621.net/pool/show?id={}'.format(pool['id']), icon_url=ctx.author.avatar_url)
             embed.set_footer(text='{} / {}'.format(c, len(posts)),
-                             icon_url='icon_e6.png')
+                             icon_url='http://lh6.ggpht.com/d3pNZNFCcJM8snBsRSdKUhR9AVBnJMcYYrR92RRDBOzCrxZMhuTeoGOQSmSEn7DAPQ=w300')
 
             paginator = await ctx.send(embed=embed)
 
@@ -208,7 +208,7 @@ class MsG:
                         embed.title = values[c - 1]['author']
                         embed.url = 'https://e621.net/post/show/{}'.format(keys[c - 1])
                         embed.set_footer(text='{} / {}'.format(c, len(posts)),
-                                         icon_url='icon_e6.png')
+                                         icon_url='http://lh6.ggpht.com/d3pNZNFCcJM8snBsRSdKUhR9AVBnJMcYYrR92RRDBOzCrxZMhuTeoGOQSmSEn7DAPQ=w300')
                         embed.set_image(url=values[c - 1]['url'])
 
                         await paginator.edit(content=None, embed=embed)
@@ -224,7 +224,7 @@ class MsG:
                     embed.title = values[c - 1]['author']
                     embed.url = 'https://e621.net/post/show/{}'.format(keys[c - 1])
                     embed.set_footer(text='{} / {}'.format(c, len(posts)),
-                                     icon_url='icon_e6.png')
+                                     icon_url='http://lh6.ggpht.com/d3pNZNFCcJM8snBsRSdKUhR9AVBnJMcYYrR92RRDBOzCrxZMhuTeoGOQSmSEn7DAPQ=w300')
                     embed.set_image(url=values[c - 1]['url'])
 
                     await paginator.edit(content=None, embed=embed)
@@ -241,7 +241,7 @@ class MsG:
                         embed.title = values[c - 1]['author']
                         embed.url = 'https://e621.net/post/show/{}'.format(keys[c - 1])
                         embed.set_footer(text='{} / {}'.format(c, len(posts)),
-                                         icon_url='icon_e6.png')
+                                         icon_url='http://lh6.ggpht.com/d3pNZNFCcJM8snBsRSdKUhR9AVBnJMcYYrR92RRDBOzCrxZMhuTeoGOQSmSEn7DAPQ=w300')
                         embed.set_image(url=values[c - 1]['url'])
 
                         await paginator.edit(content=None, embed=embed)
@@ -362,7 +362,7 @@ class MsG:
             embed.set_author(name=formatter.tostring(args, random=True),
                              url='https://e621.net/post?tags={}'.format(','.join(args)), icon_url=ctx.author.avatar_url)
             embed.set_footer(text='{} / {}'.format(c, len(posts)),
-                             icon_url='icon_e6.png')
+                             icon_url='http://lh6.ggpht.com/d3pNZNFCcJM8snBsRSdKUhR9AVBnJMcYYrR92RRDBOzCrxZMhuTeoGOQSmSEn7DAPQ=w300')
 
             paginator = await ctx.send(embed=embed)
 
@@ -383,7 +383,7 @@ class MsG:
                         embed.title = values[c - 1]['author']
                         embed.url = 'https://e621.net/post/show/{}'.format(keys[c - 1])
                         embed.set_footer(text='{} / {}'.format(c, len(posts)),
-                                         icon_url='icon_e6.png')
+                                         icon_url='http://lh6.ggpht.com/d3pNZNFCcJM8snBsRSdKUhR9AVBnJMcYYrR92RRDBOzCrxZMhuTeoGOQSmSEn7DAPQ=w300')
                         embed.set_image(url=values[c - 1]['url'])
                         await paginator.edit(content=None, embed=embed)
                     else:
@@ -398,7 +398,7 @@ class MsG:
                     embed.title = values[c - 1]['author']
                     embed.url = 'https://e621.net/post/show/{}'.format(keys[c - 1])
                     embed.set_footer(text='{} / {}'.format(c, len(posts)),
-                                     icon_url='icon_e6.png')
+                                     icon_url='http://lh6.ggpht.com/d3pNZNFCcJM8snBsRSdKUhR9AVBnJMcYYrR92RRDBOzCrxZMhuTeoGOQSmSEn7DAPQ=w300')
                     embed.set_image(url=values[c - 1]['url'])
 
                     await paginator.edit(content=None, embed=embed)
@@ -425,7 +425,7 @@ class MsG:
                     embed.title = values[c - 1]['author']
                     embed.url = 'https://e621.net/post/show/{}'.format(keys[c - 1])
                     embed.set_footer(text='{} / {}'.format(c, len(posts)),
-                                     icon_url='icon_e6.png')
+                                     icon_url='http://lh6.ggpht.com/d3pNZNFCcJM8snBsRSdKUhR9AVBnJMcYYrR92RRDBOzCrxZMhuTeoGOQSmSEn7DAPQ=w300')
                     embed.set_image(url=values[c - 1]['url'])
                     await paginator.edit(content=None, embed=embed)
 
@@ -456,7 +456,7 @@ class MsG:
     @e621_paginator.error
     async def e621_paginator_error(self, ctx, error):
         if isinstance(error, errext.CheckFailure):
-            return await ctx.send('❌ {} **is not an NSFW channel.**'.format(ctx.channel.mention), delete_after=10)
+            return await ctx.send('⛔️ {} **is not an NSFW channel.**'.format(ctx.channel.mention), delete_after=10)
 
     # Searches for and returns images from e621.net given tags when not blacklisted
     @commands.command(aliases=['e6', '6'], brief='e621 | NSFW', description='e621 | NSFW\nTag-based search for e621.net\n\nYou can only search 5 tags and 6 images at once for now.\ne6 [tags...] ([# of images])')
@@ -484,7 +484,7 @@ class MsG:
                 embed.set_author(name=formatter.tostring(args, random=True),
                                  url='https://e621.net/post?tags={}'.format(','.join(args)), icon_url=ctx.author.avatar_url)
                 embed.set_footer(
-                    text=str(ident), icon_url='icon_e6.png')
+                    text=str(ident), icon_url='http://lh6.ggpht.com/d3pNZNFCcJM8snBsRSdKUhR9AVBnJMcYYrR92RRDBOzCrxZMhuTeoGOQSmSEn7DAPQ=w300')
                 await ctx.send(embed=embed)
 
         except exc.TagBlacklisted as e:
@@ -508,7 +508,7 @@ class MsG:
     @e621.error
     async def e621_error(self, ctx, error):
         if isinstance(error, errext.CheckFailure):
-            return await ctx.send('❌ {} **is not an NSFW channel.**'.format(ctx.channel.mention), delete_after=10)
+            return await ctx.send('⛔️ {} **is not an NSFW channel.**'.format(ctx.channel.mention), delete_after=10)
 
     # Searches for and returns images from e926.net given tags when not blacklisted
     @commands.command(aliases=['e9', '9'], brief='e926 | SFW', description='e926 | SFW\nTag-based search for e926.net\n\nYou can only search 5 tags and 6 images at once for now.\ne9 [tags...] ([# of images])')
@@ -535,7 +535,7 @@ class MsG:
                 embed.set_author(name=formatter.tostring(args, random=True),
                                  url='https://e621.net/post?tags={}'.format(','.join(args)), icon_url=ctx.author.avatar_url)
                 embed.set_footer(
-                    text=str(ident), icon_url='icon_e6.png')
+                    text=str(ident), icon_url='http://lh6.ggpht.com/d3pNZNFCcJM8snBsRSdKUhR9AVBnJMcYYrR92RRDBOzCrxZMhuTeoGOQSmSEn7DAPQ=w300')
                 await ctx.send(embed=embed)
 
         except exc.TagBlacklisted as e:
@@ -553,7 +553,7 @@ class MsG:
         except exc.Timeout:
             await ctx.send('❌ **Request timed out.**')
 
-    @commands.group(name='favorites', aliases=['faves', 'f'])
+    @commands.group(aliases=['faves', 'f'])
     @checks.del_ctx()
     async def favorites(self, ctx):
         pass
@@ -562,23 +562,43 @@ class MsG:
     async def favorites_error(self, ctx, error):
         pass
 
-    @favorites.command(name='get', aliases=['g'])
+    @favorites.group(name='get', aliases=['g'])
     async def _get_favorites(self, ctx):
-        await ctx.send('⭐ {}**\'s favorites:**\n```\n{}```'.format(ctx.author.mention, formatter.tostring(self.favorites.get(ctx.author.id, set()))))
+        pass
 
-    @favorites.command(name='add', aliases=['a'])
-    async def _add_favorites(self, ctx, *tags):
-        self.favorites.setdefault(ctx.author.id, set()).update(tags)
+    @_get_favorites.command(name='tags', aliases=['t'])
+    async def __get_favorites_tags(self, ctx):
+        await ctx.send('⭐ {}**\'s favorites tags:**\n```\n{}```'.format(ctx.author.mention, formatter.tostring(self.favorites.get(ctx.author.id, {}).get('tags', set()))))
+
+    @favorites.command(name='posts', aliases=['p'])
+    async def __get_favorites_posts(self, ctx):
+        pass
+
+    @favorites.group(name='add', aliases=['a'])
+    async def _add_favorites(self, ctx):
+        pass
+
+    @_add_favorites.command(name='tags', aliases=['t'])
+    async def __add_favorites_tags(self, ctx, *tags):
+        self.favorites.setdefault(ctx.author.id, {}).setdefault('tags', set()).update(tags)
         u.dump(self.favorites, 'cogs/favorites.pkl')
 
         await ctx.send('✅ {} **added:**\n```\n{}```'.format(ctx.author.mention, formatter.tostring(tags)))
 
-    @favorites.command(name='remove', aliases=['r'])
-    async def _remove_favorites(self, ctx, *tags):
+    @_add_favorites.command(name='posts', aliases=['p'])
+    async def __add_favorites_posts(self, ctx, *posts):
+        pass
+
+    @favorites.group(name='remove', aliases=['r'])
+    async def _remove_favorites(self, ctx):
+        pass
+
+    @_remove_favorites.command(name='tags', aliases=['t'])
+    async def __remove_favorites_tags(self, ctx, *tags):
         try:
             for tag in tags:
                 try:
-                    self.favorites[ctx.author.id].remove(tag)
+                    self.favorites[ctx.author.id].get('tags', set()).remove(tag)
 
                 except KeyError:
                     raise exc.TagError(tag)
@@ -590,13 +610,25 @@ class MsG:
         except exc.TagError as e:
             await ctx.send('❌ `{}` **not in favorites.**'.format(e), delete_after=10)
 
-    @favorites.command(name='clear', aliases=['c'])
+    @_remove_favorites.command(name='posts', aliases=['p'])
+    async def __remove_favorites_posts(self, ctx):
+        pass
+
+    @favorites.group(name='clear', aliases=['c'])
     async def _clear_favorites(self, ctx):
+        pass
+
+    @_clear_favorites.command(name='tags', aliases=['t'])
+    async def __clear_favorites_tags(self, ctx):
         with suppress(KeyError):
             del self.favorites[ctx.author.id]
             u.dump(self.favorites, 'cogs/favorites.pkl')
 
         await ctx.send('✅ {}**\'s favorites cleared.**'.format(ctx.author.mention))
+
+    @_clear_favorites.command(name='posts', aliases=['p'])
+    async def __clear_favorites_posts(self, ctx):
+        pass
 
     # Umbrella command structure to manage global, channel, and user blacklists
     @commands.group(aliases=['bl', 'b'], brief='Manage blacklists', description='Blacklist base command for managing blacklists\n\n`bl get [blacklist]` to show a blacklist\n`bl set [blacklist] [tags]` to replace a blacklist\n`bl clear [blacklist]` to clear a blacklist\n`bl add [blacklist] [tags]` to add tags to a blacklist\n`bl remove [blacklist] [tags]` to remove tags from a blacklist', usage='[flag] [blacklist] ([tags])')
@@ -605,10 +637,8 @@ class MsG:
         if ctx.invoked_subcommand is None:
             await ctx.send('❌ **Use a flag to manage blacklists.**\n*Type* `{}help bl` *for more info.*'.format(ctx.prefix), delete_after=10)
 
-    @blacklist.error
-    async def blacklist_error(self, ctx, error):
-        if isinstance(error, commands.CheckFailure):
-            return await ctx.send('❌ **Insufficient permissions.**')
+    # @blacklist.error
+    # async def blacklist_error(self, ctx, error):
         # if isinstance(error, KeyError):
         #     return await ctx.send('❌ **Blacklist does not exist.**', delete_after=10)
 
