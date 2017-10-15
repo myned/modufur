@@ -35,7 +35,7 @@ async def on_ready():
     # bot.loop.create_task(u.clear(booru.temp_urls, 30*60))
 
     if isinstance(bot.get_channel(u.config['startup_channel']), d.TextChannel):
-        await bot.get_channel(u.config['startup_channel']).send('**Started ☀️ .**')
+        await bot.get_channel(u.config['startup_channel']).send('**Started** ☀️ .')
     print('\n\\ \\ \\ \\ \\ \\ \\ \\ \\\nC O N N E C T E D : {}\n/ / / / / / / / /\n'.format(bot.user.name))
     # u.notify('C O N N E C T E D')
 
@@ -54,15 +54,15 @@ async def on_error(error, *args, **kwargs):
 @bot.event
 async def on_command_error(ctx, error):
     if isinstance(error, errext.CheckFailure):
-        await ctx.send('❌ **Insufficient permissions.**', delete_after=10)
-    elif not isinstance(error, errext.CommandNotFound):
+        await ctx.send('⛔️ **Insufficient permissions.**', delete_after=10)
+    elif isinstance(error, errext.CommandNotFound):
+        print('INVALID COMMAND : {}'.format(error), file=sys.stderr)
+    else:
         print('\n! ! ! ! ! ! !  ! ! ! ! !\nC O M M A N D  E R R O R : {}\n! ! ! ! ! ! !  ! ! ! ! !\n'.format(
             error), file=sys.stderr)
         tb.print_exception(type(error), error, error.__traceback__, file=sys.stderr)
         await exc.send_error(ctx, error)
         # u.notify('C O M M A N D  E R R O R')
-    else:
-        print('INVALID COMMAND : {}'.format(error), file=sys.stderr)
 
 
 async def on_reaction_add(r, u):
