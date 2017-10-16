@@ -161,7 +161,7 @@ class MsG:
                     try:
                         await ctx.trigger_typing()
 
-                        await ctx.send('✅ **Probable match from {}:**\n{}'.format(message.author.display_name, await scraper.get_post(match.group(0))))
+                        await ctx.send('✅ **Probable match from** {}**:**\n{}'.format(message.author.display_name, await scraper.get_post(match.group(0))))
 
                         await asyncio.sleep(self.RATE_LIMIT)
 
@@ -177,7 +177,7 @@ class MsG:
                     try:
                         await ctx.trigger_typing()
 
-                        await ctx.send('✅ **Probable match from {}:**\n{}'.format(message.author.display_name, await scraper.get_post(attachment.url)))
+                        await ctx.send('✅ **Probable match from** {}**:**\n{}'.format(message.author.display_name, await scraper.get_post(attachment.url)))
 
                         await asyncio.sleep(self.RATE_LIMIT)
 
@@ -259,7 +259,7 @@ class MsG:
 
                         post = await scraper.get_post(match.group(0))
 
-                        await ctx.send('✅ **Probable match from {}:**\n{}'.format(message.author.display_name, await scraper.get_image(post)))
+                        await ctx.send('✅ **Probable match from** {}**:**\n{}'.format(message.author.display_name, await scraper.get_image(post)))
 
                         await asyncio.sleep(self.RATE_LIMIT)
 
@@ -277,7 +277,7 @@ class MsG:
 
                         post = await scraper.get_post(attachment.url)
 
-                        await ctx.send('✅ **Probable match from {}:**\n{}'.format(message.author.display_name, await scraper.get_image(post)))
+                        await ctx.send('✅ **Probable match from** {}**:**\n{}'.format(message.author.display_name, await scraper.get_image(post)))
 
                         await asyncio.sleep(self.RATE_LIMIT)
 
@@ -303,7 +303,7 @@ class MsG:
 
                     post = await scraper.get_post(match.group(0))
 
-                    await message.channel.send('✅ **Probable match from {}:**\n{}'.format(message.author.display_name, await scraper.get_image(post)))
+                    await message.channel.send('✅ **Probable match from** {}**:**\n{}'.format(message.author.display_name, await scraper.get_image(post)))
 
                     await asyncio.sleep(self.RATE_LIMIT)
 
@@ -319,7 +319,7 @@ class MsG:
 
                     post = await scraper.get_post(attachment.url)
 
-                    await message.channel.send('✅ **Probable match from {}:**\n{}'.format(message.author.display_name, await scraper.get_image(post)))
+                    await message.channel.send('✅ **Probable match from** {}**:**\n{}'.format(message.author.display_name, await scraper.get_image(post)))
 
                     await asyncio.sleep(self.RATE_LIMIT)
 
@@ -407,8 +407,8 @@ class MsG:
                        == pools[int(selection.content) - 1]][0]
             await selection.delete()
             pool = {'name': tempool['name'], 'id': tempool['id']}
-        elif request:
-            temppool = pool_request[0]
+        elif pool_request:
+            tempool = pool_request[0]
             pool = {'name': pool_request[0]['name'], 'id': pool_request[0]['id']}
         else:
             raise exc.NotFound
