@@ -29,8 +29,8 @@ class Bot:
     async def die(self, ctx):
         await ctx.message.add_reaction('🌙')
 
-        if isinstance(self.bot.get_channel(u.config['shutdown_channel']), d.TextChannel):
-            await self.bot.get_channel(u.config['shutdown_channel']).send('**Shutting down** 🌙 . . .')
+        if isinstance(self.bot.get_channel(u.config['info_channel']), d.TextChannel):
+            await self.bot.get_channel(u.config['info_channel']).send('**Shutting down** 🌙 . . .')
         # loop = self.bot.loop.all_tasks()
         # for task in loop:
         #     task.cancel()
@@ -46,8 +46,13 @@ class Bot:
         await ctx.message.add_reaction('💤')
 
         print('\n| | | | | | | | | |\nR E S T A R T I N G\n| | | | | | | | | |\n')
-        if isinstance(self.bot.get_channel(u.config['shutdown_channel']), d.TextChannel):
-            await self.bot.get_channel(u.config['shutdown_channel']).send('**Restarting** 💤 . . .')
+        if isinstance(self.bot.get_channel(u.config['info_channel']), d.TextChannel):
+            await self.bot.get_channel(u.config['info_channel']).send('**Restarting** 💤 . . .')
+
+        u.temp['restart_ch'] = ctx.channel.id
+        u.temp['restart_msg'] = ctx.message.id
+        u.dump(u.temp, 'temp/temp.pkl')
+
         # u.notify('R E S T A R T I N G')
         # loop = self.bot.loop.all_tasks()
         # for task in loop:

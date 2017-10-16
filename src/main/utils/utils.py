@@ -23,8 +23,8 @@ try:
         print('config.json loaded.')
 except FileNotFoundError:
     with open('config.json', 'w') as outfile:
-        jsn.dump({'client_id': 0, 'owner_id': 0, 'permissions': 126016, 'playing': 'a game', 'prefix': ',',
-                  'shutdown_channel': 0, 'startup_channel': 0, 'token': 'str'}, outfile, indent=4, sort_keys=True)
+        jsn.dump({'client_id': 0, 'info_channel': 0, 'owner_id': 0, 'permissions': 126016,
+                  'playing': 'a game', 'prefix': ',', 'token': 'str'}, outfile, indent=4, sort_keys=True)
         raise FileNotFoundError(
             'Config file not found: config.json created with abstract values. Restart run.py with correct values.')
 
@@ -62,6 +62,7 @@ def dump(obj, filename, *, json=False):
 
 settings = setdefault('settings.pkl', {'del_ctx': []})
 tasks = setdefault('cogs/tasks.pkl', {'auto_del': [], 'auto_rev': []})
+temp = setdefault('temp/temp.pkl', {})
 
 session = aiohttp.ClientSession()
 
