@@ -370,6 +370,7 @@ class MsG:
             await channel.send('✅ **Stopped queueing messages for reversion in** {}**.**'.format(channel.mention), delete_after=5)
 
     @commands.command(name='autoreverse', aliases=['autorev', 'ar'])
+    @commands.has_permissions(manage_channels=True)
     async def auto_reverse_image_search(self, ctx):
         try:
             await ctx.message.add_reaction('✅')
