@@ -29,6 +29,10 @@ class MissingArgument(Exception):
     pass
 
 
+class FavoritesNotFound(Exception):
+    pass
+
+
 class PostError(Exception):
     pass
 
