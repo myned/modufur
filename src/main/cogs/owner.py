@@ -27,6 +27,8 @@ class Bot:
     @commands.is_owner()
     @checks.del_ctx()
     async def die(self, ctx):
+        await ctx.message.add_reaction('🌙')
+
         if isinstance(self.bot.get_channel(u.config['shutdown_channel']), d.TextChannel):
             await self.bot.get_channel(u.config['shutdown_channel']).send('**Shutting down** 🌙 . . .')
         # loop = self.bot.loop.all_tasks()
@@ -41,6 +43,8 @@ class Bot:
     @commands.is_owner()
     @checks.del_ctx()
     async def restart(self, ctx):
+        await ctx.message.add_reaction('💤')
+
         print('\n| | | | | | | | | |\nR E S T A R T I N G\n| | | | | | | | | |\n')
         if isinstance(self.bot.get_channel(u.config['shutdown_channel']), d.TextChannel):
             await self.bot.get_channel(u.config['shutdown_channel']).send('**Restarting** 💤 . . .')
@@ -57,12 +61,16 @@ class Bot:
     @commands.is_owner()
     @checks.del_ctx()
     async def invite(self, ctx):
+        await ctx.message.add_reaction('✉️')
+
         await ctx.send('🔗 https://discordapp.com/oauth2/authorize?&client_id={}&scope=bot&permissions={}'.format(u.config['client_id'], u.config['permissions']), delete_after=10)
 
     @commands.command(name=',status', aliases=[',presence', ',game'], hidden=True)
     @commands.is_owner()
     @checks.del_ctx()
     async def status(self, ctx, *, game=None):
+        await ctx.message.add_reaction('✅')
+
         if game is not None:
             await self.bot.change_presence(game=d.Game(name=game))
             u.config['playing'] = game
@@ -71,8 +79,6 @@ class Bot:
             await self.bot.change_presence(game=None)
             u.config['playing'] = 'None'
             u.dump(u.config, 'config.json', json=True)
-
-        await ctx.message.add_reaction('✅')
 
 
 class Tools:
@@ -116,6 +122,8 @@ class Tools:
                 return False
 
         try:
+            await ctx.message.add_reaction('✅')
+
             console = await self.generate(ctx)
             exception = await self.generate_err(ctx)
             while not self.bot.is_closed():
@@ -147,6 +155,8 @@ class Tools:
     @checks.del_ctx()
     async def arbitrary(self, ctx, *, exe):
         try:
+            await ctx.message.add_reaction('✅')
+
             sys.stdout = io.StringIO()
             exec(exe)
             await self.generate(ctx, exe, sys.stdout.getvalue())
