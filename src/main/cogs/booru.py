@@ -23,11 +23,21 @@ class MsG:
         self.bot = bot
         self.LIMIT = 100
         self.RATE_LIMIT = 2.1
+        self.queue = asyncio.Queue()
+        self.reversing = False
 
         self.favorites = u.setdefault('cogs/favorites.pkl', {'tags': set(), 'posts': set()})
         self.blacklists = u.setdefault(
             'cogs/blacklists.pkl', {'global_blacklist': set(), 'guild_blacklist': {}, 'user_blacklist': {}})
         self.aliases = u.setdefault('cogs/aliases.pkl', {})
+
+        if u.tasks['auto_rev']:
+            for channel in u.tasks['auto_rev']:
+                temp = self.bot.get_channel(channel)
+                self.bot.loop.create_task(self.queue_on_message(temp))
+                print('LOOPING : #{}'.format(temp.name))
+            self.bot.loop.create_task(self.reverse())
+            self.reversing = True
 
     # Tag search
     @commands.command(aliases=['rel'], brief='e621 Related tag search', description='e621 | NSFW\nReturn a link search for given tags')
@@ -104,11 +114,10 @@ class MsG:
 
                     await ctx.send('✅ **Probable match:**\n{}'.format(await scraper.get_post(url)))
 
+                    await asyncio.sleep(self.RATE_LIMIT)
+
                 except exc.MatchError as e:
                     await ctx.send('❌ **No probable match for:** `{}`'.format(e), delete_after=10)
-
-                finally:
-                    await asyncio.sleep(self.RATE_LIMIT)
 
             for attachment in ctx.message.attachments:
                 try:
@@ -116,11 +125,10 @@ class MsG:
 
                     await ctx.send('✅ **Probable match:**\n{}'.format(await scraper.get_post(attachment.url)))
 
+                    await asyncio.sleep(self.RATE_LIMIT)
+
                 except exc.MatchError as e:
                     await ctx.send('❌ **No probable match for:** `{}`'.format(e), delete_after=10)
-
-                finally:
-                    await asyncio.sleep(self.RATE_LIMIT)
 
         except exc.MissingArgument:
             await ctx.send('❌ **Invalid url or file.**', delete_after=10)
@@ -155,15 +163,14 @@ class MsG:
 
                         await ctx.send('✅ **Probable match from {}:**\n{}'.format(message.author.display_name, await scraper.get_post(match.group(0))))
 
+                        await asyncio.sleep(self.RATE_LIMIT)
+
                         if delete:
                             with suppress(err.NotFound):
                                 await message.delete()
 
                     except exc.MatchError as e:
                         await ctx.send('❌ **No probable match for:** `{}`'.format(e), delete_after=10)
-
-                    finally:
-                        await asyncio.sleep(self.RATE_LIMIT)
 
             for message in attachments:
                 for attachment in message.attachments:
@@ -172,15 +179,14 @@ class MsG:
 
                         await ctx.send('✅ **Probable match from {}:**\n{}'.format(message.author.display_name, await scraper.get_post(attachment.url)))
 
+                        await asyncio.sleep(self.RATE_LIMIT)
+
                         if delete:
                             with suppress(err.NotFound):
                                 await message.delete()
 
                     except exc.MatchError as e:
                         await ctx.send('❌ **No probable match for:** `{}`'.format(e), delete_after=10)
-
-                    finally:
-                        await asyncio.sleep(self.RATE_LIMIT)
 
         except exc.NotFound:
             await ctx.send('❌ **No matches found.**', delete_after=10)
@@ -202,11 +208,10 @@ class MsG:
 
                     await ctx.send('✅ **Probable match:**\n{}'.format(await scraper.get_image(post)))
 
+                    await asyncio.sleep(self.RATE_LIMIT)
+
                 except exc.MatchError as e:
                     await ctx.send('❌ **No probable match for:** `{}`'.format(e), delete_after=10)
-
-                finally:
-                    await asyncio.sleep(self.RATE_LIMIT)
 
             for attachment in ctx.message.attachments:
                 try:
@@ -216,11 +221,10 @@ class MsG:
 
                     await ctx.send('✅ **Probable match:**\n{}'.format(await scraper.get_image(post)))
 
+                    await asyncio.sleep(self.RATE_LIMIT)
+
                 except exc.MatchError as e:
                     await ctx.send('❌ **No probable match for:** `{}`'.format(e), delete_after=10)
-
-                finally:
-                    await asyncio.sleep(self.RATE_LIMIT)
 
         except exc.MissingArgument:
             await ctx.send('❌ **Invalid url or file.**', delete_after=10)
@@ -257,15 +261,14 @@ class MsG:
 
                         await ctx.send('✅ **Probable match from {}:**\n{}'.format(message.author.display_name, await scraper.get_image(post)))
 
+                        await asyncio.sleep(self.RATE_LIMIT)
+
                         if delete:
                             with suppress(err.NotFound):
                                 await message.delete()
 
                     except exc.MatchError as e:
                         await ctx.send('❌ **No probable match for:** `{}`'.format(e), delete_after=10)
-
-                    finally:
-                        await asyncio.sleep(self.RATE_LIMIT)
 
             for message in attachments:
                 for attachment in message.attachments:
@@ -276,6 +279,8 @@ class MsG:
 
                         await ctx.send('✅ **Probable match from {}:**\n{}'.format(message.author.display_name, await scraper.get_image(post)))
 
+                        await asyncio.sleep(self.RATE_LIMIT)
+
                         if delete:
                             with suppress(err.NotFound):
                                 await message.delete()
@@ -283,13 +288,87 @@ class MsG:
                     except exc.MatchError as e:
                         await ctx.send('❌ **No probable match for:** `{}`'.format(e), delete_after=10)
 
-                    finally:
-                        await asyncio.sleep(self.RATE_LIMIT)
-
         except exc.NotFound:
             await ctx.send('❌ **No matches found.**', delete_after=10)
         except ValueError:
             await ctx.send('❌ **Invalid limit.**', delete_after=10)
+
+    async def reverse(self):
+        while self.reversing:
+            message = await self.queue.get()
+
+            for match in re.finditer('(http[a-z]?:\/\/[^ ]*\.(?:gif|png|jpg|jpeg))', message.content):
+                try:
+                    await message.channel.trigger_typing()
+
+                    post = await scraper.get_post(match.group(0))
+
+                    await message.channel.send('✅ **Probable match from {}:**\n{}'.format(message.author.display_name, await scraper.get_image(post)))
+
+                    await asyncio.sleep(self.RATE_LIMIT)
+
+                    with suppress(err.NotFound):
+                        await message.delete()
+
+                except exc.MatchError as e:
+                    await message.channel.send('❌ **No probable match for:** `{}`'.format(e), delete_after=10)
+
+            for attachment in message.attachments:
+                try:
+                    await message.channel.trigger_typing()
+
+                    post = await scraper.get_post(attachment.url)
+
+                    await message.channel.send('✅ **Probable match from {}:**\n{}'.format(message.author.display_name, await scraper.get_image(post)))
+
+                    await asyncio.sleep(self.RATE_LIMIT)
+
+                    with suppress(err.NotFound):
+                        await message.delete()
+
+                except exc.MatchError as e:
+                    await message.channel.send('❌ **No probable match for:** `{}`'.format(e), delete_after=10)
+
+        print('STOPPED : reversing')
+
+    async def queue_on_message(self, channel):
+        def check(msg):
+            if msg.content.lower() == 'stop' and msg.channel is channel and msg.author.guild_permissions.administrator:
+                raise exc.Abort
+            elif msg.channel is channel and msg.author.id != self.bot.user.id and (re.search('(http[a-z]?:\/\/[^ ]*\.(?:gif|png|jpg|jpeg))', msg.content) is not None or msg.attachments):
+                return True
+            return False
+
+        try:
+            while not self.bot.is_closed():
+                message = await self.bot.wait_for('message', check=check)
+                await self.queue.put(message)
+
+        except exc.Abort:
+            u.tasks['auto_rev'].remove(channel.id)
+            u.dump(u.tasks, 'cogs/tasks.pkl')
+            if not u.tasks['auto_rev']:
+                self.reversing = False
+            print('STOPPED : looping #{}'.format(channel.name))
+            await channel.send('✅ **Stopped queueing messages for reversion in** {}**.**'.format(channel.mention), delete_after=5)
+
+    @commands.command(name='autoreverse', aliases=['autorev', 'ar'])
+    async def auto_reverse_image_search(self, ctx):
+        try:
+            if ctx.channel.id not in u.tasks['auto_rev']:
+                u.tasks['auto_rev'].append(ctx.channel.id)
+                u.dump(u.tasks, 'cogs/tasks.pkl')
+                self.bot.loop.create_task(self.queue_on_message(ctx.channel))
+                if not self.reversing:
+                    self.bot.loop.create_task(self.reverse())
+                    self.reversing = True
+                print('LOOPING : #{}'.format(ctx.channel.name))
+                await ctx.send('✅ **Auto-reversing all images in {}.**'.format(ctx.channel.mention), delete_after=5)
+            else:
+                raise exc.Exists
+
+        except exc.Exists:
+            await ctx.send('❌ **Already auto-reversing in {}.** Type `stop` to stop.'.format(ctx.channel.mention), delete_after=10)
 
     def get_favorites(self, ctx, args):
         if '-f' in args or '-favs' in args or '-faves' in args or '-favorites' in args:
