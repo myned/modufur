@@ -1,5 +1,5 @@
 import asyncio
-import json
+import json as jsn
 import os
 import pickle as pkl
 import subprocess
@@ -19,12 +19,12 @@ print('\nPID : {}\n'.format(os.getpid()))
 
 try:
     with open('config.json') as infile:
-        config = json.load(infile)
+        config = jsn.load(infile)
         print('config.json loaded.')
 except FileNotFoundError:
     with open('config.json', 'w') as outfile:
-        json.dump({'client_id': 0, 'listed_ids': [0], 'owner_id': 0, 'permissions': 126016, 'prefix': ',',
-                   'shutdown_channel': 0, 'startup_channel': 0, 'token': 'str'}, outfile, indent=4, sort_keys=True)
+        jsn.dump({'client_id': 0, 'owner_id': 0, 'permissions': 126016, 'playing': 'a game', 'prefix': ',',
+                  'shutdown_channel': 0, 'startup_channel': 0, 'token': 'str'}, outfile, indent=4, sort_keys=True)
         raise FileNotFoundError(
             'Config file not found: config.json created with abstract values. Restart run.py with correct values.')
 
@@ -42,14 +42,22 @@ def setdefault(filename, default=None):
             return pkl.load(iofile)
 
 
-def load(filename):
-    with open(filename, 'rb') as infile:
-        return pkl.load(infile)
+def load(filename, *, json=False):
+    if not json:
+        with open(filename, 'rb') as infile:
+            return pkl.load(infile)
+    else:
+        with open(filename) as infile:
+            return jsn.load(infile)
 
 
-def dump(obj, filename):
-    with open(filename, 'wb') as outfile:
-        pkl.dump(obj, outfile)
+def dump(obj, filename, *, json=False):
+    if not json:
+        with open(filename, 'wb') as outfile:
+            pkl.dump(obj, outfile)
+    else:
+        with open(filename, 'w') as outfile:
+            jsn.dump(obj, outfile, indent=4, sort_keys=True)
 
 
 settings = setdefault('settings.pkl', {'del_ctx': []})

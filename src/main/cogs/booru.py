@@ -437,8 +437,7 @@ class MsG:
                 raise exc.GoTo
             elif reaction.emoji == '➡' and reaction.message.content == paginator.content and (user is ctx.author or user.id == u.config['owner_id']):
                 raise exc.Right
-            else:
-                return False
+            return False
 
         def on_message(msg):
             with suppress(ValueError):
@@ -611,8 +610,7 @@ class MsG:
                 raise exc.GoTo
             elif reaction.emoji == '➡' and reaction.message.content == paginator.content and (user is ctx.author or user.id == u.config['owner_id']):
                 raise exc.Right
-            else:
-                return False
+            return False
 
         def on_message(msg):
             with suppress(ValueError):

@@ -82,7 +82,7 @@ class Utils:
         print('Service built.')
 
     @commands.command(aliases=['up', 'u', 'vid', 'v'])
-    @checks.is_listed()
+    @commands.has_permissions(administrator=True)
     async def upload(self, ctx):
         global youtube
         attachments = ctx.message.attachments

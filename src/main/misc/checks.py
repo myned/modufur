@@ -11,7 +11,6 @@ from discord.ext.commands import errors as errext
 from utils import utils as u
 
 owner_id = u.config['owner_id']
-listed_ids = u.config['listed_ids']
 
 
 def is_owner():
@@ -29,12 +28,6 @@ def is_admin():
 def is_mod():
     def predicate(ctx):
         return ctx.message.author.guild_permissions.ban_members
-    return commands.check(predicate)
-
-
-def is_listed():
-    def predicate(ctx):
-        return ctx.message.author.id in listed_ids
     return commands.check(predicate)
 
 
