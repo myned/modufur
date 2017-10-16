@@ -53,7 +53,7 @@ def dump(obj, filename):
 
 
 settings = setdefault('settings.pkl', {'del_ctx': []})
-tasks = setdefault('cogs/tasks.pkl', {'auto_del': []})
+tasks = setdefault('cogs/tasks.pkl', {'auto_del': [], 'auto_rev': []})
 
 session = aiohttp.ClientSession()
 

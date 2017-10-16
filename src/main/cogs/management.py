@@ -23,7 +23,7 @@ class Administration:
             for channel in u.tasks['auto_del']:
                 temp = self.bot.get_channel(channel)
                 self.bot.loop.create_task(self.queue_on_message(temp))
-                print('Looping #{}'.format(temp.name))
+                print('LOOPING : #{}'.format(temp.name))
             self.bot.loop.create_task(self.delete())
             self.deleting = True
 
@@ -103,17 +103,18 @@ class Administration:
                 if not message.pinned:
                     await message.delete()
 
+        print('STOPPED : deleting')
+
     async def queue_on_message(self, channel):
         def check(msg):
             if msg.content.lower() == 'stop' and msg.channel is channel and msg.author.guild_permissions.administrator:
                 raise exc.Abort
             elif msg.channel is channel and not msg.pinned:
                 return True
-            else:
-                return False
+            return False
 
         try:
-            async for message in channel.history():
+            async for message in channel.history(limit=None):
                 if message.content.lower() == 'stop' and message.author.guild_permissions.administrator:
                     raise exc.Abort
                 if not message.pinned:
@@ -128,12 +129,8 @@ class Administration:
             u.dump(u.tasks, 'cogs/tasks.pkl')
             if not u.tasks['auto_del']:
                 self.deleting = False
-                print('Stopped deleting.')
-            print('Stopped looping #{}'.format(channel.name))
+            print('STOPPED : looping #{}'.format(channel.name))
             await channel.send('✅ **Stopped queueing messages for deletion in** {}**.**'.format(channel.mention), delete_after=5)
-
-        except AttributeError:
-            pass
 
     @commands.command(name='autodelete', aliases=['autodel', 'ad'])
     @commands.has_permissions(administrator=True)
@@ -147,13 +144,13 @@ class Administration:
                 if not self.deleting:
                     self.bot.loop.create_task(self.delete())
                     self.deleting = True
-                print('Looping #{}'.format(ctx.channel.name))
-                await ctx.send('✅ **Auto-deleting all messages in this channel.**', delete_after=5)
+                print('LOOPING : #{}'.format(ctx.channel.name))
+                await ctx.send('✅ **Auto-deleting all messages in {}.**'.format(ctx.channel.mention), delete_after=5)
             else:
                 raise exc.Exists
 
         except exc.Exists:
-            await ctx.send('❌ **Already auto-deleting in this channel.** Type `stop` to stop.', delete_after=10)
+            await ctx.send('❌ **Already auto-deleting in {}.** Type `stop` to stop.'.format(ctx.channel.mention), delete_after=10)
 
     @commands.command(name='deletecommands', aliases=['delcmds'])
     @commands.has_permissions(administrator=True)
