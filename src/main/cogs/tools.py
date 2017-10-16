@@ -56,23 +56,24 @@ class Utils:
     @commands.command(aliases=['pre'], brief='List bot prefixes', description='Shows all used prefixes')
     @checks.del_ctx()
     async def prefix(self, ctx):
-        await ctx.message.add_reaction('✅')
-
         await ctx.send('**Prefix:** `{}`'.format(u.config['prefix']))
+        await ctx.message.add_reaction('✅')
 
     @commands.group(name=',send', aliases=[',s'], hidden=True)
     @commands.is_owner()
     @checks.del_ctx()
     async def send(self, ctx):
-        await ctx.message.add_reaction('✅')
+        pass
 
     @send.command(name='guild', aliases=['g', 'server', 's'])
     async def send_guild(self, ctx, guild, channel, *message):
         await discord.utils.get(self.bot.get_all_channels(), guild__name=guild, name=channel).send(formatter.tostring(message))
+        await ctx.message.add_reaction('✅')
 
     @send.command(name='user', aliases=['u', 'member', 'm'])
     async def send_user(self, ctx, user, *message):
         await discord.utils.get(self.bot.get_all_members(), id=int(user)).send(formatter.tostring(message))
+        await ctx.message.add_reaction('✅')
 
     @commands.command(aliases=['authenticateupload', 'authupload', 'authup', 'auth'])
     async def authenticate_upload(self, ctx):
@@ -104,11 +105,11 @@ class Utils:
             print('https://www.youtube.com/watch?v=' + youtube.videos().insert(part='snippet',
                                                                                body={'categoryId': '24', 'title': 'Test'}, media_body=http.MediaFileUpload(temp.name, chunksize=-1)))
         except exc.InvalidVideoFile as e:
-            await ctx.send('❌ `' + str(e) + '` **not valid video type.**', delete_after=10)
+            await ctx.send('`' + str(e) + '` **not valid video type.**', delete_after=10)
         except exc.TooManyAttachments as e:
-            await ctx.send('❌ `' + str(e) + '` **too many attachments.** Only one attachment is permitted to upload.', delete_after=10)
+            await ctx.send('`' + str(e) + '` **too many attachments.** Only one attachment is permitted to upload.', delete_after=10)
         except exc.MissingAttachment:
-            await ctx.send('❌ **Missing attachment.**', delete_after=10)
+            await ctx.send('**Missing attachment.**', delete_after=10)
 
     @upload.error
     async def upload_error(self, ctx, error):
