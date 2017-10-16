@@ -1,5 +1,6 @@
 import asyncio
 import json
+import re
 import traceback as tb
 from contextlib import suppress
 
@@ -70,6 +71,25 @@ class MsG:
         except exc.MissingArgument:
             await ctx.send('❌ **No tags given.**', delete_after=10)
 
+    @commands.command(name='getimage', aliases=['geti', 'gi'])
+    @checks.del_ctx()
+    async def get_image(self, ctx, *urls):
+        try:
+            if not urls:
+                raise exc.MissingArgument
+
+            for url in urls:
+                try:
+                    await ctx.trigger_typing()
+
+                    await ctx.send('✅ {}'.format(await scraper.get_image(url)))
+
+                finally:
+                    await asyncio.sleep(self.RATE_LIMIT)
+
+        except exc.MissingArgument:
+            await ctx.send('❌ **Invalid url or file.**', delete_after=10)
+
     # Reverse image searches a linked image using the public iqdb
     @commands.command(name='reverse', aliases=['rev', 'ris'], brief='e621 Reverse image search', description='e621 | NSFW\nReverse-search an image with given URL')
     @checks.del_ctx()
@@ -78,33 +98,207 @@ class MsG:
             if not urls and not ctx.message.attachments:
                 raise exc.MissingArgument
 
-            await ctx.trigger_typing()
-
             for url in urls:
                 try:
                     await ctx.trigger_typing()
 
-                    await ctx.send('✅ **Probable match:**\n{}'.format(await scraper.check_match(url)))
+                    await ctx.send('✅ **Probable match:**\n{}'.format(await scraper.get_post(url)))
 
                 except exc.MatchError as e:
-                    await ctx.send('❌ **No probable match for** `{}`**.** Make sure URLs direct to an image file.'.format(e), delete_after=10)
+                    await ctx.send('❌ **No probable match for:** `{}`'.format(e), delete_after=10)
 
                 finally:
                     await asyncio.sleep(self.RATE_LIMIT)
+
             for attachment in ctx.message.attachments:
                 try:
                     await ctx.trigger_typing()
 
-                    await ctx.send('✅ **Probable match:**\n{}'.format(await scraper.check_match(attachment.url)))
+                    await ctx.send('✅ **Probable match:**\n{}'.format(await scraper.get_post(attachment.url)))
 
                 except exc.MatchError as e:
-                    await ctx.send('❌ **No probable match for** `{}`**.** Make sure URLs direct to an image file.'.format(e), delete_after=10)
+                    await ctx.send('❌ **No probable match for:** `{}`'.format(e), delete_after=10)
 
                 finally:
                     await asyncio.sleep(self.RATE_LIMIT)
 
         except exc.MissingArgument:
             await ctx.send('❌ **Invalid url or file.**', delete_after=10)
+
+    @commands.command(name='reverseall', aliases=['revall', 'risall', 'rall'])
+    @checks.del_ctx()
+    @commands.has_permissions(manage_channels=True)
+    async def reverse_image_search_all(self, ctx, arg=None, limit=1):
+        urls = []
+        attachments = []
+        delete = False
+
+        try:
+            if arg == '-d' or arg == '-del' or arg == '-delete':
+                delete = True
+            elif arg is not None:
+                limit = int(arg)
+
+            async for message in ctx.channel.history(limit=limit + 1):
+                if re.search('(http[a-z]?:\/\/[^ ]*\.(?:gif|png|jpg|jpeg))', message.content) is not None:
+                    urls.append(message)
+                elif message.attachments:
+                    attachments.append(message)
+
+            if not urls and not attachments:
+                raise exc.NotFound
+
+            for message in urls:
+                for match in re.finditer('(http[a-z]?:\/\/[^ ]*\.(?:gif|png|jpg|jpeg))', message.content):
+                    try:
+                        await ctx.trigger_typing()
+
+                        await ctx.send('✅ **Probable match from {}:**\n{}'.format(message.author.display_name, await scraper.get_post(match.group(0))))
+
+                        if delete:
+                            with suppress(err.NotFound):
+                                await message.delete()
+
+                    except exc.MatchError as e:
+                        await ctx.send('❌ **No probable match for:** `{}`'.format(e), delete_after=10)
+
+                    finally:
+                        await asyncio.sleep(self.RATE_LIMIT)
+
+            for message in attachments:
+                for attachment in message.attachments:
+                    try:
+                        await ctx.trigger_typing()
+
+                        await ctx.send('✅ **Probable match from {}:**\n{}'.format(message.author.display_name, await scraper.get_post(attachment.url)))
+
+                        if delete:
+                            with suppress(err.NotFound):
+                                await message.delete()
+
+                    except exc.MatchError as e:
+                        await ctx.send('❌ **No probable match for:** `{}`'.format(e), delete_after=10)
+
+                    finally:
+                        await asyncio.sleep(self.RATE_LIMIT)
+
+        except exc.NotFound:
+            await ctx.send('❌ **No matches found.**', delete_after=10)
+        except ValueError:
+            await ctx.send('❌ **Invalid limit.**', delete_after=10)
+
+    @commands.command(name='qualitysearch', aliases=['qrev', 'qis'])
+    @checks.del_ctx()
+    async def quality_reverse_image_search(self, ctx, *urls):
+        try:
+            if not urls and not ctx.message.attachments:
+                raise exc.MissingArgument
+
+            for url in urls:
+                try:
+                    await ctx.trigger_typing()
+
+                    post = await scraper.get_post(url)
+
+                    await ctx.send('✅ **Probable match:**\n{}'.format(await scraper.get_image(post)))
+
+                except exc.MatchError as e:
+                    await ctx.send('❌ **No probable match for:** `{}`'.format(e), delete_after=10)
+
+                finally:
+                    await asyncio.sleep(self.RATE_LIMIT)
+
+            for attachment in ctx.message.attachments:
+                try:
+                    await ctx.trigger_typing()
+
+                    post = await scraper.get_post(attachment.url)
+
+                    await ctx.send('✅ **Probable match:**\n{}'.format(await scraper.get_image(post)))
+
+                except exc.MatchError as e:
+                    await ctx.send('❌ **No probable match for:** `{}`'.format(e), delete_after=10)
+
+                finally:
+                    await asyncio.sleep(self.RATE_LIMIT)
+
+        except exc.MissingArgument:
+            await ctx.send('❌ **Invalid url or file.**', delete_after=10)
+
+    @commands.command(name='qualityall', aliases=['qrevall', 'qisall', 'qall'])
+    @checks.del_ctx()
+    @commands.has_permissions(manage_channels=True)
+    async def quality_reverse_image_search_all(self, ctx, arg=None, limit=1):
+        urls = []
+        attachments = []
+        delete = False
+
+        try:
+            if arg == '-d' or arg == '-del' or arg == '-delete':
+                delete = True
+            elif arg is not None:
+                limit = int(arg)
+
+            async for message in ctx.channel.history(limit=limit + 1):
+                if re.search('(http[a-z]?:\/\/[^ ]*\.(?:gif|png|jpg|jpeg))', message.content) is not None:
+                    urls.append(message)
+                elif message.attachments:
+                    attachments.append(message)
+
+            if not urls and not attachments:
+                raise exc.NotFound
+
+            for message in urls:
+                for match in re.finditer('(http[a-z]?:\/\/[^ ]*\.(?:gif|png|jpg|jpeg))', message.content):
+                    try:
+                        await ctx.trigger_typing()
+
+                        post = await scraper.get_post(match.group(0))
+
+                        await ctx.send('✅ **Probable match from {}:**\n{}'.format(message.author.display_name, await scraper.get_image(post)))
+
+                        if delete:
+                            with suppress(err.NotFound):
+                                await message.delete()
+
+                    except exc.MatchError as e:
+                        await ctx.send('❌ **No probable match for:** `{}`'.format(e), delete_after=10)
+
+                    finally:
+                        await asyncio.sleep(self.RATE_LIMIT)
+
+            for message in attachments:
+                for attachment in message.attachments:
+                    try:
+                        await ctx.trigger_typing()
+
+                        post = await scraper.get_post(attachment.url)
+
+                        await ctx.send('✅ **Probable match from {}:**\n{}'.format(message.author.display_name, await scraper.get_image(post)))
+
+                        if delete:
+                            with suppress(err.NotFound):
+                                await message.delete()
+
+                    except exc.MatchError as e:
+                        await ctx.send('❌ **No probable match for:** `{}`'.format(e), delete_after=10)
+
+                    finally:
+                        await asyncio.sleep(self.RATE_LIMIT)
+
+        except exc.NotFound:
+            await ctx.send('❌ **No matches found.**', delete_after=10)
+        except ValueError:
+            await ctx.send('❌ **Invalid limit.**', delete_after=10)
+
+    def get_favorites(self, ctx, args):
+        if '-f' in args or '-favs' in args or '-faves' in args or '-favorites' in args:
+            if self.favorites.get(ctx.author.id, {}).get('tags', set()):
+                args = ['~{}'.format(tag) for tag in self.favorites[ctx.author.id]['tags']]
+            else:
+                raise exc.FavoritesNotFound
+
+        return args
 
     async def return_pool(self, *, ctx, booru='e621', query=[]):
         def on_message(msg):
@@ -153,7 +347,7 @@ class MsG:
     @commands.command(name='pool', aliases=['e6pp'], brief='e621 pool paginator', description='e621 | NSFW\nShow pools in a page format', hidden=True)
     @checks.del_ctx()
     async def pool_paginator(self, ctx, *kwords):
-        def on_react(reaction, user):
+        def on_reaction(reaction, user):
             if reaction.emoji == '🚫' and reaction.message.content == paginator.content and (user is ctx.author or user.id == u.config['owner_id']):
                 raise exc.Abort
             elif reaction.emoji == '📁' and reaction.message.content == paginator.content and (user is ctx.author or user.id == u.config['owner_id']):
@@ -178,6 +372,7 @@ class MsG:
 
         try:
             await ctx.trigger_typing()
+
             pool, posts = await self.return_pool(ctx=ctx, booru='e621', query=kwords)
             keys = list(posts.keys())
             values = list(posts.values())
@@ -200,7 +395,7 @@ class MsG:
 
             while not self.bot.is_closed():
                 try:
-                    await self.bot.wait_for('reaction_add', check=on_react, timeout=10 * 60)
+                    await self.bot.wait_for('reaction_add', check=on_reaction, timeout=10 * 60)
 
                 except exc.Left:
                     if c > 1:
@@ -326,7 +521,7 @@ class MsG:
     @checks.del_ctx()
     @checks.is_nsfw()
     async def e621_paginator(self, ctx, *args):
-        def on_react(reaction, user):
+        def on_reaction(reaction, user):
             if reaction.emoji == '🚫' and reaction.message.content == paginator.content and (user is ctx.author or user.id == u.config['owner_id']):
                 raise exc.Abort
             elif reaction.emoji == '📁' and reaction.message.content == paginator.content and (user is ctx.author or user.id == u.config['owner_id']):
@@ -352,7 +547,10 @@ class MsG:
         c = 1
 
         try:
+            args = self.get_favorites(ctx, args)
+
             await ctx.trigger_typing()
+
             posts = await self.check_return_posts(ctx=ctx, booru='e621', tags=args, limit=limit)
             keys = list(posts.keys())
             values = list(posts.values())
@@ -375,7 +573,7 @@ class MsG:
 
             while not self.bot.is_closed():
                 try:
-                    await self.bot.wait_for('reaction_add', check=on_react, timeout=10 * 60)
+                    await self.bot.wait_for('reaction_add', check=on_reaction, timeout=10 * 60)
 
                 except exc.Left:
                     if c > 1:
@@ -431,19 +629,16 @@ class MsG:
 
         except exc.Abort:
             await paginator.edit(content='🚫 **Exited paginator.**')
-
         except asyncio.TimeoutError:
             await paginator.edit(content='❌ **Paginator timed out.**')
-
         except exc.NotFound as e:
             await ctx.send('❌ `{}` **not found.**'.format(e), delete_after=10)
-
         except exc.TagBlacklisted as e:
             await ctx.send('❌ `{}` **blacklisted.**'.format(e), delete_after=10)
-
         except exc.TagBoundsError as e:
             await ctx.send('❌ `{}` **out of bounds.** Tags limited to 5, currently.'.format(e), delete_after=10)
-
+        except exc.FavoritesNotFound:
+            await ctx.send('❌ **You have no favorite tags.**', delete_after=10)
         except exc.Timeout:
             await ctx.send('❌ **Request timed out.**')
 
@@ -458,26 +653,36 @@ class MsG:
         if isinstance(error, errext.CheckFailure):
             return await ctx.send('⛔️ {} **is not an NSFW channel.**'.format(ctx.channel.mention), delete_after=10)
 
+    def get_limit(self, args):
+        limit = 1
+
+        for arg in args:
+            if len(arg) == 1:
+                with suppress(ValueError):
+                    if int(arg) <= 3 and int(arg) >= 1:
+                        limit = int(arg)
+                        args.remove(arg)
+                        break
+                    else:
+                        raise exc.BoundsError(arg)
+
+        return limit
+
     # Searches for and returns images from e621.net given tags when not blacklisted
-    @commands.command(aliases=['e6', '6'], brief='e621 | NSFW', description='e621 | NSFW\nTag-based search for e621.net\n\nYou can only search 5 tags and 6 images at once for now.\ne6 [tags...] ([# of images])')
+    @commands.group(aliases=['e6', '6'], brief='e621 | NSFW', description='e621 | NSFW\nTag-based search for e621.net\n\nYou can only search 5 tags and 6 images at once for now.\ne6 [tags...] ([# of images])')
     @checks.del_ctx()
     @checks.is_nsfw()
     async def e621(self, ctx, *args):
         args = list(args)
-        limit = 1
 
         try:
+            args = self.get_favorites(ctx, args)
+            limit = self.get_limit(args)
+
             await ctx.trigger_typing()
-            # Checks for, defines, and removes limit from args
-            for arg in args:
-                if len(arg) == 1:
-                    with suppress(ValueError):
-                        if int(arg) <= 6 and int(arg) >= 1:
-                            limit = int(arg)
-                            args.remove(arg)
-                        else:
-                            raise exc.BoundsError(arg)
+
             posts = await self.check_return_posts(ctx=ctx, booru='e621', tags=args, limit=limit)
+
             for ident, post in posts.items():
                 embed = d.Embed(title=post['author'], url='https://e621.net/post/show/{}'.format(ident),
                                 color=ctx.me.color).set_image(url=post['url'])
@@ -485,20 +690,19 @@ class MsG:
                                  url='https://e621.net/post?tags={}'.format(','.join(args)), icon_url=ctx.author.avatar_url)
                 embed.set_footer(
                     text=str(ident), icon_url='http://lh6.ggpht.com/d3pNZNFCcJM8snBsRSdKUhR9AVBnJMcYYrR92RRDBOzCrxZMhuTeoGOQSmSEn7DAPQ=w300')
+
                 await ctx.send(embed=embed)
 
         except exc.TagBlacklisted as e:
             await ctx.send('❌ `{}` **blacklisted.**'.format(e), delete_after=10)
-
         except exc.BoundsError as e:
             await ctx.send('❌ `{}` **out of bounds.**'.format(e), delete_after=10)
-
         except exc.TagBoundsError as e:
             await ctx.send('❌ `{}` **out of bounds.** Tags limited to 5, currently.'.format(e), delete_after=10)
-
         except exc.NotFound as e:
             await ctx.send('❌ `{}` **not found.**'.format(e), delete_after=10)
-
+        except exc.FavoritesNotFound:
+            await ctx.send('❌ **You have no favorite tags.**', delete_after=10)
         except exc.Timeout:
             await ctx.send('❌ **Request timed out.**')
 
@@ -515,20 +719,15 @@ class MsG:
     @checks.del_ctx()
     async def e926(self, ctx, *args):
         args = list(args)
-        limit = 1
 
         try:
+            args = self.get_favorites(ctx, args)
+            limit = self.get_limit(args)
+
             await ctx.trigger_typing()
-            # Checks for, defines, and removes limit from args
-            for arg in args:
-                if len(arg) == 1:
-                    with suppress(ValueError):
-                        if int(arg) <= 6 and int(arg) >= 1:
-                            limit = int(arg)
-                            args.remove(arg)
-                        else:
-                            raise exc.BoundsError(arg)
+
             posts = await self.check_return_posts(ctx=ctx, booru='e926', tags=args, limit=limit)
+
             for ident, post in posts.items():
                 embed = d.Embed(title=post['author'], url='https://e926.net/post/show/{}'.format(ident),
                                 color=ctx.me.color).set_image(url=post['url'])
@@ -536,65 +735,77 @@ class MsG:
                                  url='https://e621.net/post?tags={}'.format(','.join(args)), icon_url=ctx.author.avatar_url)
                 embed.set_footer(
                     text=str(ident), icon_url='http://lh6.ggpht.com/d3pNZNFCcJM8snBsRSdKUhR9AVBnJMcYYrR92RRDBOzCrxZMhuTeoGOQSmSEn7DAPQ=w300')
+
                 await ctx.send(embed=embed)
 
         except exc.TagBlacklisted as e:
             await ctx.send('❌ `{}` **blacklisted.**'.format(e), delete_after=10)
-
         except exc.BoundsError as e:
             await ctx.send('❌ `{}` **out of bounds.**'.format(e), delete_after=10)
-
         except exc.TagBoundsError as e:
             await ctx.send('❌ `{}` **out of bounds.** Tags limited to 5, currently.'.format(e), delete_after=10)
-
         except exc.NotFound as e:
             await ctx.send('❌ `{}` **not found.**'.format(e), delete_after=10)
-
+        except exc.FavoritesNotFound:
+            await ctx.send('❌ **You have no favorite tags.**', delete_after=10)
         except exc.Timeout:
             await ctx.send('❌ **Request timed out.**')
 
-    @commands.group(aliases=['faves', 'f'])
+    @commands.group(aliases=['fave', 'fav', 'f'])
     @checks.del_ctx()
-    async def favorites(self, ctx):
+    async def favorite(self, ctx):
+        if ctx.invoked_subcommand is None:
+            await ctx.send('❌ **Use a flag to manage favorites.**\n*Type* `{}help fav` *for more info.*'.format(ctx.prefix), delete_after=10)
+
+    @favorite.error
+    async def favorite_error(self, ctx, error):
         pass
 
-    @favorites.error
-    async def favorites_error(self, ctx, error):
+    @favorite.group(name='get', aliases=['g'])
+    async def _get_favorite(self, ctx):
         pass
 
-    @favorites.group(name='get', aliases=['g'])
-    async def _get_favorites(self, ctx):
+    @_get_favorite.command(name='tags', aliases=['t'])
+    async def __get_favorite_tags(self, ctx):
+        await ctx.send('⭐ {}**\'s favorite tags:**\n```\n{}```'.format(ctx.author.mention, formatter.tostring(self.favorites.get(ctx.author.id, {}).get('tags', set()))), delete_after=10)
+
+    @_get_favorite.command(name='posts', aliases=['p'])
+    async def __get_favorite_posts(self, ctx):
         pass
 
-    @_get_favorites.command(name='tags', aliases=['t'])
-    async def __get_favorites_tags(self, ctx):
-        await ctx.send('⭐ {}**\'s favorites tags:**\n```\n{}```'.format(ctx.author.mention, formatter.tostring(self.favorites.get(ctx.author.id, {}).get('tags', set()))))
-
-    @favorites.command(name='posts', aliases=['p'])
-    async def __get_favorites_posts(self, ctx):
+    @favorite.group(name='add', aliases=['a'])
+    async def _add_favorite(self, ctx):
         pass
 
-    @favorites.group(name='add', aliases=['a'])
-    async def _add_favorites(self, ctx):
+    @_add_favorite.command(name='tags', aliases=['t'])
+    async def __add_favorite_tags(self, ctx, *tags):
+        try:
+            for tag in tags:
+                if tag in self.blacklists['user_blacklist'].get(ctx.author.id, set()):
+                    raise exc.TagBlacklisted(tag)
+            if len(self.favorites[ctx.author.id]['tags']) + len(tags) > 5:
+                raise exc.BoundsError
+
+            self.favorites.setdefault(ctx.author.id, {}).setdefault('tags', set()).update(tags)
+            u.dump(self.favorites, 'cogs/favorites.pkl')
+
+            await ctx.send('✅ {} **added to their favorites:**\n```\n{}```'.format(ctx.author.mention, formatter.tostring(tags)), delete_after=5)
+
+        except exc.BoundsError:
+            await ctx.send('❌ **Favorites list currently limited to:** `5`', delete_after=10)
+        except exc.TagBlacklisted as e:
+            await ctx.send('🚫 `{}` **blacklisted.**', delete_after=10)
+
+    @_add_favorite.command(name='posts', aliases=['p'])
+    async def __add_favorite_posts(self, ctx, *posts):
         pass
 
-    @_add_favorites.command(name='tags', aliases=['t'])
-    async def __add_favorites_tags(self, ctx, *tags):
-        self.favorites.setdefault(ctx.author.id, {}).setdefault('tags', set()).update(tags)
-        u.dump(self.favorites, 'cogs/favorites.pkl')
-
-        await ctx.send('✅ {} **added:**\n```\n{}```'.format(ctx.author.mention, formatter.tostring(tags)))
-
-    @_add_favorites.command(name='posts', aliases=['p'])
-    async def __add_favorites_posts(self, ctx, *posts):
+    @favorite.group(name='remove', aliases=['r'])
+    async def _remove_favorite(self, ctx):
         pass
 
-    @favorites.group(name='remove', aliases=['r'])
-    async def _remove_favorites(self, ctx):
-        pass
-
-    @_remove_favorites.command(name='tags', aliases=['t'])
-    async def __remove_favorites_tags(self, ctx, *tags):
+    @_remove_favorite.command(name='tags', aliases=['t'])
+    async def __remove_favorite_tags(self, ctx, *tags):
         try:
             for tag in tags:
                 try:
@@ -605,29 +816,29 @@ class MsG:
 
             u.dump(self.favorites, 'cogs/favorites.pkl')
 
-            await ctx.send('✅ {} **removed:**\n```\n{}```'.format(ctx.author.mention, formatter.tostring(tags)), delete_after=5)
+            await ctx.send('✅ {} **removed from their favorites:**\n```\n{}```'.format(ctx.author.mention, formatter.tostring(tags)), delete_after=5)
 
         except exc.TagError as e:
             await ctx.send('❌ `{}` **not in favorites.**'.format(e), delete_after=10)
 
-    @_remove_favorites.command(name='posts', aliases=['p'])
-    async def __remove_favorites_posts(self, ctx):
+    @_remove_favorite.command(name='posts', aliases=['p'])
+    async def __remove_favorite_posts(self, ctx):
         pass
 
-    @favorites.group(name='clear', aliases=['c'])
-    async def _clear_favorites(self, ctx):
+    @favorite.group(name='clear', aliases=['c'])
+    async def _clear_favorite(self, ctx):
         pass
 
-    @_clear_favorites.command(name='tags', aliases=['t'])
-    async def __clear_favorites_tags(self, ctx):
+    @_clear_favorite.command(name='tags', aliases=['t'])
+    async def __clear_favorite_tags(self, ctx):
         with suppress(KeyError):
             del self.favorites[ctx.author.id]
             u.dump(self.favorites, 'cogs/favorites.pkl')
 
-        await ctx.send('✅ {}**\'s favorites cleared.**'.format(ctx.author.mention))
+        await ctx.send('✅ {}**\'s favorites cleared.**'.format(ctx.author.mention), delete_after=5)
 
-    @_clear_favorites.command(name='posts', aliases=['p'])
-    async def __clear_favorites_posts(self, ctx):
+    @_clear_favorite.command(name='posts', aliases=['p'])
+    async def __clear_favorite_posts(self, ctx):
         pass
 
     # Umbrella command structure to manage global, channel, and user blacklists
@@ -741,7 +952,7 @@ class MsG:
         u.dump(self.blacklists, 'cogs/blacklists.pkl')
         u.dump(self.aliases, 'cogs/aliases.pkl')
 
-        await ctx.send('✅ {} **added:**\n```\n{}```'.format(ctx.author.mention, formatter.tostring(tags)), delete_after=5)
+        await ctx.send('✅ {} **added to their blacklist:**\n```\n{}```'.format(ctx.author.mention, formatter.tostring(tags)), delete_after=5)
 
     @blacklist.group(name='remove', aliases=['rm', 'r'])
     async def _remove_tags(self, ctx):
@@ -799,7 +1010,7 @@ class MsG:
 
             u.dump(self.blacklists, 'cogs/blacklists.pkl')
 
-            await ctx.send('✅ {} **removed:**\n```\n{}```'.format(ctx.author.mention, formatter.tostring(tags)), delete_after=5)
+            await ctx.send('✅ {} **removed from their blacklist:**\n```\n{}```'.format(ctx.author.mention, formatter.tostring(tags)), delete_after=5)
 
         except exc.TagError as e:
             await ctx.send('❌ `{}` **not in blacklist.**'.format(e), delete_after=10)
