@@ -74,8 +74,6 @@ class Bot:
     @commands.is_owner()
     @checks.del_ctx()
     async def status(self, ctx, *, game=None):
-        await ctx.message.add_reaction('✅')
-
         if game is not None:
             await self.bot.change_presence(game=d.Game(name=game))
             u.config['playing'] = game
@@ -84,6 +82,8 @@ class Bot:
             await self.bot.change_presence(game=None)
             u.config['playing'] = 'None'
             u.dump(u.config, 'config.json', json=True)
+
+        await ctx.message.add_reaction('✅')
 
 
 class Tools:
