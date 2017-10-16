@@ -59,17 +59,20 @@ class Bot:
     async def invite(self, ctx):
         await ctx.send('🔗 https://discordapp.com/oauth2/authorize?&client_id={}&scope=bot&permissions={}'.format(u.config['client_id'], u.config['permissions']), delete_after=10)
 
-    @commands.command(aliases=['presence', 'game'], hidden=True)
+    @commands.command(name=',status', aliases=[',presence', ',game'], hidden=True)
     @commands.is_owner()
     @checks.del_ctx()
-    async def status(self, ctx, game):
-        try:
-            if game is not None:
-                await self.bot.change_presence(game=d.Game(name=game))
-            else:
-                raise exc.NotFound
-        except exc.NotFound:
-            await ctx.send('❌ **No game given.**', delete_after=10)
+    async def status(self, ctx, *, game=None):
+        if game is not None:
+            await self.bot.change_presence(game=d.Game(name=game))
+            u.config['playing'] = game
+            u.dump(u.config, 'config.json', json=True)
+        else:
+            await self.bot.change_presence(game=None)
+            u.config['playing'] = 'None'
+            u.dump(u.config, 'config.json', json=True)
+
+        await ctx.message.add_reaction('✅')
 
 
 class Tools:
