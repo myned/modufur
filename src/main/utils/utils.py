@@ -6,6 +6,7 @@ import subprocess
 from contextlib import suppress
 
 import aiohttp
+import discord as d
 from pync import Notifier
 
 print('\nPID : {}\n'.format(os.getpid()))
@@ -54,23 +55,23 @@ def dump(obj, filename):
 settings = setdefault('settings.pkl', {'del_ctx': []})
 tasks = setdefault('cogs/tasks.pkl', {'auto_del': []})
 
-
-async def clear(obj, interval=10 * 60, replace=None):
-    if replace is None:
-        if type(obj) is list:
-            replace = []
-        elif type(obj) is dict:
-            replace = {}
-        elif type(obj) is int:
-            replace = 0
-        elif type(obj) is str:
-            replace = ''
-
-    while True:
-        obj = replace
-        asyncio.sleep(interval)
-
 session = aiohttp.ClientSession()
+
+
+# async def clear(obj, interval=10 * 60, replace=None):
+#     if replace is None:
+#         if type(obj) is list:
+#             replace = []
+#         elif type(obj) is dict:
+#             replace = {}
+#         elif type(obj) is int:
+#             replace = 0
+#         elif type(obj) is str:
+#             replace = ''
+#
+#     while True:
+#         obj = replace
+#         asyncio.sleep(interval)
 
 
 def close(loop):
@@ -97,3 +98,7 @@ async def fetch(url, *, params={}, json=False):
         if json is True:
             return await r.json()
         return await r.read()
+
+
+# def geneate_embed(**kwargs):
+#     embed = d.Embed(title=kwargs['title'], )
