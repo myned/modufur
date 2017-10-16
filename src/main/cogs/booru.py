@@ -49,6 +49,7 @@ class MsG:
             if tag is None:
                 raise exc.MissingArgument
 
+            await ctx.message.add_reaction('✅')
             await ctx.trigger_typing()
 
             tag_request = await u.fetch('https://e621.net/tag/related.json', params={'tags': tag, 'type': 'general'}, json=True)
@@ -70,6 +71,7 @@ class MsG:
             if tag is None:
                 raise exc.MissingArgument
 
+            await ctx.message.add_reaction('✅')
             await ctx.trigger_typing()
 
             alias_request = await u.fetch('https://e621.net/tag_alias/index.json', params={'aliased_to': tag, 'approved': 'true'}, json=True)
@@ -87,6 +89,8 @@ class MsG:
         try:
             if not urls:
                 raise exc.MissingArgument
+
+            await ctx.message.add_reaction('✅')
 
             for url in urls:
                 try:
@@ -107,6 +111,8 @@ class MsG:
         try:
             if not urls and not ctx.message.attachments:
                 raise exc.MissingArgument
+
+            await ctx.message.add_reaction('✅')
 
             for url in urls:
                 try:
@@ -135,13 +141,15 @@ class MsG:
 
     @commands.command(name='reverseall', aliases=['revall', 'risall', 'rall'])
     @checks.del_ctx()
-    @commands.has_permissions(manage_channels=True)
+    @commands.has_permissions(manage_messages=True)
     async def reverse_image_search_all(self, ctx, arg=None, limit=1):
         urls = []
         attachments = []
         delete = False
 
         try:
+            await ctx.message.add_reaction('✅')
+
             if arg == '-d' or arg == '-del' or arg == '-delete':
                 delete = True
             elif arg is not None:
@@ -150,8 +158,10 @@ class MsG:
             async for message in ctx.channel.history(limit=limit + 1):
                 if re.search('(http[a-z]?:\/\/[^ ]*\.(?:gif|png|jpg|jpeg))', message.content) is not None:
                     urls.append(message)
+                    await message.add_reaction('⌛️')
                 elif message.attachments:
                     attachments.append(message)
+                    await message.add_reaction('⌛️')
 
             if not urls and not attachments:
                 raise exc.NotFound
@@ -200,6 +210,8 @@ class MsG:
             if not urls and not ctx.message.attachments:
                 raise exc.MissingArgument
 
+            await ctx.message.add_reaction('✅')
+
             for url in urls:
                 try:
                     await ctx.trigger_typing()
@@ -231,11 +243,13 @@ class MsG:
 
     @commands.command(name='qualityall', aliases=['qrevall', 'qisall', 'qall'])
     @checks.del_ctx()
-    @commands.has_permissions(manage_channels=True)
+    @commands.has_permissions(manage_messages=True)
     async def quality_reverse_image_search_all(self, ctx, arg=None, limit=1):
         urls = []
         attachments = []
         delete = False
+
+        await ctx.message.add_reaction('✅')
 
         try:
             if arg == '-d' or arg == '-del' or arg == '-delete':
@@ -246,8 +260,10 @@ class MsG:
             async for message in ctx.channel.history(limit=limit + 1):
                 if re.search('(http[a-z]?:\/\/[^ ]*\.(?:gif|png|jpg|jpeg))', message.content) is not None:
                     urls.append(message)
+                    await message.add_reaction('⌛️')
                 elif message.attachments:
                     attachments.append(message)
+                    await message.add_reaction('⌛️')
 
             if not urls and not attachments:
                 raise exc.NotFound
@@ -343,6 +359,7 @@ class MsG:
             while not self.bot.is_closed():
                 message = await self.bot.wait_for('message', check=check)
                 await self.queue.put(message)
+                await message.add_reaction('⌛️')
 
         except exc.Abort:
             u.tasks['auto_rev'].remove(channel.id)
@@ -355,6 +372,8 @@ class MsG:
     @commands.command(name='autoreverse', aliases=['autorev', 'ar'])
     async def auto_reverse_image_search(self, ctx):
         try:
+            await ctx.message.add_reaction('✅')
+
             if ctx.channel.id not in u.tasks['auto_rev']:
                 u.tasks['auto_rev'].append(ctx.channel.id)
                 u.dump(u.tasks, 'cogs/tasks.pkl')
@@ -449,6 +468,7 @@ class MsG:
         c = 1
 
         try:
+            await ctx.message.add_reaction('✅')
             await ctx.trigger_typing()
 
             pool, posts = await self.return_pool(ctx=ctx, booru='e621', query=kwords)
@@ -626,6 +646,7 @@ class MsG:
         try:
             args = self.get_favorites(ctx, args)
 
+            await ctx.message.add_reaction('✅')
             await ctx.trigger_typing()
 
             posts = await self.check_return_posts(ctx=ctx, booru='e621', tags=args, limit=limit)
@@ -756,6 +777,7 @@ class MsG:
             args = self.get_favorites(ctx, args)
             limit = self.get_limit(args)
 
+            await ctx.message.add_reaction('✅')
             await ctx.trigger_typing()
 
             posts = await self.check_return_posts(ctx=ctx, booru='e621', tags=args, limit=limit)
@@ -801,6 +823,7 @@ class MsG:
             args = self.get_favorites(ctx, args)
             limit = self.get_limit(args)
 
+            await ctx.message.add_reaction('✅')
             await ctx.trigger_typing()
 
             posts = await self.check_return_posts(ctx=ctx, booru='e926', tags=args, limit=limit)
@@ -833,6 +856,8 @@ class MsG:
     async def favorite(self, ctx):
         if ctx.invoked_subcommand is None:
             await ctx.send('❌ **Use a flag to manage favorites.**\n*Type* `{}help fav` *for more info.*'.format(ctx.prefix), delete_after=10)
+        else:
+            await ctx.message.add_reaction('✅')
 
     @favorite.error
     async def favorite_error(self, ctx, error):
@@ -924,6 +949,8 @@ class MsG:
     async def blacklist(self, ctx):
         if ctx.invoked_subcommand is None:
             await ctx.send('❌ **Use a flag to manage blacklists.**\n*Type* `{}help bl` *for more info.*'.format(ctx.prefix), delete_after=10)
+        else:
+            await ctx.message.add_reaction('✅')
 
     # @blacklist.error
     # async def blacklist_error(self, ctx, error):

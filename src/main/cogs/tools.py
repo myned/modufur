@@ -48,19 +48,23 @@ class Utils:
     async def ping(self, ctx):
         global command_dict
 
+        await ctx.message.add_reaction('🏓')
+
         await ctx.send(ctx.author.mention + '  🏓  `' + str(round(self.bot.latency * 1000)) + 'ms`', delete_after=5)
         command_dict.setdefault(str(ctx.author.id), {}).update({'command': ctx.command})
 
     @commands.command(aliases=['pre'], brief='List bot prefixes', description='Shows all used prefixes')
     @checks.del_ctx()
     async def prefix(self, ctx):
+        await ctx.message.add_reaction('✅')
+
         await ctx.send('**Prefix:** `{}`'.format(u.config['prefix']))
 
     @commands.group(name=',send', aliases=[',s'], hidden=True)
     @commands.is_owner()
     @checks.del_ctx()
     async def send(self, ctx):
-        pass
+        await ctx.message.add_reaction('✅')
 
     @send.command(name='guild', aliases=['g', 'server', 's'])
     async def send_guild(self, ctx, guild, channel, *message):

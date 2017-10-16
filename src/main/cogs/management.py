@@ -50,6 +50,8 @@ class Administration:
 
         history = []
         try:
+            await ctx.message.add_reaction('✅')
+
             pru_sent = await ctx.send('⌛️ **Pruning** <@{}>**\'s messages will take some time.**'.format(uid))
             ch_sent = await ctx.send('🗄 **Caching channels...**')
 
@@ -138,6 +140,8 @@ class Administration:
     async def auto_delete(self, ctx):
         try:
             if ctx.channel.id not in u.tasks['auto_del']:
+                await ctx.message.add_reaction('✅')
+
                 u.tasks['auto_del'].append(ctx.channel.id)
                 u.dump(u.tasks, 'cogs/tasks.pkl')
                 self.bot.loop.create_task(self.queue_on_message(ctx.channel))
