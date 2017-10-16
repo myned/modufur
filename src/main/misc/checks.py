@@ -1,8 +1,9 @@
 import asyncio
 import json
 import traceback
+from contextlib import suppress
 
-import discord
+import discord as d
 from discord import errors as err
 from discord.ext import commands
 from discord.ext.commands import errors as errext
@@ -51,7 +52,7 @@ def mod(ctx):
 
 def is_nsfw():
     def predicate(ctx):
-        if isinstance(ctx.message.channel, discord.TextChannel):
+        if isinstance(ctx.message.channel, d.TextChannel):
             return ctx.message.channel.is_nsfw()
         return True
     return commands.check(predicate)
@@ -59,12 +60,8 @@ def is_nsfw():
 
 def del_ctx():
     async def predicate(ctx):
-        if ctx.me.permissions_in(ctx.channel).manage_messages and isinstance(ctx.message.channel, discord.TextChannel) and ctx.guild.id in u.settings['del_ctx']:
-            try:
+        if ctx.guild.id in u.settings['del_ctx'] and ctx.me.permissions_in(ctx.channel).manage_messages and isinstance(ctx.message.channel, d.TextChannel):
+            with suppress(err.NotFound):
                 await ctx.message.delete()
-
-            except err.NotFound:
-                pass
-
         return True
     return commands.check(predicate)
