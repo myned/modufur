@@ -58,26 +58,30 @@ class Administration:
                     async for message in channel.history(limit=None):
                         if message.author.id == int(user):
                             history.append(message)
-                    # history.extend(await channel.history(limit=None).flatten())
                     await ch_sent.edit(content='🗄 **Cached** `{}/{}` **channels.**'.format(channels.index(channel) + 1, len(channels)))
                     await asyncio.sleep(self.RATE_LIMIT)
             elif when == 'before':
                 for channel in channels:
-                    history.extend(await channel.history(limit=None, before=ref.created_at).flatten())
+                    async for message in channel.history(limit=None, before=ref.created_at):
+                        if message.author.id == int(user):
+                            history.append(message)
                     await ch_sent.edit(content='🗄 **Cached** `{}/{}` **channels.**'.format(channels.index(channel) + 1, len(channels)))
                     await asyncio.sleep(self.RATE_LIMIT)
             elif when == 'after':
                 for channel in channels:
-                    history.extend(await channel.history(limit=None, after=ref.created_at).flatten())
+                    async for message in channel.history(limit=None, after=ref.created_at):
+                        if message.author.id == int(user):
+                            history.append(message)
                     await ch_sent.edit(content='🗄 **Cached** `{}/{}` **channels.**'.format(channels.index(channel) + 1, len(channels)))
                     await asyncio.sleep(self.RATE_LIMIT)
             elif when == 'about':
                 for channel in channels:
-                    history.extend(await channel.history(limit=101, about=ref.created_at).flatten())
+                    async for message in channel.history(limit=None, about=ref.created_at):
+                        if message.author.id == int(user):
+                            history.append(message)
                     await ch_sent.edit(content='🗄 **Cached** `{}/{}` **channels.**'.format(channels.index(channel) + 1, len(channels)))
                     await asyncio.sleep(self.RATE_LIMIT)
 
-            # history = [message for message in history if message.author.id == user]
             est_sent = await ctx.send('⏱ **Estimated time to delete history:** `{}m {}s`'.format(int(self.RATE_LIMIT * len(history) / 60), int(self.RATE_LIMIT * len(history) % 60)))
             cont_sent = await ctx.send('{} **Continue?** `Y` or `N`'.format(ctx.author.mention))
             await self.bot.wait_for('message', check=yes, timeout=10 * 60)

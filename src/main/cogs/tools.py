@@ -66,13 +66,13 @@ class Utils:
         pass
 
     @send.command(name='guild', aliases=['g', 'server', 's'])
-    async def send_guild(self, ctx, guild, channel, *message):
-        await discord.utils.get(self.bot.get_all_channels(), guild__name=guild, name=channel).send(formatter.tostring(message))
+    async def send_guild(self, ctx, guild, channel, *, message):
+        await discord.utils.get(self.bot.get_all_channels(), guild__name=guild, name=channel).send(message)
         await ctx.message.add_reaction('✅')
 
     @send.command(name='user', aliases=['u', 'member', 'm'])
-    async def send_user(self, ctx, user, *message):
-        await discord.utils.get(self.bot.get_all_members(), id=int(user)).send(formatter.tostring(message))
+    async def send_user(self, ctx, user, *, message):
+        await discord.utils.get(self.bot.get_all_members(), id=int(user)).send(message)
         await ctx.message.add_reaction('✅')
 
     @commands.command(aliases=['authenticateupload', 'authupload', 'authup', 'auth'])
