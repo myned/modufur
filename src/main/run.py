@@ -1,7 +1,7 @@
 import asyncio
 import datetime as dt
 import json
-import logging
+# import logging as log
 import subprocess
 import sys
 import traceback as tb
@@ -16,7 +16,7 @@ from misc import exceptions as exc
 from misc import checks
 from utils import utils as u
 
-logging.basicConfig(level=logging.INFO)
+# log.basicConfig(level=log.INFO)
 
 bot = commands.Bot(command_prefix=u.config['prefix'], description='Experimental booru bot')
 
