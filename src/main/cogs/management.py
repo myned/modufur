@@ -30,7 +30,7 @@ class Administration:
     @commands.command(name=',prunefromguild', aliases=[',pfg', ',prunefromserver', ',pfs'], brief='Prune a user\'s messages from the guild', description='about flag centers on message 50 of 101 messages\n\npfg \{user id\} [before|after|about] [\{message id\}]\n\nExample:\npfg \{user id\} before \{message id\}')
     @commands.is_owner()
     @checks.del_ctx()
-    async def prune_all_user(self, ctx, user: d.Member, when=None, reference=None):
+    async def prune_all_user(self, ctx, user: d.User, when=None, reference=None):
         def yes(msg):
             if msg.content.lower() == 'y' and msg.channel is ctx.channel and msg.author is ctx.author:
                 return True
