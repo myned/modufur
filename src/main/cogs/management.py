@@ -30,7 +30,7 @@ class Administration:
     @commands.command(name=',prunefromguild', aliases=[',pfg', ',prunefromserver', ',pfs'], brief='Prune a user\'s messages from the guild', description='about flag centers on message 50 of 101 messages\n\npfg \{user id\} [before|after|about] [\{message id\}]\n\nExample:\npfg \{user id\} before \{message id\}')
     @commands.is_owner()
     @checks.del_ctx()
-    async def prune_all_user(self, ctx, uid, when=None, reference=None):
+    async def prune_all_user(self, ctx, user: d.Member, when=None, reference=None):
         def yes(msg):
             if msg.content.lower() == 'y' and msg.channel is ctx.channel and msg.author is ctx.author:
                 return True
@@ -50,7 +50,7 @@ class Administration:
 
         history = []
         try:
-            pru_sent = await ctx.send('⏳ **Pruning** <@{}>**\'s messages will take some time.**'.format(uid))
+            pru_sent = await ctx.send('⏳ **Pruning** {}**\'s messages will take some time.**'.format(user.mention))
             ch_sent = await ctx.send('🗄 **Caching channels...**')
 
             if when is None:
@@ -74,19 +74,20 @@ class Administration:
                     await ch_sent.edit(content='🗄 **Cached** `{}/{}` **channels.**'.format(channels.index(channel) + 1, len(channels)))
                     await asyncio.sleep(self.RATE_LIMIT)
 
-            history = [message for message in history if message.author.id == int(uid)]
+            history = [message for message in history if message.author is user]
             est_sent = await ctx.send('⏱ **Estimated time to delete history:** `{}m {}s`'.format(int(self.RATE_LIMIT * len(history) / 60), int(self.RATE_LIMIT * len(history) % 60)))
             cont_sent = await ctx.send('{} **Continue?** `Y` or `N`'.format(ctx.author.mention))
             await self.bot.wait_for('message', check=yes, timeout=60)
             await cont_sent.delete()
             del_sent = await ctx.send('🗑 **Deleting messages...**')
+            await del_sent.pin()
             for message in history:
                 with suppress(err.NotFound):
                     await message.delete()
                 await del_sent.edit(content='🗑 **Deleted** `{}/{}` **messages.**'.format(history.index(message) + 1, len(history)))
                 await asyncio.sleep(self.RATE_LIMIT)
-            await del_sent.edit(content='🗑 `{}` **of** <@{}>**\'s messages deleted from** {}**.**'.format(len(history), uid, ctx.guild.name))
 
+            await ctx.send('🗑 `{}` **of** {}**\'s messages deleted from** {}**.**'.format(len(history), user.mention, ctx.guild.name))
             await ctx.message.add_reaction('✅')
 
         except exc.CheckFail:
