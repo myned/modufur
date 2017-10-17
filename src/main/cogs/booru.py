@@ -152,8 +152,6 @@ class MsG:
         delete = False
 
         try:
-            await ctx.message.add_reaction('✅')
-
             if arg == '-d' or arg == '-del' or arg == '-delete':
                 delete = True
             elif arg is not None:
@@ -206,6 +204,8 @@ class MsG:
                         await ctx.send('**No probable match for:** `{}`'.format(e), delete_after=10)
                         await message.add_reaction('❌')
 
+            await ctx.message.add_reaction('✅')
+
         except exc.NotFound:
             await ctx.send('**No matches found.**', delete_after=10)
             await ctx.message.add_reaction('❌')
@@ -219,8 +219,6 @@ class MsG:
         try:
             if not urls and not ctx.message.attachments:
                 raise exc.MissingArgument
-
-            await ctx.message.add_reaction('✅')
 
             for url in urls:
                 try:
@@ -248,6 +246,8 @@ class MsG:
                 except exc.MatchError as e:
                     await ctx.send('**No probable match for:** `{}`'.format(e), delete_after=10)
 
+            await ctx.message.add_reaction('✅')
+
         except exc.MissingArgument:
             await ctx.send('**Invalid url or file.**', delete_after=10)
             await ctx.message.add_reaction('❌')
@@ -259,8 +259,6 @@ class MsG:
         urls = []
         attachments = []
         delete = False
-
-        await ctx.message.add_reaction('✅')
 
         try:
             if arg == '-d' or arg == '-del' or arg == '-delete':
@@ -318,6 +316,8 @@ class MsG:
                     except exc.MatchError as e:
                         await ctx.send('**No probable match for:** `{}`'.format(e), delete_after=10)
                         await message.add_reaction('❌')
+
+            await ctx.message.add_reaction('✅')
 
         except exc.NotFound:
             await ctx.send('**No matches found.**', delete_after=10)
