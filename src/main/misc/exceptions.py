@@ -1,4 +1,4 @@
-base = '⚠️ **An internal error has occurred.** This has already been reported.'
+base = '⚠️ **An internal error has occurred.** This has been reported.'
 
 
 async def send_error(ctx, error):

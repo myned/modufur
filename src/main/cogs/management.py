@@ -55,7 +55,10 @@ class Administration:
 
             if when is None:
                 for channel in channels:
-                    history.extend(await channel.history(limit=None).flatten())
+                    async for message in channel.history(limit=None):
+                        if message.author.id == user:
+                            history.append(message)
+                    # history.extend(await channel.history(limit=None).flatten())
                     await ch_sent.edit(content='🗄 **Cached** `{}/{}` **channels.**'.format(channels.index(channel) + 1, len(channels)))
                     await asyncio.sleep(self.RATE_LIMIT)
             elif when == 'before':
@@ -74,10 +77,10 @@ class Administration:
                     await ch_sent.edit(content='🗄 **Cached** `{}/{}` **channels.**'.format(channels.index(channel) + 1, len(channels)))
                     await asyncio.sleep(self.RATE_LIMIT)
 
-            history = [message for message in history if message.author.id is user]
+            # history = [message for message in history if message.author.id == user]
             est_sent = await ctx.send('⏱ **Estimated time to delete history:** `{}m {}s`'.format(int(self.RATE_LIMIT * len(history) / 60), int(self.RATE_LIMIT * len(history) % 60)))
             cont_sent = await ctx.send('{} **Continue?** `Y` or `N`'.format(ctx.author.mention))
-            await self.bot.wait_for('message', check=yes, timeout=60)
+            await self.bot.wait_for('message', check=yes, timeout=10 * 60)
             await cont_sent.delete()
             del_sent = await ctx.send('🗑 **Deleting messages...**')
             await del_sent.pin()
@@ -86,6 +89,7 @@ class Administration:
                     await message.delete()
                 await del_sent.edit(content='🗑 **Deleted** `{}/{}` **messages.**'.format(history.index(message) + 1, len(history)))
                 await asyncio.sleep(self.RATE_LIMIT)
+            await del_sent.unpin()
 
             await ctx.send('🗑 `{}` **of** <@{}>**\'s messages deleted from** {}**.**'.format(len(history), user, ctx.guild.name))
             await ctx.message.add_reaction('✅')
