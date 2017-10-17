@@ -124,7 +124,7 @@ def get_args(ctx, args, *, rem=False, rm=False, lim=False):
 
         try:
             remaining.remove('-d')
-        except KeyError:
+        except ValueError:
             remaining.remove('-dm')
 
     if rm:
@@ -134,10 +134,10 @@ def get_args(ctx, args, *, rem=False, rm=False, lim=False):
 
             try:
                 remaining.remove('-r')
-            except KeyError:
+            except ValueError:
                 try:
                     remaining.remove('-rm')
-                except KeyError:
+                except ValueError:
                     remaining.remove('-remove')
 
     if lim:
