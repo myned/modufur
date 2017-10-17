@@ -23,7 +23,9 @@ class Info:
     #     await ctx.send(embed=embed)
 
     @commands.command(hidden=True)
-    async def hi(self, ctx):
+    async def hi(self, ctx, *args):
+        dest = u.get_args(ctx, args)
+
         hello = 'Hewwo, {}.'.format(ctx.author.mention)
         if ctx.author.id == checks.owner_id:
             hello += '.. ***Master.*** uwu'
@@ -31,7 +33,7 @@ class Info:
             hello = '{} **Admin** {}'.format(hello[:7], hello[7:])
         elif ctx.author.guild_permissions.ban_members:
             hello = '{} **Mod** {}'.format(hello[:7], hello[7:])
-        await ctx.send(hello)
+        await dest.send(hello)
 
     @commands.group(name='info', aliases=['i'])
     async def info(self, ctx):
