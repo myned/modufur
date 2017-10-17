@@ -160,3 +160,7 @@ def get_args(ctx, args, *, rem=False, rm=False, lim=False):
             return destination, remaining, limit
         return destination, remaining
     return destination
+  if rm:
+    return destination, remove
+  if lim:
+    return destination, limit
