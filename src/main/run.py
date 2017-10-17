@@ -40,9 +40,8 @@ async def on_ready():
     else:
         await bot.change_presence(game=None)
 
-    if isinstance(bot.get_channel(u.config['info_channel']), d.TextChannel):
-        await bot.get_channel(u.config['info_channel']).send('**Started** ☀️ .')
     print('\n\\ \\ \\ \\ \\ \\ \\ \\ \\\nC O N N E C T E D : {}\n/ / / / / / / / /\n'.format(bot.user.name))
+    await bot.get_channel(u.config['info_channel']).send('**Started** ☀️ .')
     # u.notify('C O N N E C T E D')
     if u.temp:
         channel = bot.get_channel(u.temp['restart_ch'])
@@ -53,13 +52,12 @@ async def on_ready():
 
 @bot.event
 async def on_error(error, *args, **kwargs):
-    if isinstance(bot.get_channel(u.config['info_channel']), d.TextChannel):
-        await bot.get_channel(u.config['info_channel']).send('**ERROR** ⚠️ {}'.format(error))
-    await bot.logout()
-    u.close(bot.loop)
     print('\n! ! ! ! !\nE R R O R : {}\n! ! ! ! !\n'.format(error), file=sys.stderr)
     tb.print_exc()
+    await bot.get_channel(u.config['info_channel']).send('**ERROR** ⚠️ {}'.format(error))
     # u.notify('E R R O R')
+    await bot.logout()
+    u.close(bot.loop)
 
 
 @bot.event
@@ -72,6 +70,8 @@ async def on_command_error(ctx, error):
         print('\n! ! ! ! ! ! !  ! ! ! ! !\nC O M M A N D  E R R O R : {}\n! ! ! ! ! ! !  ! ! ! ! !\n'.format(
             error), file=sys.stderr)
         tb.print_exception(type(error), error, error.__traceback__, file=sys.stderr)
+        await bot.get_user(u.config['owner_id']).send('**COMMAND ERROR** ⚠️ {}'.format(error))
+        await bot.get_channel(u.config['info_channel']).send('**COMMAND ERROR** ⚠️ {}'.format(error))
         await exc.send_error(ctx, error)
         # u.notify('C O M M A N D  E R R O R')
 
@@ -101,8 +101,9 @@ async def reaction_remove(r, u):
 @checks.del_ctx()
 async def test(ctx):
     test = await ctx.send('Test')
-    await test.add_reaction('✅')
-    bot.add_listener(on_reaction_add)
-    bot.add_listener(on_reaction_remove)
+    raise Exception
+    # await test.add_reaction('✅')
+    # bot.add_listener(on_reaction_add)
+    # bot.add_listener(on_reaction_remove)
 
 bot.run(u.config['token'])
