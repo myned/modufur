@@ -21,6 +21,7 @@ class MsG:
 
     def __init__(self, bot):
         self.bot = bot
+        self.color = d.Color(0x1A1A1A)
         self.LIMIT = 100
         self.RATE_LIMIT = u.RATE_LIMIT
         self.queue = asyncio.Queue()
@@ -498,7 +499,7 @@ class MsG:
             values = list(posts.values())
 
             embed = d.Embed(
-                title=values[c - 1]['author'], url='https://e621.net/post/show/{}'.format(keys[c - 1]), color=ctx.me.color).set_image(url=values[c - 1]['url'])
+                title=values[c - 1]['author'], url='https://e621.net/post/show/{}'.format(keys[c - 1]), color=ctx.me.color if isinstance(ctx.channel, d.TextChannel) else self.color).set_image(url=values[c - 1]['url'])
             embed.set_author(name=pool['name'],
                              url='https://e621.net/pool/show?id={}'.format(pool['id']), icon_url=ctx.author.avatar_url)
             embed.set_footer(text='{} / {}'.format(c, len(posts)),
@@ -618,9 +619,9 @@ class MsG:
         posts = {}
         c = 0
         while len(posts) < limit:
-            if c == 50 + limit * 3:
+            if c == limit * 5 + self.LIMIT:
                 raise exc.Timeout
-            request = await u.fetch('https://{}.net/post/index.json'.format(booru), params={'tags': ','.join(['order:random'] + tags), 'limit': self.LIMIT}, json=True)
+            request = await u.fetch('https://{}.net/post/index.json'.format(booru), params={'tags': ','.join(['order:random'] + tags), 'limit': self.LIMIT * limit}, json=True)
             if len(request) == 0:
                 raise exc.NotFound(formatter.tostring(tags))
             if len(request) < limit:
@@ -681,7 +682,7 @@ class MsG:
             values = list(posts.values())
 
             embed = d.Embed(
-                title=values[c - 1]['author'], url='https://e621.net/post/show/{}'.format(keys[c - 1]), color=ctx.me.color).set_image(url=values[c - 1]['url'])
+                title=values[c - 1]['author'], url='https://e621.net/post/show/{}'.format(keys[c - 1]), color=ctx.me.color if isinstance(ctx.channel, d.TextChannel) else self.color).set_image(url=values[c - 1]['url'])
             embed.set_author(name=formatter.tostring(args, random=True),
                              url='https://e621.net/post?tags={}'.format(','.join(args)), icon_url=ctx.author.avatar_url)
             embed.set_footer(text='{} / {}'.format(c, len(posts)),
@@ -797,7 +798,7 @@ class MsG:
     async def e621_paginator_error(self, ctx, error):
         if isinstance(error, errext.CheckFailure):
             await ctx.send('⛔️ {} **is not an NSFW channel.**'.format(ctx.channel.mention), delete_after=10)
-            return await ctx.message.add_reaction('❌')
+            return await ctx.message.add_reaction('⛔️')
 
     def get_limit(self, args):
         limit = 1
@@ -831,7 +832,7 @@ class MsG:
 
             for ident, post in posts.items():
                 embed = d.Embed(title=post['author'], url='https://e621.net/post/show/{}'.format(ident),
-                                color=ctx.me.color).set_image(url=post['url'])
+                                color=ctx.me.color if isinstance(ctx.channel, d.TextChannel) else self.color).set_image(url=post['url'])
                 embed.set_author(name=formatter.tostring(args, random=True),
                                  url='https://e621.net/post?tags={}'.format(','.join(args)), icon_url=ctx.author.avatar_url)
                 embed.set_footer(
@@ -866,7 +867,8 @@ class MsG:
     @e621.error
     async def e621_error(self, ctx, error):
         if isinstance(error, errext.CheckFailure):
-            return await ctx.send('⛔️ {} **is not an NSFW channel.**'.format(ctx.channel.mention), delete_after=10)
+            await ctx.send('⛔️ {} **is not an NSFW channel.**'.format(ctx.channel.mention), delete_after=10)
+            return await ctx.message.add_reaction('⛔️')
 
     # Searches for and returns images from e926.net given tags when not blacklisted
     @commands.command(aliases=['e9', '9'], brief='e926 | SFW', description='e926 | SFW\nTag-based search for e926.net\n\nYou can only search 5 tags and 6 images at once for now.\ne9 [tags...] ([# of images])')
@@ -884,7 +886,7 @@ class MsG:
 
             for ident, post in posts.items():
                 embed = d.Embed(title=post['author'], url='https://e926.net/post/show/{}'.format(ident),
-                                color=ctx.me.color).set_image(url=post['url'])
+                                color=ctx.me.color if isinstance(ctx.channel, d.TextChannel) else self.color).set_image(url=post['url'])
                 embed.set_author(name=formatter.tostring(args, random=True),
                                  url='https://e621.net/post?tags={}'.format(','.join(args)), icon_url=ctx.author.avatar_url)
                 embed.set_footer(
