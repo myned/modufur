@@ -56,7 +56,7 @@ class Administration:
             if when is None:
                 for channel in channels:
                     async for message in channel.history(limit=None):
-                        if message.author.id == user:
+                        if message.author.id == int(user):
                             history.append(message)
                     # history.extend(await channel.history(limit=None).flatten())
                     await ch_sent.edit(content='🗄 **Cached** `{}/{}` **channels.**'.format(channels.index(channel) + 1, len(channels)))
@@ -84,14 +84,16 @@ class Administration:
             await cont_sent.delete()
             del_sent = await ctx.send('🗑 **Deleting messages...**')
             await del_sent.pin()
+            c = 0
             for message in history:
                 with suppress(err.NotFound):
                     await message.delete()
+                    c += 1
                 await del_sent.edit(content='🗑 **Deleted** `{}/{}` **messages.**'.format(history.index(message) + 1, len(history)))
                 await asyncio.sleep(self.RATE_LIMIT)
             await del_sent.unpin()
 
-            await ctx.send('🗑 `{}` **of** <@{}>**\'s messages deleted from** {}**.**'.format(len(history), user, ctx.guild.name))
+            await ctx.send('🗑 `{}` **of** <@{}>**\'s messages left in** {}**.**'.format(len(history) - c, user, ctx.guild.name))
             await ctx.message.add_reaction('✅')
 
         except exc.CheckFail:
