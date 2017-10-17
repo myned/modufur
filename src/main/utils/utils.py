@@ -64,6 +64,7 @@ settings = setdefault('settings.pkl', {'del_ctx': []})
 tasks = setdefault('cogs/tasks.pkl', {'auto_del': [], 'auto_qual': [], 'auto_rev': []})
 temp = setdefault('temp/temp.pkl', {})
 
+RATE_LIMIT = 2.2
 session = aiohttp.ClientSession()
 
 
