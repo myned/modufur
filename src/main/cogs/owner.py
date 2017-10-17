@@ -29,8 +29,7 @@ class Bot:
     async def die(self, ctx):
         await ctx.message.add_reaction('🌙')
 
-        if isinstance(self.bot.get_channel(u.config['info_channel']), d.TextChannel):
-            await self.bot.get_channel(u.config['info_channel']).send('**Shutting down** 🌙 . . .')
+        await self.bot.get_channel(u.config['info_channel']).send('**Shutting down** 🌙 . . .')
         # loop = self.bot.loop.all_tasks()
         # for task in loop:
         #     task.cancel()
@@ -46,14 +45,13 @@ class Bot:
         await ctx.message.add_reaction('💤')
 
         print('\n| | | | | | | | | |\nR E S T A R T I N G\n| | | | | | | | | |\n')
-        if isinstance(self.bot.get_channel(u.config['info_channel']), d.TextChannel):
-            await self.bot.get_channel(u.config['info_channel']).send('**Restarting** 💤 . . .')
+        await self.bot.get_channel(u.config['info_channel']).send('**Restarting** 💤 . . .')
+        # u.notify('R E S T A R T I N G')
 
         u.temp['restart_ch'] = ctx.channel.id
         u.temp['restart_msg'] = ctx.message.id
         u.dump(u.temp, 'temp/temp.pkl')
 
-        # u.notify('R E S T A R T I N G')
         # loop = self.bot.loop.all_tasks()
         # for task in loop:
         #     task.cancel()
@@ -102,7 +100,7 @@ class Tools:
 
     async def refresh(self, m, i='', o=''):
         global nl
-        output = m.content[10:-3]
+        output = m.content[10:-2]
         if len(nl.findall(output)) <= 20:
             await m.edit(content='```python\n{}\n{}\n>>>```'.format(output, self.format(i, o)))
         else:
@@ -136,8 +134,7 @@ class Tools:
                     exe = await self.bot.wait_for('message', check=execute)
                 except exc.Abort:
                     raise exc.Abort
-                finally:
-                    await exe.delete()
+                await exe.delete()
                 try:
                     sys.stdout = io.StringIO()
                     sys.stderr = io.StringIO()

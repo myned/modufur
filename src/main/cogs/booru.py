@@ -22,7 +22,7 @@ class MsG:
     def __init__(self, bot):
         self.bot = bot
         self.LIMIT = 100
-        self.RATE_LIMIT = 2.1
+        self.RATE_LIMIT = u.RATE_LIMIT
         self.queue = asyncio.Queue()
         self.qualitifying = False
 
@@ -550,6 +550,10 @@ class MsG:
                         starred.append(values[c - 1]['url'])
 
                         await paginator.edit(content='**Image** `{}` **saved.**'.format(len(starred)))
+                    else:
+                        starred.remove(values[c - 1])['url']
+
+                        await paginator.edit(content='**Image removed.**')
 
                 except exc.Right:
                     if c < len(keys):
@@ -587,7 +591,7 @@ class MsG:
             for url in starred:
                 await ctx.author.send(url)
                 if len(starred) > 5:
-                    await asyncio.sleep(2.1)
+                    await asyncio.sleep(self.RATE_LIMIT)
 
     # Messy code that checks image limit and tags in blacklists
     async def check_return_posts(self, *, ctx, booru='e621', tags=[], limit=1, previous={}):
@@ -728,6 +732,10 @@ class MsG:
                         starred.append(values[c - 1]['url'])
 
                         await paginator.edit(content='**Image** `{}` **saved.**'.format(len(starred)))
+                    else:
+                        starred.remove(values[c - 1])['url']
+
+                        await paginator.edit(content='**Image removed.**')
 
                 except exc.Right:
                     if c % limit == 0:
@@ -783,7 +791,7 @@ class MsG:
             for url in starred:
                 await ctx.author.send(url)
                 if len(starred) > 5:
-                    await asyncio.sleep(2.1)
+                    await asyncio.sleep(self.RATE_LIMIT)
 
     @e621_paginator.error
     async def e621_paginator_error(self, ctx, error):
@@ -1086,6 +1094,8 @@ class MsG:
             if alias_request:
                 for dic in alias_request:
                     self.aliases.setdefault(tag, set()).add(dic['name'])
+            else:
+                self.aliases.setdefault(tag, set())
         u.dump(self.blacklists, 'cogs/blacklists.pkl')
         u.dump(self.aliases, 'cogs/aliases.pkl')
 
@@ -1107,6 +1117,8 @@ class MsG:
             if alias_request:
                 for dic in alias_request:
                     self.aliases.setdefault(tag, set()).add(dic['name'])
+            else:
+                self.aliases.setdefault(tag, set())
         u.dump(self.blacklists, 'cogs/blacklists.pkl')
         u.dump(self.aliases, 'cogs/aliases.pkl')
 
@@ -1123,6 +1135,8 @@ class MsG:
             if alias_request:
                 for dic in alias_request:
                     self.aliases.setdefault(tag, set()).add(dic['name'])
+            else:
+                self.aliases.setdefault(tag, set())
         u.dump(self.blacklists, 'cogs/blacklists.pkl')
         u.dump(self.aliases, 'cogs/aliases.pkl')
 

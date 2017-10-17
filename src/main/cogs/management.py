@@ -15,7 +15,7 @@ class Administration:
 
     def __init__(self, bot):
         self.bot = bot
-        self.RATE_LIMIT = 2.1
+        self.RATE_LIMIT = u.RATE_LIMIT
         self.queue = asyncio.Queue()
         self.deleting = False
 
@@ -23,7 +23,7 @@ class Administration:
             for channel in u.tasks['auto_del']:
                 temp = self.bot.get_channel(channel)
                 self.bot.loop.create_task(self.queue_for_deletion(temp))
-                print('AUTO-DELETING : #{}'.format(temp.name))
+                print('AUTO-DELETING : #{}'.format(temp.id))
             self.bot.loop.create_task(self.delete())
             self.deleting = True
 
@@ -131,7 +131,7 @@ class Administration:
             u.dump(u.tasks, 'cogs/tasks.pkl')
             if not u.tasks['auto_del']:
                 self.deleting = False
-            print('STOPPED : looping #{}'.format(channel.name))
+            print('STOPPED : deleting #{}'.format(channel.id))
             await channel.send('**Stopped queueing messages for deletion in** {}**.**'.format(channel.mention), delete_after=5)
 
     @commands.command(name='autodelete', aliases=['autodel', 'ad'])
@@ -146,7 +146,7 @@ class Administration:
                 if not self.deleting:
                     self.bot.loop.create_task(self.delete())
                     self.deleting = True
-                print('AUTO-DELETING : #{}'.format(ctx.channel.name))
+                print('AUTO-DELETING : #{}'.format(ctx.channel.id))
                 await ctx.send('**Auto-deleting all messages in {}.**'.format(ctx.channel.mention), delete_after=5)
                 await ctx.message.add_reaction('✅')
             else:
