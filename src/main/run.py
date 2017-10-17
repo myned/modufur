@@ -54,7 +54,8 @@ async def on_ready():
 async def on_error(error, *args, **kwargs):
     print('\n! ! ! ! !\nE R R O R : {}\n! ! ! ! !\n'.format(error), file=sys.stderr)
     tb.print_exc()
-    await bot.get_channel(u.config['info_channel']).send('**ERROR** ⚠️ {}'.format(error))
+    await bot.get_user(u.config['owner_id']).send('**ERROR** ⚠️ `{}`'.format(error))
+    await bot.get_channel(u.config['info_channel']).send('**ERROR** ⚠️ `{}`'.format(error))
     # u.notify('E R R O R')
     await bot.logout()
     u.close(bot.loop)
@@ -64,14 +65,15 @@ async def on_error(error, *args, **kwargs):
 async def on_command_error(ctx, error):
     if isinstance(error, errext.CheckFailure):
         await ctx.send('⛔️ **Insufficient permissions.**', delete_after=10)
+        await ctx.message.add_reaction('⛔️')
     elif isinstance(error, errext.CommandNotFound):
         print('INVALID COMMAND : {}'.format(error), file=sys.stderr)
     else:
         print('\n! ! ! ! ! ! !  ! ! ! ! !\nC O M M A N D  E R R O R : {}\n! ! ! ! ! ! !  ! ! ! ! !\n'.format(
             error), file=sys.stderr)
         tb.print_exception(type(error), error, error.__traceback__, file=sys.stderr)
-        await bot.get_user(u.config['owner_id']).send('**COMMAND ERROR** ⚠️ {}'.format(error))
-        await bot.get_channel(u.config['info_channel']).send('**COMMAND ERROR** ⚠️ {}'.format(error))
+        await bot.get_user(u.config['owner_id']).send('**COMMAND ERROR** ⚠️ `{}`'.format(error))
+        await bot.get_channel(u.config['info_channel']).send('**COMMAND ERROR** ⚠️ `{}`'.format(error))
         await exc.send_error(ctx, error)
         # u.notify('C O M M A N D  E R R O R')
 
