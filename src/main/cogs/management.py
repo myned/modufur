@@ -77,7 +77,7 @@ class Administration:
             history = [message for message in history if message.author.id is user]
             est_sent = await ctx.send('⏱ **Estimated time to delete history:** `{}m {}s`'.format(int(self.RATE_LIMIT * len(history) / 60), int(self.RATE_LIMIT * len(history) % 60)))
             cont_sent = await ctx.send('{} **Continue?** `Y` or `N`'.format(ctx.author.mention))
-            await self.bot.wait_for('message', check=yes, timeout=60)
+            await self.bot.wait_for('message', check=yes, timeout=10 * 60)
             await cont_sent.delete()
             del_sent = await ctx.send('🗑 **Deleting messages...**')
             await del_sent.pin()
