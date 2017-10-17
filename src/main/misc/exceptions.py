@@ -2,104 +2,104 @@ base = '⚠️ **An internal error has occurred.** This has been reported to my 
 
 
 async def send_error(ctx, error):
-    await ctx.send('{}\n```\n{}```'.format(base, error))
+  await ctx.send('{}\n```\n{}```'.format(base, error))
 
 
 class Left(Exception):
-    pass
+  pass
 
 
 class Right(Exception):
-    pass
+  pass
 
 
 class Save(Exception):
-    pass
+  pass
 
 
 class GoTo(Exception):
-    pass
+  pass
 
 
 class Exists(Exception):
-    pass
+  pass
 
 
 class MissingArgument(Exception):
-    pass
+  pass
 
 
 class FavoritesNotFound(Exception):
-    pass
+  pass
 
 
 class PostError(Exception):
-    pass
+  pass
 
 
 class ImageError(Exception):
-    pass
+  pass
 
 
 class MatchError(Exception):
-    pass
+  pass
 
 
 class TagBlacklisted(Exception):
-    pass
+  pass
 
 
 class BoundsError(Exception):
-    pass
+  pass
 
 
 class TagBoundsError(Exception):
-    pass
+  pass
 
 
 class TagExists(Exception):
-    pass
+  pass
 
 
 class TagError(Exception):
-    pass
+  pass
 
 
 class FlagError(Exception):
-    pass
+  pass
 
 
 class BlacklistError(Exception):
-    pass
+  pass
 
 
 class NotFound(Exception):
-    pass
+  pass
 
 
 class Timeout(Exception):
-    pass
+  pass
 
 
 class InvalidVideoFile(Exception):
-    pass
+  pass
 
 
 class MissingAttachment(Exception):
-    pass
+  pass
 
 
 class TooManyAttachments(Exception):
-    pass
+  pass
 
 
 class CheckFail(Exception):
-    pass
+  pass
 
 
 class Abort(Exception):
-    pass
+  pass
 
 
 class Continue(Exception):
-    pass
+  pass
