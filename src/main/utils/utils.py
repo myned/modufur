@@ -9,6 +9,8 @@ import aiohttp
 import discord as d
 from pync import Notifier
 
+from misc import exceptions as exc
+
 print('\nPID : {}\n'.format(os.getpid()))
 
 
