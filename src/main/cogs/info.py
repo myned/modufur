@@ -24,7 +24,7 @@ class Info:
 
   @commands.command(hidden=True)
   async def hi(self, ctx, *args):
-    dest = u.get_args(ctx, args)
+    dest = u.get_kwargs(ctx, args)
 
     hello = 'Hewwo, {}.'.format(ctx.author.mention)
     if ctx.author.id == checks.owner_id:

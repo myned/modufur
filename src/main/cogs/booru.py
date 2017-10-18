@@ -24,7 +24,7 @@ class MsG:
     self.color = d.Color(0x1A1A1A)
     self.LIMIT = 100
     self.RATE_LIMIT = u.RATE_LIMIT
-    self.HISTORY_LIMIT = 99
+    self.HISTORY_LIMIT = 100
     self.queue = asyncio.Queue()
     self.qualitifying = False
 
@@ -45,7 +45,8 @@ class MsG:
   @commands.command(aliases=['rel'], brief='e621 Related tag search', description='e621 | NSFW\nReturn a link search for given tags')
   @checks.del_ctx()
   async def related(self, ctx, *args):
-    dest, tags = u.get_args(ctx, args, rem=True)
+    kwargs = u.get_kwargs(ctx, args)
+    dest, tags = kwargs['destination'], kwargs['remaining']
     related = []
 
     await dest.trigger_typing()
@@ -65,7 +66,8 @@ class MsG:
   @commands.command(name='aliases', aliases=['alias'], brief='e621 Tag aliases', description='e621 | NSFW\nSearch aliases for given tag')
   @checks.del_ctx()
   async def tag_aliases(self, ctx, *args):
-    dest, tags = u.get_args(ctx, args, rem=True)
+    kwargs = u.get_kwargs(ctx, args)
+    dest, tags = kwargs['destination'], kwargs['remaining']
     aliases = []
 
     await dest.trigger_typing()
@@ -85,7 +87,8 @@ class MsG:
   @checks.del_ctx()
   async def get_image(self, ctx, *args):
     try:
-      dest, urls = u.get_args(ctx, args, rem=True)
+      kwargs = u.get_kwargs(ctx, args)
+      dest, urls = kwargs['destination'], kwargs['remaining']
 
       if not urls:
         raise exc.MissingArgument
@@ -110,7 +113,8 @@ class MsG:
   @checks.del_ctx()
   async def reverse_image_search(self, ctx, *args):
     try:
-      dest, urls = u.get_args(ctx, args, rem=True)
+      kwargs = u.get_kwargs(ctx, args)
+      dest, urls = kwargs['destination'], kwargs['remaining']
       c = 0
 
       if not urls and not ctx.message.attachments:
@@ -153,7 +157,8 @@ class MsG:
   @checks.del_ctx()
   async def quality_reverse_image_search(self, ctx, *args):
     try:
-      dest, urls = u.get_args(ctx, args, rem=True)
+      kwargs = u.get_kwargs(ctx, args)
+      dest, urls = kwargs['destination'], kwargs['remaining']
       c = 0
 
       if not urls and not ctx.message.attachments:
@@ -200,14 +205,17 @@ class MsG:
   @checks.del_ctx()
   async def reversify(self, ctx, *args):
     try:
-      dest, remove, limit = u.get_args(ctx, args, rm=True, lim=self.HISTORY_LIMIT)
+      kwargs = u.get_kwargs(ctx, args, limit=self.HISTORY_LIMIT / 5)
+      dest, remove, limit = kwargs['destination'], kwargs['remove'], kwargs['limit']
       urls = []
       attachments = []
 
       if not ctx.author.permissions_in(ctx.channel).manage_messages:
         dest = ctx.author
 
-      async for message in ctx.channel.history(limit=limit + 1):
+      async for message in ctx.channel.history(limit=self.HISTORY_LIMIT * limit):
+        if len(urls) + len(attachments) >= limit:
+          break
         if message.author.id != self.bot.user.id and re.search('(http[a-z]?:\/\/[^ ]*\.(?:gif|png|jpg|jpeg))', message.content) is not None:
           urls.append(message)
           await message.add_reaction('⏳')
@@ -267,14 +275,17 @@ class MsG:
   @checks.del_ctx()
   async def qualitify(self, ctx, *args):
     try:
-      dest, remove, limit = u.get_args(ctx, args, rm=True, lim=self.HISTORY_LIMIT)
+      kwargs = u.get_kwargs(ctx, args, limit=self.HISTORY_LIMIT / 5)
+      dest, remove, limit = kwargs['destination'], kwargs['remove'], kwargs['limit']
       urls = []
       attachments = []
 
       if not ctx.author.permissions_in(ctx.channel).manage_messages:
         dest = ctx.author
 
-      async for message in ctx.channel.history(limit=limit + 1):
+      async for message in ctx.channel.history(limit=self.HISTORY_LIMIT * limit):
+        if len(urls) + len(attachments) >= limit:
+          break
         if message.author.id != self.bot.user.id and re.search('(http[a-z]?:\/\/[^ ]*\.(?:gif|png|jpg|jpeg))', message.content) is not None:
           urls.append(message)
           await message.add_reaction('⏳')
@@ -330,9 +341,9 @@ class MsG:
     except exc.NotFound:
       await ctx.send('**No matches found.**', delete_after=10)
       await ctx.message.add_reaction('❌')
-    except ValueError:
-      await ctx.send('**Invalid limit.**', delete_after=10)
-      await ctx.message.add_reaction('❌')
+    # except ValueError:
+    #   await ctx.send('**Invalid limit.**', delete_after=10)
+    #   await ctx.message.add_reaction('❌')
 
   async def _qualitify(self):
     while self.qualitifying:
@@ -496,7 +507,8 @@ class MsG:
       return False
 
     try:
-      dest, query = u.get_args(ctx, args, rem=True)
+      kwargs = u.get_kwargs(ctx, args)
+      dest, query = kwargs['destination'], kwargs['remaining']
       starred = []
       c = 1
 
@@ -676,7 +688,8 @@ class MsG:
       return False
 
     try:
-      dest, tags = u.get_args(ctx, args, rem=True)
+      kwargs = u.get_kwargs(ctx, args)
+      dest, tags = kwargs['destination'], kwargs['remaining']
       limit = self.LIMIT / 5
       starred = []
       c = 1
@@ -814,7 +827,8 @@ class MsG:
   @checks.is_nsfw()
   async def e621(self, ctx, *args):
     try:
-      dest, args, limit = u.get_args(ctx, args, rem=True, lim=3)
+      kwargs = u.get_kwargs(ctx, args, limit=3)
+      dest, args, limit = kwargs['destination'], kwargs['remaining'], kwargs['limit']
 
       tags = self.get_favorites(ctx, args)
 
@@ -867,7 +881,8 @@ class MsG:
   @checks.del_ctx()
   async def e926(self, ctx, *args):
     try:
-      dest, args, limit = u.get_args(ctx, args, rem=True, lim=3)
+      kwargs = u.get_kwargs(ctx, args, limit=3)
+      dest, args, limit = kwargs['destination'], kwargs['remaining'], kwargs['limit']
 
       tags = self.get_favorites(ctx, args)
 
@@ -923,7 +938,7 @@ class MsG:
 
   @_get_favorite.command(name='tags', aliases=['t'])
   async def __get_favorite_tags(self, ctx, *args):
-    dest = u.get_args(ctx, *args)
+    dest = u.get_kwargs(ctx, args)['destination']
 
     await dest.send('⭐ {}**\'s favorite tags:**\n```\n{}```'.format(ctx.author.mention, formatter.tostring(self.favorites.get(ctx.author.id, {}).get('tags', set()))), delete_after=10)
     await ctx.message.add_reaction('✅')
@@ -939,7 +954,8 @@ class MsG:
   @_add_favorite.command(name='tags', aliases=['t'])
   async def __add_favorite_tags(self, ctx, *args):
     try:
-      dest, tags = u.get_args(ctx, args, rem=True)
+      kwargs = u.get_kwargs(ctx, args)
+      dest, tags = kwargs['destination'], kwargs['remaining']
 
       for tag in tags:
         if tag in self.blacklists['user_blacklist'].get(ctx.author.id, set()):
@@ -971,7 +987,8 @@ class MsG:
   @_remove_favorite.command(name='tags', aliases=['t'])
   async def __remove_favorite_tags(self, ctx, *args):
     try:
-      dest, tags = u.get_args(ctx, args, rem=True)
+      kwargs = u.get_kwargs(ctx, args)
+      dest, tags = kwargs['destination'], kwargs['remaining']
 
       for tag in tags:
         try:
@@ -999,7 +1016,7 @@ class MsG:
 
   @_clear_favorite.command(name='tags', aliases=['t'])
   async def __clear_favorite_tags(self, ctx, *args):
-    dest = u.get_args(ctx, args)
+    dest = u.get_kwargs(ctx, args)['destination']
 
     with suppress(KeyError):
       del self.favorites[ctx.author.id]
@@ -1033,14 +1050,14 @@ class MsG:
 
   @_get_blacklist.command(name='global', aliases=['gl', 'g'])
   async def __get_global_blacklist(self, ctx, *args):
-    dest = u.get_args(ctx, args)
+    dest = u.get_kwargs(ctx, args)['destination']
 
     await dest.send('🚫 **Global blacklist:**\n```\n{}```'.format(formatter.tostring(self.blacklists['global_blacklist'])))
     await ctx.message.add_reaction('✅')
 
   @_get_blacklist.command(name='channel', aliases=['ch', 'c'])
   async def __get_channel_blacklist(self, ctx, *args):
-    dest = u.get_args(ctx, args)
+    dest = u.get_kwargs(ctx, args)['destination']
 
     guild = ctx.guild if isinstance(
         ctx.guild, d.Guild) else ctx.channel
@@ -1050,14 +1067,14 @@ class MsG:
 
   @_get_blacklist.command(name='me', aliases=['m'])
   async def __get_user_blacklist(self, ctx, *args):
-    dest = u.get_args(ctx, args)
+    dest = u.get_kwargs(ctx, args)['destination']
 
     await dest.send('🚫 {}**\'s blacklist:**\n```\n{}```'.format(ctx.author.mention, formatter.tostring(self.blacklists['user_blacklist'].get(ctx.author.id, set()))), delete_after=10)
     await ctx.message.add_reaction('✅')
 
   @_get_blacklist.command(name='here', aliases=['h'])
   async def __get_here_blacklists(self, ctx, *args):
-    dest = u.get_args(ctx, args)
+    dest = u.get_kwargs(ctx, args)['destination']
 
     guild = ctx.guild if isinstance(
         ctx.guild, d.Guild) else ctx.channel
@@ -1074,7 +1091,7 @@ class MsG:
   @__get_all_blacklists.command(name='guild', aliases=['g'])
   @commands.has_permissions(manage_channels=True)
   async def ___get_all_guild_blacklists(self, ctx, *args):
-    dest = u.get_args(ctx, args)
+    dest = u.get_kwargs(ctx, args)['destination']
 
     guild = ctx.guild if isinstance(
         ctx.guild, d.Guild) else ctx.channel
@@ -1085,7 +1102,7 @@ class MsG:
   @__get_all_blacklists.command(name='user', aliases=['u', 'member', 'm'])
   @commands.is_owner()
   async def ___get_all_user_blacklists(self, ctx, *args):
-    dest = u.get_args(ctx, args)
+    dest = u.get_kwargs(ctx, args)['destination']
 
     await dest.send('🚫 **__User blacklists:__**\n\n{}'.format(formatter.dict_tostring(self.blacklists['user_blacklist'])))
     await ctx.message.add_reaction('✅')
@@ -1099,7 +1116,8 @@ class MsG:
   @_add_tags.command(name='global', aliases=['gl', 'g'])
   @commands.is_owner()
   async def __add_global_tags(self, ctx, *args):
-    dest, tags = u.get_args(ctx, args, rem=True)
+    kwargs = u.get_kwargs(ctx, args)
+    dest, tags = kwargs['destination'], kwargs['remaining']
 
     await dest.trigger_typing()
 
@@ -1120,7 +1138,8 @@ class MsG:
   @_add_tags.command(name='channel', aliases=['ch', 'c'])
   @commands.has_permissions(manage_channels=True)
   async def __add_channel_tags(self, ctx, *args):
-    dest, tags = u.get_args(ctx, args, rem=True)
+    kwargs = u.get_kwargs(ctx, args)
+    dest, tags = kwargs['destination'], kwargs['remaining']
 
     guild = ctx.guild if isinstance(
         ctx.guild, d.Guild) else ctx.channel
@@ -1144,7 +1163,8 @@ class MsG:
 
   @_add_tags.command(name='me', aliases=['m'])
   async def __add_user_tags(self, ctx, *args):
-    dest, tags = u.get_args(ctx, args, rem=True)
+    kwargs = u.get_kwargs(ctx, args)
+    dest, tags = kwargs['destination'], kwargs['remaining']
 
     await dest.trigger_typing()
 
@@ -1172,7 +1192,8 @@ class MsG:
   @commands.is_owner()
   async def __remove_global_tags(self, ctx, *args):
     try:
-      dest, tags = u.get_args(ctx, args, rem=True)
+      kwargs = u.get_kwargs(ctx, args)
+      dest, tags = kwargs['destination'], kwargs['remaining']
 
       for tag in tags:
         try:
@@ -1194,7 +1215,8 @@ class MsG:
   @commands.has_permissions(manage_channels=True)
   async def __remove_channel_tags(self, ctx, *args):
     try:
-      dest, tags = u.get_args(ctx, args, rem=True)
+      kwargs = u.get_kwargs(ctx, args)
+      dest, tags = kwargs['destination'], kwargs['remaining']
 
       guild = ctx.guild if isinstance(
           ctx.guild, d.Guild) else ctx.channel
@@ -1218,7 +1240,8 @@ class MsG:
   @_remove_tags.command(name='me', aliases=['m'])
   async def __remove_user_tags(self, ctx, *args):
     try:
-      dest, tags = u.get_args(ctx, args, rem=True)
+      kwargs = u.get_kwargs(ctx, args)
+      dest, tags = kwargs['destination'], kwargs['remaining']
 
       for tag in tags:
         try:
@@ -1245,7 +1268,7 @@ class MsG:
   @_clear_blacklist.command(name='global', aliases=['gl', 'g'])
   @commands.is_owner()
   async def __clear_global_blacklist(self, ctx, *args):
-    dest = u.get_args(ctx, args)
+    dest = u.get_kwargs(ctx, args)['destination']
 
     self.blacklists['global_blacklist'].clear()
     u.dump(self.blacklists, 'cogs/blacklists.pkl')
@@ -1256,7 +1279,7 @@ class MsG:
   @_clear_blacklist.command(name='channel', aliases=['ch', 'c'])
   @commands.has_permissions(manage_channels=True)
   async def __clear_channel_blacklist(self, ctx, *args):
-    dest = u.get_args(ctx, args)
+    dest = u.get_kwargs(ctx, args)['destination']
 
     guild = ctx.guild if isinstance(
         ctx.guild, d.Guild) else ctx.channel
@@ -1270,7 +1293,7 @@ class MsG:
 
   @_clear_blacklist.command(name='me', aliases=['m'])
   async def __clear_user_blacklist(self, ctx, *args):
-    dest = u.get_args(ctx, args)
+    dest = u.get_kwargs(ctx, args)['destination']
 
     with suppress(KeyError):
       del self.blacklists['user_blacklist'][ctx.author.id]
