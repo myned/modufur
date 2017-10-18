@@ -26,7 +26,7 @@ try:
 except FileNotFoundError:
   with open('config.json', 'w') as outfile:
     jsn.dump({'client_id': 0, 'info_channel': 0, 'owner_id': 0, 'permissions': 126016,
-              'playing': 'a game', 'prefix': ',', 'token': 'str'}, outfile, indent=4, sort_keys=True)
+              'playing': 'a game', 'prefix': [',', 'm,'], 'token': 'str'}, outfile, indent=4, sort_keys=True)
     raise FileNotFoundError(
         'Config file not found: config.json created with abstract values. Restart run.py with correct values.')
 
