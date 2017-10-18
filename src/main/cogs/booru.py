@@ -267,8 +267,8 @@ class MsG:
     except exc.NotFound:
       await ctx.send('**No matches found.**', delete_after=10)
       await ctx.message.add_reaction('❌')
-    except ValueError:
-      await ctx.send('**Invalid limit.**', delete_after=10)
+    except exc.BoundsError as e:
+      await ctx.send('`{}` **invalid limit.** Images limited to 20'.format(e), delete_after=10)
       await ctx.message.add_reaction('❌')
 
   @commands.command(name='qualitify', aliases=['qualify', 'qrevify', 'qrisify', 'qify'])
@@ -341,9 +341,9 @@ class MsG:
     except exc.NotFound:
       await ctx.send('**No matches found.**', delete_after=10)
       await ctx.message.add_reaction('❌')
-    # except ValueError:
-    #   await ctx.send('**Invalid limit.**', delete_after=10)
-    #   await ctx.message.add_reaction('❌')
+    except exc.BoundsError as e:
+      await ctx.send('`{}` **invalid limit.** Images limited to 20'.format(e), delete_after=10)
+      await ctx.message.add_reaction('❌')
 
   async def _qualitify(self):
     while self.qualitifying:
