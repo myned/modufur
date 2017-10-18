@@ -62,7 +62,7 @@ class MsG:
 
       related.clear()
 
-    await ctx.message.add_reaction('✅')
+    await ctx.message.add_reaction('\N{WHITE HEAVY CHECK MARK}')
 
   # Tag aliases
   @commands.command(name='aliases', aliases=['alias'], brief='e621 Tag aliases', description='e621 | NSFW\nSearch aliases for given tag')
@@ -85,7 +85,7 @@ class MsG:
 
       aliases.clear()
 
-    await ctx.message.add_reaction('✅')
+    await ctx.message.add_reaction('\N{WHITE HEAVY CHECK MARK}')
 
   @commands.command(name='getimage', aliases=['geti', 'gi'])
   @checks.del_ctx()
@@ -106,11 +106,11 @@ class MsG:
         finally:
           await asyncio.sleep(self.RATE_LIMIT)
 
-      await ctx.message.add_reaction('✅')
+      await ctx.message.add_reaction('\N{WHITE HEAVY CHECK MARK}')
 
     except exc.MissingArgument:
       await ctx.send('**Invalid url or file.**', delete_after=10)
-      await ctx.message.add_reaction('❌')
+      await ctx.message.add_reaction('\N{CROSS MARK}')
 
   # Reverse image searches a linked image using the public iqdb
   @commands.command(name='reverse', aliases=['rev', 'ris'], brief='e621 Reverse image search', description='e621 | NSFW\nReverse-search an image with given URL')
@@ -149,13 +149,13 @@ class MsG:
           await ctx.send('**No probable match for:** `{}`'.format(e), delete_after=10)
 
       if c:
-        await ctx.message.add_reaction('✅')
+        await ctx.message.add_reaction('\N{WHITE HEAVY CHECK MARK}')
       else:
-        await ctx.message.add_reaction('❌')
+        await ctx.message.add_reaction('\N{CROSS MARK}')
 
     except exc.MissingArgument:
       await ctx.send('**Invalid url or file.**', delete_after=10)
-      await ctx.message.add_reaction('❌')
+      await ctx.message.add_reaction('\N{CROSS MARK}')
 
   @commands.command(name='quality', aliases=['qual', 'qrev', 'qis'])
   @checks.del_ctx()
@@ -197,13 +197,13 @@ class MsG:
           await ctx.send('**No probable match for:** `{}`'.format(e), delete_after=10)
 
       if c:
-        await ctx.message.add_reaction('✅')
+        await ctx.message.add_reaction('\N{WHITE HEAVY CHECK MARK}')
       else:
-        await ctx.message.add_reaction('❌')
+        await ctx.message.add_reaction('\N{CROSS MARK}')
 
     except exc.MissingArgument:
       await ctx.send('**Invalid url or file.**', delete_after=10)
-      await ctx.message.add_reaction('❌')
+      await ctx.message.add_reaction('\N{CROSS MARK}')
 
   @commands.command(name='reversify', aliases=['revify', 'risify', 'rify'])
   @checks.del_ctx()
@@ -222,10 +222,10 @@ class MsG:
           break
         if message.author.id != self.bot.user.id and re.search('(http[a-z]?:\/\/[^ ]*\.(?:gif|png|jpg|jpeg))', message.content) is not None:
           urls.append(message)
-          await message.add_reaction('⏳')
+          await message.add_reaction('\N{HOURGLASS WITH FLOWING SAND}')
         elif message.author.id != self.bot.user.id and message.attachments:
           attachments.append(message)
-          await message.add_reaction('⏳')
+          await message.add_reaction('\N{HOURGLASS WITH FLOWING SAND}')
 
       if not urls and not attachments:
         raise exc.NotFound
@@ -236,7 +236,7 @@ class MsG:
             await dest.trigger_typing()
 
             await dest.send('**Probable match from** {}**:**\n{}'.format(message.author.display_name, await scraper.get_post(match.group(0))))
-            await message.add_reaction('✅')
+            await message.add_reaction('\N{WHITE HEAVY CHECK MARK}')
 
             await asyncio.sleep(self.RATE_LIMIT)
 
@@ -246,7 +246,7 @@ class MsG:
 
           except exc.MatchError as e:
             await ctx.send('**No probable match for:** `{}`'.format(e), delete_after=10)
-            await message.add_reaction('❌')
+            await message.add_reaction('\N{CROSS MARK}')
 
       for message in attachments:
         for attachment in message.attachments:
@@ -254,7 +254,7 @@ class MsG:
             await dest.trigger_typing()
 
             await dest.send('**Probable match from** {}**:**\n{}'.format(message.author.display_name, await scraper.get_post(attachment.url)))
-            await message.add_reaction('✅')
+            await message.add_reaction('\N{WHITE HEAVY CHECK MARK}')
 
             await asyncio.sleep(self.RATE_LIMIT)
 
@@ -264,16 +264,16 @@ class MsG:
 
           except exc.MatchError as e:
             await ctx.send('**No probable match for:** `{}`'.format(e), delete_after=10)
-            await message.add_reaction('❌')
+            await message.add_reaction('\N{CROSS MARK}')
 
-      await ctx.message.add_reaction('✅')
+      await ctx.message.add_reaction('\N{WHITE HEAVY CHECK MARK}')
 
     except exc.NotFound:
       await ctx.send('**No matches found.**', delete_after=10)
-      await ctx.message.add_reaction('❌')
+      await ctx.message.add_reaction('\N{CROSS MARK}')
     except exc.BoundsError as e:
       await ctx.send('`{}` **invalid limit.** Images limited to 20'.format(e), delete_after=10)
-      await ctx.message.add_reaction('❌')
+      await ctx.message.add_reaction('\N{CROSS MARK}')
 
   @commands.command(name='qualitify', aliases=['qualify', 'qrevify', 'qrisify', 'qify'])
   @checks.del_ctx()
@@ -292,10 +292,10 @@ class MsG:
           break
         if message.author.id != self.bot.user.id and re.search('(http[a-z]?:\/\/[^ ]*\.(?:gif|png|jpg|jpeg))', message.content) is not None:
           urls.append(message)
-          await message.add_reaction('⏳')
+          await message.add_reaction('\N{HOURGLASS WITH FLOWING SAND}')
         elif message.author.id != self.bot.user.id and message.attachments:
           attachments.append(message)
-          await message.add_reaction('⏳')
+          await message.add_reaction('\N{HOURGLASS WITH FLOWING SAND}')
 
       if not urls and not attachments:
         raise exc.NotFound
@@ -308,7 +308,7 @@ class MsG:
             post = await scraper.get_post(match.group(0))
 
             await dest.send('**Probable match from** {}**:**\n{}'.format(message.author.display_name, await scraper.get_image(post)))
-            await message.add_reaction('✅')
+            await message.add_reaction('\N{WHITE HEAVY CHECK MARK}')
 
             await asyncio.sleep(self.RATE_LIMIT)
 
@@ -318,7 +318,7 @@ class MsG:
 
           except exc.MatchError as e:
             await ctx.send('**No probable match for:** `{}`'.format(e), delete_after=10)
-            await message.add_reaction('❌')
+            await message.add_reaction('\N{CROSS MARK}')
 
       for message in attachments:
         for attachment in message.attachments:
@@ -328,7 +328,7 @@ class MsG:
             post = await scraper.get_post(attachment.url)
 
             await dest.send('**Probable match from** {}**:**\n{}'.format(message.author.display_name, await scraper.get_image(post)))
-            await message.add_reaction('✅')
+            await message.add_reaction('\N{WHITE HEAVY CHECK MARK}')
 
             await asyncio.sleep(self.RATE_LIMIT)
 
@@ -338,16 +338,16 @@ class MsG:
 
           except exc.MatchError as e:
             await ctx.send('**No probable match for:** `{}`'.format(e), delete_after=10)
-            await message.add_reaction('❌')
+            await message.add_reaction('\N{CROSS MARK}')
 
-      await ctx.message.add_reaction('✅')
+      await ctx.message.add_reaction('\N{WHITE HEAVY CHECK MARK}')
 
     except exc.NotFound:
       await ctx.send('**No matches found.**', delete_after=10)
-      await ctx.message.add_reaction('❌')
+      await ctx.message.add_reaction('\N{CROSS MARK}')
     except exc.BoundsError as e:
       await ctx.send('`{}` **invalid limit.** Images limited to 20'.format(e), delete_after=10)
-      await ctx.message.add_reaction('❌')
+      await ctx.message.add_reaction('\N{CROSS MARK}')
 
   async def _qualitify(self):
     while self.qualitifying:
@@ -360,7 +360,7 @@ class MsG:
           post = await scraper.get_post(match.group(0))
 
           await message.channel.send('**Probable match from** {}**:**\n{}'.format(message.author.display_name, await scraper.get_image(post)))
-          await message.add_reaction('✅')
+          await message.add_reaction('\N{WHITE HEAVY CHECK MARK}')
 
           await asyncio.sleep(self.RATE_LIMIT)
 
@@ -369,7 +369,7 @@ class MsG:
 
         except exc.MatchError as e:
           await message.channel.send('**No probable match for:** `{}`'.format(e), delete_after=10)
-          await message.add_reaction('❌')
+          await message.add_reaction('\N{CROSS MARK}')
 
       for attachment in message.attachments:
         try:
@@ -378,7 +378,7 @@ class MsG:
           post = await scraper.get_post(attachment.url)
 
           await message.channel.send('**Probable match from** {}**:**\n{}'.format(message.author.display_name, await scraper.get_image(post)))
-          await message.add_reaction('✅')
+          await message.add_reaction('\N{WHITE HEAVY CHECK MARK}')
 
           await asyncio.sleep(self.RATE_LIMIT)
 
@@ -387,7 +387,7 @@ class MsG:
 
         except exc.MatchError as e:
           await message.channel.send('**No probable match for:** `{}`'.format(e), delete_after=10)
-          await message.add_reaction('❌')
+          await message.add_reaction('\N{CROSS MARK}')
 
     print('STOPPED : qualitifying')
 
@@ -403,7 +403,7 @@ class MsG:
       while not self.bot.is_closed():
         message = await self.bot.wait_for('message', check=check)
         await self.queue.put(message)
-        await message.add_reaction('⏳')
+        await message.add_reaction('\N{HOURGLASS WITH FLOWING SAND}')
 
     except exc.Abort:
       u.tasks['auto_qual'].remove(channel.id)
@@ -427,13 +427,13 @@ class MsG:
 
         print('AUTO-QUALITIFYING : #{}'.format(ctx.channel.name))
         await ctx.send('**Auto-qualitifying all images in {}.**'.format(ctx.channel.mention), delete_after=5)
-        await ctx.message.add_reaction('✅')
+        await ctx.message.add_reaction('\N{WHITE HEAVY CHECK MARK}')
       else:
         raise exc.Exists
 
     except exc.Exists:
       await ctx.send('**Already auto-qualitifying in {}.** Type `stop` to stop.'.format(ctx.channel.mention), delete_after=10)
-      await ctx.message.add_reaction('❌')
+      await ctx.message.add_reaction('\N{CROSS MARK}')
 
   def get_favorites(self, ctx, args):
     if '-f' in args or '-favs' in args or '-faves' in args or '-favorites' in args:
@@ -492,16 +492,16 @@ class MsG:
   @checks.del_ctx()
   async def pool_paginator(self, ctx, *args):
     def on_reaction(reaction, user):
-      if reaction.emoji == '🚫' and reaction.message.content == paginator.content and (user is ctx.author or user.id == u.config['owner_id']):
+      if reaction.emoji == '\N{OCTAGONAL SIGN}' and reaction.message.id == ctx.message.id and (user is ctx.author or user.id == u.config['owner_id']):
         raise exc.Abort
-      elif reaction.emoji == '📁' and reaction.message.content == paginator.content and (user is ctx.author or user.id == u.config['owner_id']):
-        raise exc.Save
-      elif reaction.emoji == '⬅' and reaction.message.content == paginator.content and (user is ctx.author or user.id == u.config['owner_id']):
-        raise exc.Left
-      elif reaction.emoji == '🔢' and reaction.message.content == paginator.content and (user is ctx.author or user.id == u.config['owner_id']):
+      elif reaction.emoji == '\N{NUMBER SIGN}\N{COMBINING ENCLOSING KEYCAP}' and reaction.message.id == paginator.id and (user is ctx.author or user.id == u.config['owner_id']):
         raise exc.GoTo
-      elif reaction.emoji == '➡' and reaction.message.content == paginator.content and (user is ctx.author or user.id == u.config['owner_id']):
+      elif reaction.emoji == '\N{LEFTWARDS BLACK ARROW}' and reaction.message.id == paginator.id and (user is ctx.author or user.id == u.config['owner_id']):
+        raise exc.Left
+      elif reaction.emoji == '\N{BLACK RIGHTWARDS ARROW}' and reaction.message.id == paginator.id and (user is ctx.author or user.id == u.config['owner_id']):
         raise exc.Right
+      elif reaction.emoji == '\N{FILE FOLDER}' and reaction.message.id == paginator.id and (user is ctx.author or user.id == u.config['owner_id']):
+        raise exc.Save
       return False
 
     def on_message(msg):
@@ -531,30 +531,15 @@ class MsG:
 
       paginator = await dest.send(embed=embed)
 
-      await paginator.add_reaction('🚫')
-      await paginator.add_reaction('📁')
-      await paginator.add_reaction('⬅')
-      await paginator.add_reaction('🔢')
-      await paginator.add_reaction('➡')
+      for emoji in ('\N{NUMBER SIGN}\N{COMBINING ENCLOSING KEYCAP}', '\N{LEFTWARDS BLACK ARROW}', '\N{BLACK RIGHTWARDS ARROW}', '\N{FILE FOLDER}'):
+        await paginator.add_reaction(emoji)
+      for emoji in ('\N{WHITE HEAVY CHECK MARK}', '\N{OCTAGONAL SIGN}'):
+        await ctx.message.add_reaction(emoji)
       await asyncio.sleep(1)
-      await ctx.message.add_reaction('✅')
 
       while not self.bot.is_closed():
         try:
           await self.bot.wait_for('reaction_add', check=on_reaction, timeout=10 * 60)
-
-        except exc.Left:
-          if c > 1:
-            c -= 1
-            embed.title = values[c - 1]['author']
-            embed.url = 'https://e621.net/post/show/{}'.format(keys[c - 1])
-            embed.set_footer(text='{} / {}'.format(c, len(posts)),
-                             icon_url='http://lh6.ggpht.com/d3pNZNFCcJM8snBsRSdKUhR9AVBnJMcYYrR92RRDBOzCrxZMhuTeoGOQSmSEn7DAPQ=w300')
-            embed.set_image(url=values[c - 1]['url'])
-
-            await paginator.edit(content=None, embed=embed)
-          else:
-            await paginator.edit(content='**First image.**')
 
         except exc.GoTo:
           await paginator.edit(content='**Enter image number...**')
@@ -570,15 +555,18 @@ class MsG:
 
           await paginator.edit(content=None, embed=embed)
 
-        except exc.Save:
-          if values[c - 1]['url'] not in starred:
-            starred.append(values[c - 1]['url'])
+        except exc.Left:
+          if c > 1:
+            c -= 1
+            embed.title = values[c - 1]['author']
+            embed.url = 'https://e621.net/post/show/{}'.format(keys[c - 1])
+            embed.set_footer(text='{} / {}'.format(c, len(posts)),
+                             icon_url='http://lh6.ggpht.com/d3pNZNFCcJM8snBsRSdKUhR9AVBnJMcYYrR92RRDBOzCrxZMhuTeoGOQSmSEn7DAPQ=w300')
+            embed.set_image(url=values[c - 1]['url'])
 
-            await paginator.edit(content='**Image** `{}` **saved.**'.format(len(starred)))
+            await paginator.edit(content=None, embed=embed)
           else:
-            starred.remove(values[c - 1])['url']
-
-            await paginator.edit(content='**Image removed.**')
+            await paginator.edit(content='**First image.**')
 
         except exc.Right:
           if c < len(keys):
@@ -591,26 +579,35 @@ class MsG:
 
             await paginator.edit(content=None, embed=embed)
 
+        except exc.Save:
+          if values[c - 1]['url'] not in starred:
+            starred.append(values[c - 1]['url'])
+
+            await paginator.edit(content='`{}` **image saved.**'.format(len(starred)))
+          else:
+            starred.remove(values[c - 1])['url']
+
+            await paginator.edit(content='**Image removed.**')
+
     except exc.Abort:
       try:
-        await paginator.edit(content='🚫 **Exited paginator.**')
+        await paginator.edit(content='**Exited paginator.**')
 
       except UnboundLocalError:
-        await dest.send('🚫 **Exited paginator.**')
-      await ctx.message.add_reaction('🚫')
+        await dest.send('**Exited paginator.**')
     except asyncio.TimeoutError:
       try:
-        await paginator.edit(content='🚫 **Paginator timed out.**')
+        await paginator.edit(content='**Paginator timed out.**')
 
       except UnboundLocalError:
-        await dest.send('🚫 **Paginator timed out.**')
-      await ctx.message.add_reaction('🚫')
+        await dest.send('**Paginator timed out.**')
+      await ctx.message.add_reaction('\N{OCTAGONAL SIGN}')
     except exc.NotFound:
       await ctx.send('**Pool not found.**', delete_after=10)
-      await ctx.message.add_reaction('❌')
+      await ctx.message.add_reaction('\N{CROSS MARK}')
     except exc.Timeout:
       await ctx.send('**Request timed out.**')
-      await ctx.message.add_reaction('❌')
+      await ctx.message.add_reaction('\N{CROSS MARK}')
 
     finally:
       for url in starred:
@@ -633,7 +630,7 @@ class MsG:
       blacklist.update(list(self.aliases[tag]) + [tag])
     # Checks if tags are in local blacklists
     if tags:
-      if len(tags) > 5:
+      if (len(tags) > 5 and booru == 'e621') or (len(tags) > 4 and booru == 'e926'):
         raise exc.TagBoundsError(formatter.tostring(tags[5:]))
       for tag in tags:
         if tag == 'swf' or tag == 'webm' or tag in blacklist:
@@ -673,16 +670,16 @@ class MsG:
   @checks.is_nsfw()
   async def e621_paginator(self, ctx, *args):
     def on_reaction(reaction, user):
-      if reaction.emoji == '🚫' and reaction.message.content == paginator.content and (user is ctx.author or user.id == u.config['owner_id']):
+      if reaction.emoji == '\N{OCTAGONAL SIGN}' and reaction.message.id == ctx.message.id and (user is ctx.author or user.id == u.config['owner_id']):
         raise exc.Abort
-      elif reaction.emoji == '📁' and reaction.message.content == paginator.content and (user is ctx.author or user.id == u.config['owner_id']):
-        raise exc.Save
-      elif reaction.emoji == '⬅' and reaction.message.content == paginator.content and (user is ctx.author or user.id == u.config['owner_id']):
-        raise exc.Left
-      elif reaction.emoji == '🔢' and reaction.message.content == paginator.content and (user is ctx.author or user.id == u.config['owner_id']):
+      elif reaction.emoji == '\N{NUMBER SIGN}\N{COMBINING ENCLOSING KEYCAP}' and reaction.message.id == paginator.id and (user is ctx.author or user.id == u.config['owner_id']):
         raise exc.GoTo
-      elif reaction.emoji == '➡' and reaction.message.content == paginator.content and (user is ctx.author or user.id == u.config['owner_id']):
+      elif reaction.emoji == '\N{LEFTWARDS BLACK ARROW}' and reaction.message.id == paginator.id and (user is ctx.author or user.id == u.config['owner_id']):
+        raise exc.Left
+      elif reaction.emoji == '\N{BLACK RIGHTWARDS ARROW}' and reaction.message.id == paginator.id and (user is ctx.author or user.id == u.config['owner_id']):
         raise exc.Right
+      elif reaction.emoji == '\N{FILE FOLDER}' and reaction.message.id == paginator.id and (user is ctx.author or user.id == u.config['owner_id']):
+        raise exc.Save
       return False
 
     def on_message(msg):
@@ -715,29 +712,15 @@ class MsG:
 
       paginator = await dest.send(embed=embed)
 
-      await paginator.add_reaction('🚫')
-      await paginator.add_reaction('📁')
-      await paginator.add_reaction('⬅')
-      await paginator.add_reaction('🔢')
-      await paginator.add_reaction('➡')
+      for emoji in ('\N{NUMBER SIGN}\N{COMBINING ENCLOSING KEYCAP}', '\N{LEFTWARDS BLACK ARROW}', '\N{BLACK RIGHTWARDS ARROW}', '\N{FILE FOLDER}'):
+        await paginator.add_reaction(emoji)
+      for emoji in ('\N{WHITE HEAVY CHECK MARK}', '\N{OCTAGONAL SIGN}'):
+        await ctx.message.add_reaction(emoji)
       await asyncio.sleep(1)
-      await ctx.message.add_reaction('✅')
 
       while not self.bot.is_closed():
         try:
           await self.bot.wait_for('reaction_add', check=on_reaction, timeout=10 * 60)
-
-        except exc.Left:
-          if c > 1:
-            c -= 1
-            embed.title = values[c - 1]['author']
-            embed.url = 'https://e621.net/post/show/{}'.format(keys[c - 1])
-            embed.set_footer(text='{} / {}'.format(c, len(posts)),
-                             icon_url='http://lh6.ggpht.com/d3pNZNFCcJM8snBsRSdKUhR9AVBnJMcYYrR92RRDBOzCrxZMhuTeoGOQSmSEn7DAPQ=w300')
-            embed.set_image(url=values[c - 1]['url'])
-            await paginator.edit(content=None, embed=embed)
-          else:
-            await paginator.edit(content='**First image.**')
 
         except exc.GoTo:
           await paginator.edit(content='**Enter image number...**')
@@ -753,15 +736,17 @@ class MsG:
 
           await paginator.edit(content=None, embed=embed)
 
-        except exc.Save:
-          if values[c - 1]['url'] not in starred:
-            starred.append(values[c - 1]['url'])
-
-            await paginator.edit(content='**Image** `{}` **saved.**'.format(len(starred)))
+        except exc.Left:
+          if c > 1:
+            c -= 1
+            embed.title = values[c - 1]['author']
+            embed.url = 'https://e621.net/post/show/{}'.format(keys[c - 1])
+            embed.set_footer(text='{} / {}'.format(c, len(posts)),
+                             icon_url='http://lh6.ggpht.com/d3pNZNFCcJM8snBsRSdKUhR9AVBnJMcYYrR92RRDBOzCrxZMhuTeoGOQSmSEn7DAPQ=w300')
+            embed.set_image(url=values[c - 1]['url'])
+            await paginator.edit(content=None, embed=embed)
           else:
-            starred.remove(values[c - 1])['url']
-
-            await paginator.edit(content='**Image removed.**')
+            await paginator.edit(content='**First image.**')
 
         except exc.Right:
           if c % limit == 0:
@@ -783,35 +768,44 @@ class MsG:
           embed.set_image(url=values[c - 1]['url'])
           await paginator.edit(content=None, embed=embed)
 
+        except exc.Save:
+          if values[c - 1]['url'] not in starred:
+            starred.append(values[c - 1]['url'])
+
+            await paginator.edit(content='`{}` **image saved.**'.format(len(starred)))
+          else:
+            starred.remove(values[c - 1])['url']
+
+            await paginator.edit(content='**Image removed.**')
+
     except exc.Abort:
       try:
-        await paginator.edit(content='🚫 **Exited paginator.**')
+        await paginator.edit(content='**Exited paginator.**')
 
       except UnboundLocalError:
-        await dest.send('🚫 **Exited paginator.**')
-      await ctx.message.add_reaction('🚫')
+        await dest.send('**Exited paginator.**')
     except asyncio.TimeoutError:
       try:
-        await paginator.edit(content='🚫 **Paginator timed out.**')
+        await paginator.edit(content='**Paginator timed out.**')
 
       except UnboundLocalError:
-        await dest.send('🚫 **Paginator timed out.**')
-      await ctx.message.add_reaction('🚫')
+        await dest.send('**Paginator timed out.**')
+      await ctx.message.add_reaction('\N{OCTAGONAL SIGN}')
     except exc.NotFound as e:
       await ctx.send('`{}` **not found.**'.format(e), delete_after=10)
-      await ctx.message.add_reaction('❌')
+      await ctx.message.add_reaction('\N{CROSS MARK}')
     except exc.TagBlacklisted as e:
-      await ctx.send('🚫 `{}` **blacklisted.**'.format(e), delete_after=10)
-      await ctx.message.add_reaction('🚫')
+      await ctx.send('\N{NO ENTRY SIGN} `{}` **blacklisted.**'.format(e), delete_after=10)
+      await ctx.message.add_reaction('\N{NO ENTRY SIGN}')
     except exc.TagBoundsError as e:
       await ctx.send('`{}` **out of bounds.** Tags limited to 5, currently.'.format(e), delete_after=10)
-      await ctx.message.add_reaction('❌')
+      await ctx.message.add_reaction('\N{CROSS MARK}')
     except exc.FavoritesNotFound:
       await ctx.send('**You have no favorite tags.**', delete_after=10)
-      await ctx.message.add_reaction('❌')
+      await ctx.message.add_reaction('\N{CROSS MARK}')
     except exc.Timeout:
       await ctx.send('**Request timed out.**')
-      await ctx.message.add_reaction('❌')
+      await ctx.message.add_reaction('\N{CROSS MARK}')
 
     finally:
       for url in starred:
@@ -822,8 +816,8 @@ class MsG:
   @e621_paginator.error
   async def e621_paginator_error(self, ctx, error):
     if isinstance(error, errext.CheckFailure):
-      await ctx.send('⛔️ {} **is not an NSFW channel.**'.format(ctx.channel.mention), delete_after=10)
-      return await ctx.message.add_reaction('⛔️')
+      await ctx.send('\N{NO ENTRY} {} **is not an NSFW channel.**'.format(ctx.channel.mention), delete_after=10)
+      return await ctx.message.add_reaction('\N{NO ENTRY}')
 
   # Searches for and returns images from e621.net given tags when not blacklisted
   @commands.group(aliases=['e6', '6'], brief='e621 | NSFW', description='e621 | NSFW\nTag-based search for e621.net\n\nYou can only search 5 tags and 6 images at once for now.\ne6 [tags...] ([# of images])')
@@ -850,26 +844,26 @@ class MsG:
 
         await dest.send(embed=embed)
 
-      await ctx.message.add_reaction('✅')
+      await ctx.message.add_reaction('\N{WHITE HEAVY CHECK MARK}')
 
     except exc.TagBlacklisted as e:
       await ctx.send('`{}` **blacklisted.**'.format(e), delete_after=10)
-      await ctx.message.add_reaction('❌')
+      await ctx.message.add_reaction('\N{CROSS MARK}')
     except exc.BoundsError as e:
       await ctx.send('`{}` **out of bounds.** Images limited to 3.'.format(e), delete_after=10)
-      await ctx.message.add_reaction('❌')
+      await ctx.message.add_reaction('\N{CROSS MARK}')
     except exc.TagBoundsError as e:
       await ctx.send('`{}` **out of bounds.** Tags limited to 5.'.format(e), delete_after=10)
-      await ctx.message.add_reaction('❌')
+      await ctx.message.add_reaction('\N{CROSS MARK}')
     except exc.NotFound as e:
       await ctx.send('`{}` **not found.**'.format(e), delete_after=10)
-      await ctx.message.add_reaction('❌')
+      await ctx.message.add_reaction('\N{CROSS MARK}')
     except exc.FavoritesNotFound:
       await ctx.send('**You have no favorite tags.**', delete_after=10)
-      await ctx.message.add_reaction('❌')
+      await ctx.message.add_reaction('\N{CROSS MARK}')
     except exc.Timeout:
       await ctx.send('**Request timed out.**')
-      await ctx.message.add_reaction('❌')
+      await ctx.message.add_reaction('\N{CROSS MARK}')
 
     # tools.command_dict.setdefault(str(ctx.author.id), {}).update(
     #     {'command': ctx.command, 'args': ctx.args})
@@ -877,8 +871,8 @@ class MsG:
   @e621.error
   async def e621_error(self, ctx, error):
     if isinstance(error, errext.CheckFailure):
-      await ctx.send('⛔️ {} **is not an NSFW channel.**'.format(ctx.channel.mention), delete_after=10)
-      return await ctx.message.add_reaction('⛔️')
+      await ctx.send('\N{NO ENTRY} {} **is not an NSFW channel.**'.format(ctx.channel.mention), delete_after=10)
+      return await ctx.message.add_reaction('\N{NO ENTRY}')
 
   # Searches for and returns images from e926.net given tags when not blacklisted
   @commands.command(aliases=['e9', '9'], brief='e926 | SFW', description='e926 | SFW\nTag-based search for e926.net\n\nYou can only search 5 tags and 6 images at once for now.\ne9 [tags...] ([# of images])')
@@ -904,33 +898,33 @@ class MsG:
 
         await dest.send(embed=embed)
 
-      await ctx.message.add_reaction('✅')
+      await ctx.message.add_reaction('\N{WHITE HEAVY CHECK MARK}')
 
     except exc.TagBlacklisted as e:
       await ctx.send('`{}` **blacklisted.**'.format(e), delete_after=10)
-      await ctx.message.add_reaction('❌')
+      await ctx.message.add_reaction('\N{CROSS MARK}')
     except exc.BoundsError as e:
       await ctx.send('`{}` **out of bounds.** Images limited to 3.'.format(e), delete_after=10)
-      await ctx.message.add_reaction('❌')
+      await ctx.message.add_reaction('\N{CROSS MARK}')
     except exc.TagBoundsError as e:
       await ctx.send('`{}` **out of bounds.** Tags limited to 5.'.format(e), delete_after=10)
-      await ctx.message.add_reaction('❌')
+      await ctx.message.add_reaction('\N{CROSS MARK}')
     except exc.NotFound as e:
       await ctx.send('`{}` **not found.**'.format(e), delete_after=10)
-      await ctx.message.add_reaction('❌')
+      await ctx.message.add_reaction('\N{CROSS MARK}')
     except exc.FavoritesNotFound:
       await ctx.send('**You have no favorite tags.**', delete_after=10)
-      await ctx.message.add_reaction('❌')
+      await ctx.message.add_reaction('\N{CROSS MARK}')
     except exc.Timeout:
       await ctx.send('**Request timed out.**')
-      await ctx.message.add_reaction('❌')
+      await ctx.message.add_reaction('\N{CROSS MARK}')
 
   @commands.group(aliases=['fave', 'fav', 'f'])
   @checks.del_ctx()
   async def favorite(self, ctx):
     if ctx.invoked_subcommand is None:
       await ctx.send('**Use a flag to manage favorites.**\n*Type* `{}help fav` *for more info.*'.format(ctx.prefix), delete_after=10)
-      await ctx.message.add_reaction('❌')
+      await ctx.message.add_reaction('\N{CROSS MARK}')
 
   @favorite.error
   async def favorite_error(self, ctx, error):
@@ -944,8 +938,8 @@ class MsG:
   async def __get_favorite_tags(self, ctx, *args):
     dest = u.get_kwargs(ctx, args)['destination']
 
-    await dest.send('⭐ {}**\'s favorite tags:**\n```\n{}```'.format(ctx.author.mention, formatter.tostring(self.favorites.get(ctx.author.id, {}).get('tags', set()))), delete_after=10)
-    await ctx.message.add_reaction('✅')
+    await dest.send('\N{WHITE MEDIUM STAR} {}**\'s favorite tags:**\n```\n{}```'.format(ctx.author.mention, formatter.tostring(self.favorites.get(ctx.author.id, {}).get('tags', set()))), delete_after=10)
+    await ctx.message.add_reaction('\N{WHITE HEAVY CHECK MARK}')
 
   @_get_favorite.command(name='posts', aliases=['p'])
   async def __get_favorite_posts(self, ctx):
@@ -971,14 +965,14 @@ class MsG:
       u.dump(self.favorites, 'cogs/favorites.pkl')
 
       await dest.send('{} **added to their favorites:**\n```\n{}```'.format(ctx.author.mention, formatter.tostring(tags)), delete_after=5)
-      await ctx.message.add_reaction('✅')
+      await ctx.message.add_reaction('\N{WHITE HEAVY CHECK MARK}')
 
     except exc.BoundsError:
       await ctx.send('**Favorites list currently limited to:** `5`', delete_after=10)
-      await ctx.message.add_reaction('❌')
+      await ctx.message.add_reaction('\N{CROSS MARK}')
     except exc.TagBlacklisted as e:
-      await ctx.send('🚫 `{}` **blacklisted.**', delete_after=10)
-      await ctx.message.add_reaction('🚫')
+      await ctx.send('\N{NO ENTRY SIGN} `{}` **blacklisted.**', delete_after=10)
+      await ctx.message.add_reaction('\N{NO ENTRY SIGN}')
 
   @_add_favorite.command(name='posts', aliases=['p'])
   async def __add_favorite_posts(self, ctx, *posts):
@@ -1004,11 +998,11 @@ class MsG:
       u.dump(self.favorites, 'cogs/favorites.pkl')
 
       await dest.send('{} **removed from their favorites:**\n```\n{}```'.format(ctx.author.mention, formatter.tostring(tags)), delete_after=5)
-      await ctx.message.add_reaction('✅')
+      await ctx.message.add_reaction('\N{WHITE HEAVY CHECK MARK}')
 
     except exc.TagError as e:
       await ctx.send('`{}` **not in favorites.**'.format(e), delete_after=10)
-      await ctx.message.add_reaction('❌')
+      await ctx.message.add_reaction('\N{CROSS MARK}')
 
   @_remove_favorite.command(name='posts', aliases=['p'])
   async def __remove_favorite_posts(self, ctx):
@@ -1027,7 +1021,7 @@ class MsG:
       u.dump(self.favorites, 'cogs/favorites.pkl')
 
     await dest.send('{}**\'s favorites cleared.**'.format(ctx.author.mention), delete_after=5)
-    await ctx.message.add_reaction('✅')
+    await ctx.message.add_reaction('\N{WHITE HEAVY CHECK MARK}')
 
   @_clear_favorite.command(name='posts', aliases=['p'])
   async def __clear_favorite_posts(self, ctx):
@@ -1039,7 +1033,7 @@ class MsG:
   async def blacklist(self, ctx):
     if ctx.invoked_subcommand is None:
       await ctx.send('**Use a flag to manage blacklists.**\n*Type* `{}help bl` *for more info.*'.format(ctx.prefix), delete_after=10)
-      await ctx.message.add_reaction('❌')
+      await ctx.message.add_reaction('\N{CROSS MARK}')
 
   # @blacklist.error
   # async def blacklist_error(self, ctx, error):
@@ -1050,14 +1044,14 @@ class MsG:
   async def _get_blacklist(self, ctx):
     if ctx.invoked_subcommand is None:
       await ctx.send('**Invalid blacklist.**', delete_after=10)
-      await ctx.message.add_reaction('❌')
+      await ctx.message.add_reaction('\N{CROSS MARK}')
 
   @_get_blacklist.command(name='global', aliases=['gl', 'g'])
   async def __get_global_blacklist(self, ctx, *args):
     dest = u.get_kwargs(ctx, args)['destination']
 
-    await dest.send('🚫 **Global blacklist:**\n```\n{}```'.format(formatter.tostring(self.blacklists['global_blacklist'])))
-    await ctx.message.add_reaction('✅')
+    await dest.send('\N{NO ENTRY SIGN} **Global blacklist:**\n```\n{}```'.format(formatter.tostring(self.blacklists['global_blacklist'])))
+    await ctx.message.add_reaction('\N{WHITE HEAVY CHECK MARK}')
 
   @_get_blacklist.command(name='channel', aliases=['ch', 'c'])
   async def __get_channel_blacklist(self, ctx, *args):
@@ -1066,15 +1060,15 @@ class MsG:
     guild = ctx.guild if isinstance(
         ctx.guild, d.Guild) else ctx.channel
 
-    await dest.send('🚫 {} **blacklist:**\n```\n{}```'.format(ctx.channel.mention, formatter.tostring(self.blacklists['guild_blacklist'].get(guild.id, {}).get(ctx.channel.id, set()))))
-    await ctx.message.add_reaction('✅')
+    await dest.send('\N{NO ENTRY SIGN} {} **blacklist:**\n```\n{}```'.format(ctx.channel.mention, formatter.tostring(self.blacklists['guild_blacklist'].get(guild.id, {}).get(ctx.channel.id, set()))))
+    await ctx.message.add_reaction('\N{WHITE HEAVY CHECK MARK}')
 
   @_get_blacklist.command(name='me', aliases=['m'])
   async def __get_user_blacklist(self, ctx, *args):
     dest = u.get_kwargs(ctx, args)['destination']
 
-    await dest.send('🚫 {}**\'s blacklist:**\n```\n{}```'.format(ctx.author.mention, formatter.tostring(self.blacklists['user_blacklist'].get(ctx.author.id, set()))), delete_after=10)
-    await ctx.message.add_reaction('✅')
+    await dest.send('\N{NO ENTRY SIGN} {}**\'s blacklist:**\n```\n{}```'.format(ctx.author.mention, formatter.tostring(self.blacklists['user_blacklist'].get(ctx.author.id, set()))), delete_after=10)
+    await ctx.message.add_reaction('\N{WHITE HEAVY CHECK MARK}')
 
   @_get_blacklist.command(name='here', aliases=['h'])
   async def __get_here_blacklists(self, ctx, *args):
@@ -1083,14 +1077,14 @@ class MsG:
     guild = ctx.guild if isinstance(
         ctx.guild, d.Guild) else ctx.channel
 
-    await dest.send('🚫 **__Blacklisted:__**\n\n**Global:**\n```\n{}```\n**{}:**\n```\n{}```'.format(formatter.tostring(self.blacklists['global_blacklist']), ctx.channel.mention, formatter.tostring(self.blacklists['guild_blacklist'].get(guild.id, {}).get(ctx.channel.id, set()))))
-    await ctx.message.add_reaction('✅')
+    await dest.send('\N{NO ENTRY SIGN} **__Blacklisted:__**\n\n**Global:**\n```\n{}```\n**{}:**\n```\n{}```'.format(formatter.tostring(self.blacklists['global_blacklist']), ctx.channel.mention, formatter.tostring(self.blacklists['guild_blacklist'].get(guild.id, {}).get(ctx.channel.id, set()))))
+    await ctx.message.add_reaction('\N{WHITE HEAVY CHECK MARK}')
 
   @_get_blacklist.group(name='all', aliases=['a'])
   async def __get_all_blacklists(self, ctx):
     if ctx.invoked_subcommand is None:
       await ctx.send('**Invalid blacklist.**')
-      await ctx.message.add_reaction('❌')
+      await ctx.message.add_reaction('\N{CROSS MARK}')
 
   @__get_all_blacklists.command(name='guild', aliases=['g'])
   @commands.has_permissions(manage_channels=True)
@@ -1100,22 +1094,22 @@ class MsG:
     guild = ctx.guild if isinstance(
         ctx.guild, d.Guild) else ctx.channel
 
-    await dest.send('🚫 **__{} blacklists:__**\n\n{}'.format(guild.name, formatter.dict_tostring(self.blacklists['guild_blacklist'].get(guild.id, {}))))
-    await ctx.message.add_reaction('✅')
+    await dest.send('\N{NO ENTRY SIGN} **__{} blacklists:__**\n\n{}'.format(guild.name, formatter.dict_tostring(self.blacklists['guild_blacklist'].get(guild.id, {}))))
+    await ctx.message.add_reaction('\N{WHITE HEAVY CHECK MARK}')
 
   @__get_all_blacklists.command(name='user', aliases=['u', 'member', 'm'])
   @commands.is_owner()
   async def ___get_all_user_blacklists(self, ctx, *args):
     dest = u.get_kwargs(ctx, args)['destination']
 
-    await dest.send('🚫 **__User blacklists:__**\n\n{}'.format(formatter.dict_tostring(self.blacklists['user_blacklist'])))
-    await ctx.message.add_reaction('✅')
+    await dest.send('\N{NO ENTRY SIGN} **__User blacklists:__**\n\n{}'.format(formatter.dict_tostring(self.blacklists['user_blacklist'])))
+    await ctx.message.add_reaction('\N{WHITE HEAVY CHECK MARK}')
 
   @blacklist.group(name='add', aliases=['a'])
   async def _add_tags(self, ctx):
     if ctx.invoked_subcommand is None:
       await ctx.send('**Invalid blacklist.**', delete_after=10)
-      await ctx.message.add_reaction('❌')
+      await ctx.message.add_reaction('\N{CROSS MARK}')
 
   @_add_tags.command(name='global', aliases=['gl', 'g'])
   @commands.is_owner()
@@ -1137,7 +1131,7 @@ class MsG:
     u.dump(self.aliases, 'cogs/aliases.pkl')
 
     await dest.send('**Added to global blacklist:**\n```\n{}```'.format(formatter.tostring(tags)), delete_after=5)
-    await ctx.message.add_reaction('✅')
+    await ctx.message.add_reaction('\N{WHITE HEAVY CHECK MARK}')
 
   @_add_tags.command(name='channel', aliases=['ch', 'c'])
   @commands.has_permissions(manage_channels=True)
@@ -1163,7 +1157,7 @@ class MsG:
     u.dump(self.aliases, 'cogs/aliases.pkl')
 
     await dest.send('**Added to** {} **blacklist:**\n```\n{}```'.format(ctx.channel.mention, formatter.tostring(tags)), delete_after=5)
-    await ctx.message.add_reaction('✅')
+    await ctx.message.add_reaction('\N{WHITE HEAVY CHECK MARK}')
 
   @_add_tags.command(name='me', aliases=['m'])
   async def __add_user_tags(self, ctx, *args):
@@ -1184,13 +1178,13 @@ class MsG:
     u.dump(self.aliases, 'cogs/aliases.pkl')
 
     await dest.send('{} **added to their blacklist:**\n```\n{}```'.format(ctx.author.mention, formatter.tostring(tags)), delete_after=5)
-    await ctx.message.add_reaction('✅')
+    await ctx.message.add_reaction('\N{WHITE HEAVY CHECK MARK}')
 
   @blacklist.group(name='remove', aliases=['rm', 'r'])
   async def _remove_tags(self, ctx):
     if ctx.invoked_subcommand is None:
       await ctx.send('**Invalid blacklist.**', delete_after=10)
-      await ctx.message.add_reaction('❌')
+      await ctx.message.add_reaction('\N{CROSS MARK}')
 
   @_remove_tags.command(name='global', aliases=['gl', 'g'])
   @commands.is_owner()
@@ -1209,11 +1203,11 @@ class MsG:
       u.dump(self.blacklists, 'cogs/blacklists.pkl')
 
       await dest.send('**Removed from global blacklist:**\n```\n{}```'.format(formatter.tostring(tags)), delete_after=5)
-      await ctx.message.add_reaction('✅')
+      await ctx.message.add_reaction('\N{WHITE HEAVY CHECK MARK}')
 
     except exc.TagError as e:
       await ctx.send('`{}` **not in blacklist.**'.format(e), delete_after=10)
-      await ctx.message.add_reaction('❌')
+      await ctx.message.add_reaction('\N{CROSS MARK}')
 
   @_remove_tags.command(name='channel', aliases=['ch', 'c'])
   @commands.has_permissions(manage_channels=True)
@@ -1235,11 +1229,11 @@ class MsG:
       u.dump(self.blacklists, 'cogs/blacklists.pkl')
 
       await dest.send('**Removed from** {} **blacklist:**\n```\n{}```'.format(ctx.channel.mention, formatter.tostring(tags), delete_after=5))
-      await ctx.message.add_reaction('✅')
+      await ctx.message.add_reaction('\N{WHITE HEAVY CHECK MARK}')
 
     except exc.TagError as e:
       await ctx.send('`{}` **not in blacklist.**'.format(e), delete_after=10)
-      await ctx.message.add_reaction('❌')
+      await ctx.message.add_reaction('\N{CROSS MARK}')
 
   @_remove_tags.command(name='me', aliases=['m'])
   async def __remove_user_tags(self, ctx, *args):
@@ -1257,17 +1251,17 @@ class MsG:
       u.dump(self.blacklists, 'cogs/blacklists.pkl')
 
       await dest.send('{} **removed from their blacklist:**\n```\n{}```'.format(ctx.author.mention, formatter.tostring(tags)), delete_after=5)
-      await ctx.message.add_reaction('✅')
+      await ctx.message.add_reaction('\N{WHITE HEAVY CHECK MARK}')
 
     except exc.TagError as e:
       await ctx.send('`{}` **not in blacklist.**'.format(e), delete_after=10)
-      await ctx.message.add_reaction('❌')
+      await ctx.message.add_reaction('\N{CROSS MARK}')
 
   @blacklist.group(name='clear', aliases=['cl', 'c'])
   async def _clear_blacklist(self, ctx):
     if ctx.invoked_subcommand is None:
       await ctx.send('**Invalid blacklist.**', delete_after=10)
-      await ctx.message.add_reaction('❌')
+      await ctx.message.add_reaction('\N{CROSS MARK}')
 
   @_clear_blacklist.command(name='global', aliases=['gl', 'g'])
   @commands.is_owner()
@@ -1278,7 +1272,7 @@ class MsG:
     u.dump(self.blacklists, 'cogs/blacklists.pkl')
 
     await dest.send('**Global blacklist cleared.**', delete_after=5)
-    await ctx.message.add_reaction('✅')
+    await ctx.message.add_reaction('\N{WHITE HEAVY CHECK MARK}')
 
   @_clear_blacklist.command(name='channel', aliases=['ch', 'c'])
   @commands.has_permissions(manage_channels=True)
@@ -1293,7 +1287,7 @@ class MsG:
       u.dump(self.blacklists, 'cogs/blacklists.pkl')
 
     await dest.send('{} **blacklist cleared.**'.format(ctx.channel.mention), delete_after=5)
-    await ctx.message.add_reaction('✅')
+    await ctx.message.add_reaction('\N{WHITE HEAVY CHECK MARK}')
 
   @_clear_blacklist.command(name='me', aliases=['m'])
   async def __clear_user_blacklist(self, ctx, *args):
@@ -1304,4 +1298,4 @@ class MsG:
       u.dump(self.blacklists, 'cogs/blacklists.pkl')
 
     await dest.send('{}**\'s blacklist cleared.**'.format(ctx.author.mention), delete_after=5)
-    await ctx.message.add_reaction('✅')
+    await ctx.message.add_reaction('\N{WHITE HEAVY CHECK MARK}')

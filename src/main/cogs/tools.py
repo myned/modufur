@@ -48,16 +48,16 @@ class Utils:
   async def ping(self, ctx):
     global command_dict
 
-    await ctx.message.add_reaction('🏓')
+    await ctx.message.add_reaction('\N{TABLE TENNIS PADDLE AND BALL}')
 
-    await ctx.send(ctx.author.mention + '  🏓  `' + str(round(self.bot.latency * 1000)) + 'ms`', delete_after=5)
+    await ctx.send(ctx.author.mention + '  \N{TABLE TENNIS PADDLE AND BALL}  `' + str(round(self.bot.latency * 1000)) + 'ms`', delete_after=5)
     command_dict.setdefault(str(ctx.author.id), {}).update({'command': ctx.command})
 
   @commands.command(aliases=['pre'], brief='List bot prefixes', description='Shows all used prefixes')
   @checks.del_ctx()
   async def prefix(self, ctx):
     await ctx.send('**Prefix:** `{}`'.format(u.config['prefix']))
-    await ctx.message.add_reaction('✅')
+    await ctx.message.add_reaction('\N{WHITE HEAVY CHECK MARK}')
 
   @commands.group(name=',send', aliases=[',s'], hidden=True)
   @commands.is_owner()
@@ -68,12 +68,12 @@ class Utils:
   @send.command(name='guild', aliases=['g', 'server', 's'])
   async def send_guild(self, ctx, guild, channel, *, message):
     await discord.utils.get(self.bot.get_all_channels(), guild__name=guild, name=channel).send(message)
-    await ctx.message.add_reaction('✅')
+    await ctx.message.add_reaction('\N{WHITE HEAVY CHECK MARK}')
 
   @send.command(name='user', aliases=['u', 'member', 'm'])
   async def send_user(self, ctx, user, *, message):
     await discord.utils.get(self.bot.get_all_members(), id=int(user)).send(message)
-    await ctx.message.add_reaction('✅')
+    await ctx.message.add_reaction('\N{WHITE HEAVY CHECK MARK}')
 
   @commands.command(aliases=['authenticateupload', 'authupload', 'authup', 'auth'])
   async def authenticate_upload(self, ctx):

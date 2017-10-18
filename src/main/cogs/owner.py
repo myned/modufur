@@ -27,9 +27,9 @@ class Bot:
   @commands.is_owner()
   @checks.del_ctx()
   async def die(self, ctx):
-    await ctx.message.add_reaction('🌙')
+    await ctx.message.add_reaction('\N{NEW MOON SYMBOL}')
 
-    await self.bot.get_channel(u.config['info_channel']).send('**Shutting down** 🌙 . . .')
+    await self.bot.get_channel(u.config['info_channel']).send('**Shutting down** \N{NEW MOON SYMBOL} . . .')
     # loop = self.bot.loop.all_tasks()
     # for task in loop:
     #     task.cancel()
@@ -42,10 +42,10 @@ class Bot:
   @commands.is_owner()
   @checks.del_ctx()
   async def restart(self, ctx):
-    await ctx.message.add_reaction('💤')
+    await ctx.message.add_reaction('\N{SLEEPING SYMBOL}')
 
     print('\n| | | | | | | | | |\nR E S T A R T I N G\n| | | | | | | | | |\n')
-    await self.bot.get_channel(u.config['info_channel']).send('**Restarting** 💤 . . .')
+    await self.bot.get_channel(u.config['info_channel']).send('**Restarting** \N{SLEEPING SYMBOL} . . .')
     # u.notify('R E S T A R T I N G')
 
     u.temp['restart_ch'] = ctx.channel.id
@@ -64,9 +64,9 @@ class Bot:
   @commands.is_owner()
   @checks.del_ctx()
   async def invite(self, ctx):
-    await ctx.message.add_reaction('✉️')
+    await ctx.message.add_reaction('\N{ENVELOPE}')
 
-    await ctx.send('🔗 https://discordapp.com/oauth2/authorize?&client_id={}&scope=bot&permissions={}'.format(u.config['client_id'], u.config['permissions']), delete_after=10)
+    await ctx.send('https://discordapp.com/oauth2/authorize?&client_id={}&scope=bot&permissions={}'.format(u.config['client_id'], u.config['permissions']), delete_after=10)
 
   @commands.command(name=',status', aliases=[',presence', ',game'], hidden=True)
   @commands.is_owner()
@@ -81,7 +81,7 @@ class Bot:
       u.config['playing'] = 'None'
       u.dump(u.config, 'config.json', json=True)
 
-    await ctx.message.add_reaction('✅')
+    await ctx.message.add_reaction('\N{WHITE HEAVY CHECK MARK}')
 
 
 class Tools:
@@ -125,7 +125,7 @@ class Tools:
         return False
 
     try:
-      await ctx.message.add_reaction('✅')
+      await ctx.message.add_reaction('\N{WHITE HEAVY CHECK MARK}')
 
       console = await self.generate(ctx)
       exception = await self.generate_err(ctx)
@@ -146,7 +146,7 @@ class Tools:
           sys.stdout = sys.__stdout__
           sys.stderr = sys.__stderr__
     except exc.Abort:
-      await ctx.send('↩️ **Exited console.**')
+      await ctx.send('\N{LEFTWARDS ARROW WITH HOOK} **Exited console.**')
     finally:
       sys.stdout = sys.__stdout__
       sys.stderr = sys.__stderr__
@@ -157,7 +157,7 @@ class Tools:
   @checks.del_ctx()
   async def arbitrary(self, ctx, *, exe):
     try:
-      await ctx.message.add_reaction('✅')
+      await ctx.message.add_reaction('\N{WHITE HEAVY CHECK MARK}')
 
       sys.stdout = io.StringIO()
       exec(exe)

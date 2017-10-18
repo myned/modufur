@@ -41,12 +41,12 @@ async def on_ready():
     await bot.change_presence(game=None)
 
   print('\n\\ \\ \\ \\ \\ \\ \\ \\ \\\nC O N N E C T E D : {}\n/ / / / / / / / /\n'.format(bot.user.name))
-  await bot.get_channel(u.config['info_channel']).send('**Started** ☀️ .')
+  await bot.get_channel(u.config['info_channel']).send('**Started** \N{BLACK SUN WITH RAYS} .')
   # u.notify('C O N N E C T E D')
   if u.temp:
     channel = bot.get_channel(u.temp['restart_ch'])
     message = await channel.get_message(u.temp['restart_msg'])
-    await message.add_reaction('✅')
+    await message.add_reaction('\N{WHITE HEAVY CHECK MARK}')
     u.temp.clear()
 
 
@@ -64,11 +64,11 @@ async def on_error(error, *args, **kwargs):
 @bot.event
 async def on_command_error(ctx, error):
   if isinstance(error, errext.CheckFailure):
-    await ctx.send('⛔️ **Insufficient permissions.**', delete_after=10)
-    await ctx.message.add_reaction('⛔️')
+    await ctx.send('\N{NO ENTRY} **Insufficient permissions.**', delete_after=10)
+    await ctx.message.add_reaction('\N{NO ENTRY}')
   elif isinstance(error, errext.CommandNotFound):
     print('INVALID COMMAND : {}'.format(error), file=sys.stderr)
-    await ctx.message.add_reaction('❌')
+    await ctx.message.add_reaction('\N{CROSS MARK}')
   else:
     print('\n! ! ! ! ! ! !  ! ! ! ! !\nC O M M A N D  E R R O R : {}\n! ! ! ! ! ! !  ! ! ! ! !\n'.format(
         error), file=sys.stderr)
@@ -104,9 +104,9 @@ async def reaction_remove(r, u):
 @commands.is_owner()
 @checks.del_ctx()
 async def test(ctx):
-  test = await ctx.send('Test')
-  raise Exception
-  # await test.add_reaction('✅')
+  test = await ctx.send('\N{NUMBER SIGN}\N{COMBINING ENCLOSING KEYCAP}')
+  await test.add_reaction('\N{THUMBS UP SIGN}')
+  await test.add_reaction('#\u20e3')
   # bot.add_listener(on_reaction_add)
   # bot.add_listener(on_reaction_remove)
 
