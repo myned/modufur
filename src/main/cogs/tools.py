@@ -42,7 +42,7 @@ class Utils:
     print(command_dict)
     await ctx.invoke(command_dict.get(str(ctx.author.id), {}).get('command', None), args)
 
-  # [prefix]ping -> Pong!
+  # Displays latency
   @commands.command(aliases=['p'], brief='Pong!', description='Returns latency from bot to Discord servers, not to user')
   @checks.del_ctx()
   async def ping(self, ctx):

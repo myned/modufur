@@ -53,10 +53,12 @@ class MsG:
 
     for tag in tags:
       tag_request = await u.fetch('https://e621.net/tag/related.json', params={'tags': tag, 'type': 'general'}, json=True)
-      for rel in tag_request.get(tag, [None]):
+      for rel in tag_request.get(tag, []):
         related.append(rel[0])
 
       await dest.send('`{}` **related tags:**\n```\n{}```'.format(tag, formatter.tostring(related)))
+
+      await asyncio.sleep(self.RATE_LIMIT)
 
       related.clear()
 
@@ -78,6 +80,8 @@ class MsG:
         aliases.append(dic['name'])
 
       await dest.send('`{}` **aliases:**\n```\n{}```'.format(tag, formatter.tostring(aliases)))
+
+      await asyncio.sleep(self.RATE_LIMIT)
 
       aliases.clear()
 
