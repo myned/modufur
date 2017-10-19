@@ -23,8 +23,8 @@ class MsG:
     self.bot = bot
     self.color = d.Color(0x1A1A1A)
     self.LIMIT = 100
-    self.RATE_LIMIT = u.RATE_LIMIT
     self.HISTORY_LIMIT = 100
+    self.RATE_LIMIT = u.RATE_LIMIT
     self.queue = asyncio.Queue()
     self.qualitifying = False
 
@@ -42,7 +42,7 @@ class MsG:
       self.qualitifying = True
 
   # Tag search
-  @commands.command(aliases=['rel'], brief='e621 Related tag search', description='e621 | NSFW\nReturn a link search for given tags')
+  @commands.command(aliases=['rel'], brief='e621 Search for related tags', description='e621 | NSFW\nReturn related tags for a number of given tags', usage='[related|rel]')
   @checks.del_ctx()
   async def related(self, ctx, *args):
     kwargs = u.get_kwargs(ctx, args)
@@ -500,7 +500,7 @@ class MsG:
         raise exc.Left
       elif reaction.emoji == '\N{BLACK RIGHTWARDS ARROW}' and reaction.message.id == paginator.id and (user is ctx.author or user.id == u.config['owner_id']):
         raise exc.Right
-      elif reaction.emoji == '\N{FILE FOLDER}' and reaction.message.id == paginator.id and (user is ctx.author or user.id == u.config['owner_id']):
+      elif reaction.emoji == '\N{GROWING HEART}' and reaction.message.id == paginator.id and (user is ctx.author or user.id == u.config['owner_id']):
         raise exc.Save
       return False
 
@@ -531,15 +531,17 @@ class MsG:
 
       paginator = await dest.send(embed=embed)
 
-      for emoji in ('\N{NUMBER SIGN}\N{COMBINING ENCLOSING KEYCAP}', '\N{LEFTWARDS BLACK ARROW}', '\N{BLACK RIGHTWARDS ARROW}', '\N{FILE FOLDER}'):
+      for emoji in ('\N{NUMBER SIGN}\N{COMBINING ENCLOSING KEYCAP}', '\N{LEFTWARDS BLACK ARROW}', '\N{BLACK RIGHTWARDS ARROW}', '\N{GROWING HEART}'):
         await paginator.add_reaction(emoji)
-      for emoji in ('\N{WHITE HEAVY CHECK MARK}', '\N{OCTAGONAL SIGN}'):
-        await ctx.message.add_reaction(emoji)
+      await ctx.message.add_reaction('\N{OCTAGONAL SIGN}')
       await asyncio.sleep(1)
 
       while not self.bot.is_closed():
         try:
-          await self.bot.wait_for('reaction_add', check=on_reaction, timeout=10 * 60)
+          done, pending = await asyncio.wait([self.bot.wait_for('reaction_add', check=on_reaction, timeout=10 * 60),
+                                              self.bot.wait_for('reaction_remove', check=on_reaction, timeout=10 * 60)], return_when=asyncio.FIRST_COMPLETED)
+          for future in done:
+            future.result()
 
         except exc.GoTo:
           await paginator.edit(content='**Enter image number...**')
@@ -553,7 +555,7 @@ class MsG:
                            icon_url='http://lh6.ggpht.com/d3pNZNFCcJM8snBsRSdKUhR9AVBnJMcYYrR92RRDBOzCrxZMhuTeoGOQSmSEn7DAPQ=w300')
           embed.set_image(url=values[c - 1]['url'])
 
-          await paginator.edit(content=None, embed=embed)
+          await paginator.edit(content='\N{HEAVY BLACK HEART}' if values[c - 1]['url'] in starred else None, embed=embed)
 
         except exc.Left:
           if c > 1:
@@ -564,7 +566,7 @@ class MsG:
                              icon_url='http://lh6.ggpht.com/d3pNZNFCcJM8snBsRSdKUhR9AVBnJMcYYrR92RRDBOzCrxZMhuTeoGOQSmSEn7DAPQ=w300')
             embed.set_image(url=values[c - 1]['url'])
 
-            await paginator.edit(content=None, embed=embed)
+            await paginator.edit(content='\N{HEAVY BLACK HEART}' if values[c - 1]['url'] in starred else None, embed=embed)
           else:
             await paginator.edit(content='**First image.**')
 
@@ -577,17 +579,17 @@ class MsG:
                              icon_url='http://lh6.ggpht.com/d3pNZNFCcJM8snBsRSdKUhR9AVBnJMcYYrR92RRDBOzCrxZMhuTeoGOQSmSEn7DAPQ=w300')
             embed.set_image(url=values[c - 1]['url'])
 
-            await paginator.edit(content=None, embed=embed)
+            await paginator.edit(content='\N{HEAVY BLACK HEART}' if values[c - 1]['url'] in starred else None, embed=embed)
 
         except exc.Save:
           if values[c - 1]['url'] not in starred:
             starred.append(values[c - 1]['url'])
 
-            await paginator.edit(content='`{}` **image saved.**'.format(len(starred)))
+            await paginator.edit(content='\N{HEAVY BLACK HEART}')
           else:
-            starred.remove(values[c - 1])['url']
+            starred.remove(values[c - 1]['url'])
 
-            await paginator.edit(content='**Image removed.**')
+            await paginator.edit(content='\N{BROKEN HEART}')
 
     except exc.Abort:
       try:
@@ -595,13 +597,18 @@ class MsG:
 
       except UnboundLocalError:
         await dest.send('**Exited paginator.**')
+
+      finally:
+        await ctx.message.add_reaction('\N{WHITE HEAVY CHECK MARK}')
     except asyncio.TimeoutError:
       try:
         await paginator.edit(content='**Paginator timed out.**')
 
       except UnboundLocalError:
         await dest.send('**Paginator timed out.**')
-      await ctx.message.add_reaction('\N{OCTAGONAL SIGN}')
+
+      finally:
+        await ctx.message.add_reaction('\N{WHITE HEAVY CHECK MARK}')
     except exc.NotFound:
       await ctx.send('**Pool not found.**', delete_after=10)
       await ctx.message.add_reaction('\N{CROSS MARK}')
@@ -611,7 +618,7 @@ class MsG:
 
     finally:
       for url in starred:
-        await ctx.author.send(url)
+        await ctx.author.send('`{} / {}`\n{}'.format(starred.index(url) + 1, len(starred), url))
         if len(starred) > 5:
           await asyncio.sleep(self.RATE_LIMIT)
 
@@ -678,7 +685,7 @@ class MsG:
         raise exc.Left
       elif reaction.emoji == '\N{BLACK RIGHTWARDS ARROW}' and reaction.message.id == paginator.id and (user is ctx.author or user.id == u.config['owner_id']):
         raise exc.Right
-      elif reaction.emoji == '\N{FILE FOLDER}' and reaction.message.id == paginator.id and (user is ctx.author or user.id == u.config['owner_id']):
+      elif reaction.emoji == '\N{GROWING HEART}' and reaction.message.id == paginator.id and (user is ctx.author or user.id == u.config['owner_id']):
         raise exc.Save
       return False
 
@@ -712,15 +719,17 @@ class MsG:
 
       paginator = await dest.send(embed=embed)
 
-      for emoji in ('\N{NUMBER SIGN}\N{COMBINING ENCLOSING KEYCAP}', '\N{LEFTWARDS BLACK ARROW}', '\N{BLACK RIGHTWARDS ARROW}', '\N{FILE FOLDER}'):
+      for emoji in ('\N{NUMBER SIGN}\N{COMBINING ENCLOSING KEYCAP}', '\N{LEFTWARDS BLACK ARROW}', '\N{BLACK RIGHTWARDS ARROW}', '\N{GROWING HEART}'):
         await paginator.add_reaction(emoji)
-      for emoji in ('\N{WHITE HEAVY CHECK MARK}', '\N{OCTAGONAL SIGN}'):
-        await ctx.message.add_reaction(emoji)
+      await ctx.message.add_reaction('\N{OCTAGONAL SIGN}')
       await asyncio.sleep(1)
 
       while not self.bot.is_closed():
         try:
-          await self.bot.wait_for('reaction_add', check=on_reaction, timeout=10 * 60)
+          done, pending = await asyncio.wait([self.bot.wait_for('reaction_add', check=on_reaction, timeout=10 * 60),
+                                              self.bot.wait_for('reaction_remove', check=on_reaction, timeout=10 * 60)], return_when=asyncio.FIRST_COMPLETED)
+          for future in done:
+            future.result()
 
         except exc.GoTo:
           await paginator.edit(content='**Enter image number...**')
@@ -734,7 +743,7 @@ class MsG:
                            icon_url='http://lh6.ggpht.com/d3pNZNFCcJM8snBsRSdKUhR9AVBnJMcYYrR92RRDBOzCrxZMhuTeoGOQSmSEn7DAPQ=w300')
           embed.set_image(url=values[c - 1]['url'])
 
-          await paginator.edit(content=None, embed=embed)
+          await paginator.edit(content='\N{HEAVY BLACK HEART}' if values[c - 1]['url'] in starred else None, embed=embed)
 
         except exc.Left:
           if c > 1:
@@ -744,7 +753,7 @@ class MsG:
             embed.set_footer(text='{} / {}'.format(c, len(posts)),
                              icon_url='http://lh6.ggpht.com/d3pNZNFCcJM8snBsRSdKUhR9AVBnJMcYYrR92RRDBOzCrxZMhuTeoGOQSmSEn7DAPQ=w300')
             embed.set_image(url=values[c - 1]['url'])
-            await paginator.edit(content=None, embed=embed)
+            await paginator.edit(content='\N{HEAVY BLACK HEART}' if values[c - 1]['url'] in starred else None, embed=embed)
           else:
             await paginator.edit(content='**First image.**')
 
@@ -766,17 +775,17 @@ class MsG:
           embed.set_footer(text='{} / {}'.format(c, len(posts)),
                            icon_url='http://lh6.ggpht.com/d3pNZNFCcJM8snBsRSdKUhR9AVBnJMcYYrR92RRDBOzCrxZMhuTeoGOQSmSEn7DAPQ=w300')
           embed.set_image(url=values[c - 1]['url'])
-          await paginator.edit(content=None, embed=embed)
+          await paginator.edit(content='\N{HEAVY BLACK HEART}' if values[c - 1]['url'] in starred else None, embed=embed)
 
         except exc.Save:
           if values[c - 1]['url'] not in starred:
             starred.append(values[c - 1]['url'])
 
-            await paginator.edit(content='`{}` **image saved.**'.format(len(starred)))
+            await paginator.edit(content='\N{HEAVY BLACK HEART}')
           else:
-            starred.remove(values[c - 1])['url']
+            starred.remove(values[c - 1]['url'])
 
-            await paginator.edit(content='**Image removed.**')
+            await paginator.edit(content='\N{BROKEN HEART}')
 
     except exc.Abort:
       try:
@@ -784,13 +793,18 @@ class MsG:
 
       except UnboundLocalError:
         await dest.send('**Exited paginator.**')
+
+      finally:
+        await ctx.message.add_reaction('\N{WHITE HEAVY CHECK MARK}')
     except asyncio.TimeoutError:
       try:
         await paginator.edit(content='**Paginator timed out.**')
 
       except UnboundLocalError:
         await dest.send('**Paginator timed out.**')
-      await ctx.message.add_reaction('\N{OCTAGONAL SIGN}')
+
+      finally:
+        await ctx.message.add_reaction('\N{WHITE HEAVY CHECK MARK}')
     except exc.NotFound as e:
       await ctx.send('`{}` **not found.**'.format(e), delete_after=10)
       await ctx.message.add_reaction('\N{CROSS MARK}')
@@ -809,7 +823,7 @@ class MsG:
 
     finally:
       for url in starred:
-        await ctx.author.send(url)
+        await ctx.author.send('`{} / {}`\n{}'.format(starred.index(url) + 1, len(starred), url))
         if len(starred) > 5:
           await asyncio.sleep(self.RATE_LIMIT)
 
