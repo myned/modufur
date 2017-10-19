@@ -18,7 +18,7 @@ from utils import utils as u
 
 # log.basicConfig(level=log.INFO)
 
-bot = commands.Bot(command_prefix=u.config['prefix'], description='Experimental booru bot')
+bot = commands.Bot(command_prefix=u.config['prefix'], description='Experimental miscellaneous bot')
 
 
 # Send and print ready message to #testing and console after logon
@@ -99,14 +99,33 @@ async def reaction_remove(r, u):
   print('Removed')
   bot.remove_listener(on_reaction_remove)
 
+# d.opus.load_opus('opus')
+
+
+async def wait(voice):
+  asyncio.sleep(5)
+  await voice.disconnect()
+
+
+def after(voice, error):
+  coro = voice.disconnect()
+  future = asyncio.run_coroutine_threadsafe(coro, voice.loop)
+  future.result()
+
 
 @bot.command(name=',test', hidden=True)
 @commands.is_owner()
 @checks.del_ctx()
 async def test(ctx):
-  test = await ctx.send('\N{NUMBER SIGN}\N{COMBINING ENCLOSING KEYCAP}')
-  await test.add_reaction('\N{THUMBS UP SIGN}')
-  await test.add_reaction('#\u20e3')
+  def check(react, user):
+    return reaction.emoji == '\N{THUMBS UP SIGN}'
+  # channel = bot.get_channel(int(cid))
+  # voice = await channel.connect()
+  # voice.play(d.AudioSource, after=lambda: after(voice))
+  test = await ctx.send('thumbs up!')
+  while True:
+    done, pending = await asyncio.wait([bot.wait_for('reaction_add', check=check), bot.wait_for('reaction_remove', check=check)], return_when=asyncio.FIRST_COMPLETED)
+    await ctx.send('well doneeee')
   # bot.add_listener(on_reaction_add)
   # bot.add_listener(on_reaction_remove)
 
