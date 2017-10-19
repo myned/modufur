@@ -124,21 +124,16 @@ def get_kwargs(ctx, args, *, limit=False):
   if '-d' in remaining or '-dm' in remaining:
     destination = ctx.author
 
-    try:
-      remaining.remove('-d')
-    except ValueError:
-      remaining.remove('-dm')
+    for flag in ('-d', '-dm'):
+      with suppress(ValueError):
+        remaining.remove(flag)
 
   if ('-r' in remaining or '-rm' in remaining or '-remove' in remaining) and ctx.author.permissions_in(ctx.channel).manage_messages:
     rm = True
 
-    try:
-      remaining.remove('-r')
-    except ValueError:
-      try:
-        remaining.remove('-rm')
-      except ValueError:
-        remaining.remove('-remove')
+    for flag in ('-r', '-rm', '-remove'):
+      with suppress(ValueError):
+        remaining.remove(flag)
 
   if limit:
     for arg in remaining:
