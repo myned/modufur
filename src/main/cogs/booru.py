@@ -498,10 +498,10 @@ class MsG:
         raise exc.GoTo
       elif reaction.emoji == '\N{LEFTWARDS BLACK ARROW}' and reaction.message.id == paginator.id and (user is ctx.author or user.id == u.config['owner_id']):
         raise exc.Left
-      elif reaction.emoji == '\N{BLACK RIGHTWARDS ARROW}' and reaction.message.id == paginator.id and (user is ctx.author or user.id == u.config['owner_id']):
-        raise exc.Right
       elif reaction.emoji == '\N{GROWING HEART}' and reaction.message.id == paginator.id and (user is ctx.author or user.id == u.config['owner_id']):
         raise exc.Save
+      elif reaction.emoji == '\N{BLACK RIGHTWARDS ARROW}' and reaction.message.id == paginator.id and (user is ctx.author or user.id == u.config['owner_id']):
+        raise exc.Right
       return False
 
     def on_message(msg):
@@ -531,7 +531,7 @@ class MsG:
 
       paginator = await dest.send(embed=embed)
 
-      for emoji in ('\N{NUMBER SIGN}\N{COMBINING ENCLOSING KEYCAP}', '\N{LEFTWARDS BLACK ARROW}', '\N{BLACK RIGHTWARDS ARROW}', '\N{GROWING HEART}'):
+      for emoji in ('\N{NUMBER SIGN}\N{COMBINING ENCLOSING KEYCAP}', '\N{LEFTWARDS BLACK ARROW}', '\N{GROWING HEART}', '\N{BLACK RIGHTWARDS ARROW}'):
         await paginator.add_reaction(emoji)
       await ctx.message.add_reaction('\N{OCTAGONAL SIGN}')
       await asyncio.sleep(1)
@@ -570,6 +570,16 @@ class MsG:
           else:
             await paginator.edit(content='**First image.**')
 
+        except exc.Save:
+          if values[c - 1]['url'] not in starred:
+            starred.append(values[c - 1]['url'])
+
+            await paginator.edit(content='\N{HEAVY BLACK HEART}')
+          else:
+            starred.remove(values[c - 1]['url'])
+
+            await paginator.edit(content='\N{BROKEN HEART}')
+
         except exc.Right:
           if c < len(keys):
             c += 1
@@ -580,16 +590,6 @@ class MsG:
             embed.set_image(url=values[c - 1]['url'])
 
             await paginator.edit(content='\N{HEAVY BLACK HEART}' if values[c - 1]['url'] in starred else None, embed=embed)
-
-        except exc.Save:
-          if values[c - 1]['url'] not in starred:
-            starred.append(values[c - 1]['url'])
-
-            await paginator.edit(content='\N{HEAVY BLACK HEART}')
-          else:
-            starred.remove(values[c - 1]['url'])
-
-            await paginator.edit(content='\N{BROKEN HEART}')
 
     except exc.Abort:
       try:
@@ -683,10 +683,10 @@ class MsG:
         raise exc.GoTo
       elif reaction.emoji == '\N{LEFTWARDS BLACK ARROW}' and reaction.message.id == paginator.id and (user is ctx.author or user.id == u.config['owner_id']):
         raise exc.Left
-      elif reaction.emoji == '\N{BLACK RIGHTWARDS ARROW}' and reaction.message.id == paginator.id and (user is ctx.author or user.id == u.config['owner_id']):
-        raise exc.Right
       elif reaction.emoji == '\N{GROWING HEART}' and reaction.message.id == paginator.id and (user is ctx.author or user.id == u.config['owner_id']):
         raise exc.Save
+      elif reaction.emoji == '\N{BLACK RIGHTWARDS ARROW}' and reaction.message.id == paginator.id and (user is ctx.author or user.id == u.config['owner_id']):
+        raise exc.Right
       return False
 
     def on_message(msg):
@@ -719,7 +719,7 @@ class MsG:
 
       paginator = await dest.send(embed=embed)
 
-      for emoji in ('\N{NUMBER SIGN}\N{COMBINING ENCLOSING KEYCAP}', '\N{LEFTWARDS BLACK ARROW}', '\N{BLACK RIGHTWARDS ARROW}', '\N{GROWING HEART}'):
+      for emoji in ('\N{NUMBER SIGN}\N{COMBINING ENCLOSING KEYCAP}', '\N{LEFTWARDS BLACK ARROW}', '\N{GROWING HEART}', '\N{BLACK RIGHTWARDS ARROW}'):
         await paginator.add_reaction(emoji)
       await ctx.message.add_reaction('\N{OCTAGONAL SIGN}')
       await asyncio.sleep(1)
@@ -757,6 +757,16 @@ class MsG:
           else:
             await paginator.edit(content='**First image.**')
 
+        except exc.Save:
+          if values[c - 1]['url'] not in starred:
+            starred.append(values[c - 1]['url'])
+
+            await paginator.edit(content='\N{HEAVY BLACK HEART}')
+          else:
+            starred.remove(values[c - 1]['url'])
+
+            await paginator.edit(content='\N{BROKEN HEART}')
+
         except exc.Right:
           if c % limit == 0:
             await dest.trigger_typing()
@@ -776,16 +786,6 @@ class MsG:
                            icon_url='http://lh6.ggpht.com/d3pNZNFCcJM8snBsRSdKUhR9AVBnJMcYYrR92RRDBOzCrxZMhuTeoGOQSmSEn7DAPQ=w300')
           embed.set_image(url=values[c - 1]['url'])
           await paginator.edit(content='\N{HEAVY BLACK HEART}' if values[c - 1]['url'] in starred else None, embed=embed)
-
-        except exc.Save:
-          if values[c - 1]['url'] not in starred:
-            starred.append(values[c - 1]['url'])
-
-            await paginator.edit(content='\N{HEAVY BLACK HEART}')
-          else:
-            starred.remove(values[c - 1]['url'])
-
-            await paginator.edit(content='\N{BROKEN HEART}')
 
     except exc.Abort:
       try:
