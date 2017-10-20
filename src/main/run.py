@@ -28,16 +28,15 @@ def get_prefix(bot, message):
 bot = commands.Bot(command_prefix=get_prefix, description='Experimental miscellaneous bot')
 
 # Send and print ready message to #testing and console after logon
+
+
 @bot.event
 async def on_ready():
     from cogs import booru, info, management, owner, tools
 
-  bot.add_cog(tools.Utils(bot))
-  bot.add_cog(owner.Bot(bot))
-  bot.add_cog(owner.Tools(bot))
-  bot.add_cog(management.Administration(bot))
-  bot.add_cog(info.Info(bot))
-  bot.add_cog(booru.MsG(bot))
+    for cog in (tools.Utils(bot), owner.Bot(bot), owner.Tools(bot), management.Administration(bot), info.Info(bot), booru.MsG(bot)):
+        bot.add_cog(cog)
+        print(f'COG : {type(cog).__name__}')
 
     # bot.loop.create_task(u.clear(booru.temp_urls, 30*60))
 
