@@ -56,7 +56,7 @@ class Utils:
   @commands.command(aliases=['pre'], brief='List bot prefixes', description='Shows all used prefixes')
   @checks.del_ctx()
   async def prefix(self, ctx):
-    await ctx.send('**Prefix:** `{}`'.format(u.config['prefix']))
+        await ctx.send('**Prefix:** `{}`'.format('` or `'.join(u.settings['prefixes'][ctx.guild.id] if ctx.guild.id in u.settings['prefixes'] else u.config['prefix'])))
     await ctx.message.add_reaction('\N{WHITE HEAVY CHECK MARK}')
 
   @commands.group(name=',send', aliases=[',s'], hidden=True)
