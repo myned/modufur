@@ -40,19 +40,19 @@ async def on_ready():
 
     # bot.loop.create_task(u.clear(booru.temp_urls, 30*60))
 
-  if u.config['playing'] is not 'None':
-    await bot.change_presence(game=d.Game(name=u.config['playing']))
-  else:
-    await bot.change_presence(game=None)
+    if u.config['playing'] is not 'None':
+        await bot.change_presence(game=d.Game(name=u.config['playing']))
+    else:
+        await bot.change_presence(game=None)
 
-  print('\n\\ \\ \\ \\ \\ \\ \\ \\ \\\nC O N N E C T E D : {}\n/ / / / / / / / /\n'.format(bot.user.name))
-  await bot.get_channel(u.config['info_channel']).send('**Started** \N{BLACK SUN WITH RAYS} .')
-  # u.notify('C O N N E C T E D')
-  if u.temp:
-    channel = bot.get_channel(u.temp['restart_ch'])
-    message = await channel.get_message(u.temp['restart_msg'])
-    await message.add_reaction('\N{WHITE HEAVY CHECK MARK}')
-    u.temp.clear()
+    print('\n\\ \\ \\ \\ \\ \\ \\ \\ \\\nC O N N E C T E D : {}\n/ / / / / / / / /\n'.format(bot.user.name))
+    await bot.get_channel(u.config['info_channel']).send('**Started** \N{BLACK SUN WITH RAYS} .')
+    # u.notify('C O N N E C T E D')
+    if u.temp:
+        channel = bot.get_channel(u.temp['restart_ch'])
+        message = await channel.get_message(u.temp['restart_msg'])
+        await message.add_reaction('\N{WHITE HEAVY CHECK MARK}')
+        u.temp.clear()
 
 
 @bot.event
@@ -67,8 +67,13 @@ async def on_message(message):
 async def on_error(error, *args, **kwargs):
     print('\n! ! ! ! !\nE R R O R : {}\n! ! ! ! !\n'.format(error), file=sys.stderr)
     tb.print_exc()
-  await bot.get_user(u.config['owner_id']).send('**ERROR** ⚠ `{}`'.format(error))
-  await bot.get_channel(u.config['info_channel']).send('**ERROR** ⚠ `{}`'.format(error))
+    await bot.get_user(u.config['owner_id']).send('**ERROR** \N{WARNING SIGN} `{}`'.format(error))
+    await bot.get_channel(u.config['info_channel']).send('**ERROR** \N{WARNING SIGN} `{}`'.format(error))
+    if u.temp:
+        channel = bot.get_channel(u.temp['restart_ch'])
+        message = await channel.get_message(u.temp['restart_msg'])
+        await message.add_reaction('\N{WARNING SIGN}')
+        u.temp.clear()
     # u.notify('E R R O R')
     await bot.logout()
     u.close(bot.loop)
@@ -76,54 +81,54 @@ async def on_error(error, *args, **kwargs):
 
 @bot.event
 async def on_command_error(ctx, error):
-  if isinstance(error, errext.CheckFailure):
-    await ctx.send('\N{NO ENTRY} **Insufficient permissions.**', delete_after=10)
-    await ctx.message.add_reaction('\N{NO ENTRY}')
-  elif isinstance(error, errext.CommandNotFound):
-    print('INVALID COMMAND : {}'.format(error), file=sys.stderr)
-    await ctx.message.add_reaction('\N{CROSS MARK}')
-  else:
-    print('\n! ! ! ! ! ! !  ! ! ! ! !\nC O M M A N D  E R R O R : {}\n! ! ! ! ! ! !  ! ! ! ! !\n'.format(
-        error), file=sys.stderr)
-    tb.print_exception(type(error), error, error.__traceback__, file=sys.stderr)
-    await bot.get_user(u.config['owner_id']).send('**COMMAND ERROR** ⚠ `{}`'.format(error))
-    await bot.get_channel(u.config['info_channel']).send('**COMMAND ERROR** ⚠ `{}`'.format(error))
-    await exc.send_error(ctx, error)
-    await ctx.message.add_reaction('⚠')
-    # u.notify('C O M M A N D  E R R O R')
+    if isinstance(error, errext.CheckFailure):
+        await ctx.send('\N{NO ENTRY} **Insufficient permissions.**', delete_after=10)
+        await ctx.message.add_reaction('\N{NO ENTRY}')
+    elif isinstance(error, errext.CommandNotFound):
+        print('INVALID COMMAND : {}'.format(error), file=sys.stderr)
+        await ctx.message.add_reaction('\N{CROSS MARK}')
+    else:
+        print('\n! ! ! ! ! ! !  ! ! ! ! !\nC O M M A N D  E R R O R : {}\n! ! ! ! ! ! !  ! ! ! ! !\n'.format(
+            error), file=sys.stderr)
+        tb.print_exception(type(error), error, error.__traceback__, file=sys.stderr)
+        await bot.get_user(u.config['owner_id']).send('**COMMAND ERROR** \N{WARNING SIGN} `{}`'.format(error))
+        await bot.get_channel(u.config['info_channel']).send('**COMMAND ERROR** \N{WARNING SIGN} `{}`'.format(error))
+        await exc.send_error(ctx, error)
+        await ctx.message.add_reaction('\N{WARNING SIGN}')
+        # u.notify('C O M M A N D  E R R O R')
 
 
 async def on_reaction_add(r, u):
-  pass
+    pass
 
 
 async def on_reaction_remove(r, u):
-  pass
+    pass
 
 
 async def reaction_add(r, u):
-  bot.add_listener(on_reaction_add)
-  print('Reacted')
-  bot.remove_listener(on_reaction_remove)
+    bot.add_listener(on_reaction_add)
+    print('Reacted')
+    bot.remove_listener(on_reaction_remove)
 
 
 async def reaction_remove(r, u):
-  bot.add_listener(on_reaction_remove)
-  print('Removed')
-  bot.remove_listener(on_reaction_remove)
+    bot.add_listener(on_reaction_remove)
+    print('Removed')
+    bot.remove_listener(on_reaction_remove)
 
 # d.opus.load_opus('opus')
 
 
 async def wait(voice):
-  asyncio.sleep(5)
-  await voice.disconnect()
+    asyncio.sleep(5)
+    await voice.disconnect()
 
 
 def after(voice, error):
-  coro = voice.disconnect()
-  future = asyncio.run_coroutine_threadsafe(coro, voice.loop)
-  future.result()
+    coro = voice.disconnect()
+    future = asyncio.run_coroutine_threadsafe(coro, voice.loop)
+    future.result()
 
 
 @bot.command(name=',test', hidden=True)
