@@ -18,13 +18,19 @@ from utils import utils as u
 
 # log.basicConfig(level=log.INFO)
 
-bot = commands.Bot(command_prefix=u.config['prefix'], description='Experimental miscellaneous bot')
 
+def get_prefix(bot, message):
+    if isinstance(message.guild, d.Guild) and message.guild.id in u.settings['prefixes']:
+        return u.settings['prefixes'][message.guild.id]
+    return u.config['prefix']
+
+
+bot = commands.Bot(command_prefix=get_prefix, description='Experimental miscellaneous bot')
 
 # Send and print ready message to #testing and console after logon
 @bot.event
 async def on_ready():
-  from cogs import booru, info, management, owner, tools
+    from cogs import booru, info, management, owner, tools
 
   bot.add_cog(tools.Utils(bot))
   bot.add_cog(owner.Bot(bot))
@@ -33,7 +39,7 @@ async def on_ready():
   bot.add_cog(info.Info(bot))
   bot.add_cog(booru.MsG(bot))
 
-  # bot.loop.create_task(u.clear(booru.temp_urls, 30*60))
+    # bot.loop.create_task(u.clear(booru.temp_urls, 30*60))
 
   if u.config['playing'] is not 'None':
     await bot.change_presence(game=d.Game(name=u.config['playing']))
