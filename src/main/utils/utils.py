@@ -137,8 +137,7 @@ def get_kwargs(ctx, args, *, limit=False):
 
   if limit:
     for arg in remaining:
-      if 1 <= len(arg) <= 2:
-        with suppress(ValueError):
+            if arg.isdigit():
           if 1 <= int(arg) <= limit:
             lim = int(arg)
             remaining.remove(arg)
