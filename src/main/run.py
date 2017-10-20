@@ -130,16 +130,8 @@ def after(voice, error):
 @commands.is_owner()
 @checks.del_ctx()
 async def test(ctx):
-  def check(react, user):
-    return reaction.emoji == '\N{THUMBS UP SIGN}'
-  # channel = bot.get_channel(int(cid))
-  # voice = await channel.connect()
-  # voice.play(d.AudioSource, after=lambda: after(voice))
-  test = await ctx.send('thumbs up!')
-  while True:
-    done, pending = await asyncio.wait([bot.wait_for('reaction_add', check=check), bot.wait_for('reaction_remove', check=check)], return_when=asyncio.FIRST_COMPLETED)
-    await ctx.send('well doneeee')
-  # bot.add_listener(on_reaction_add)
-  # bot.add_listener(on_reaction_remove)
+    channel = bot.get_channel(int(cid))
+    voice = await channel.connect()
+    voice.play(d.AudioSource, after=lambda: after(voice))
 
 bot.run(u.config['token'])
