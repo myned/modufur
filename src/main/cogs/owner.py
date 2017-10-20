@@ -14,8 +14,6 @@ from misc import exceptions as exc
 from misc import checks
 from utils import utils as u
 
-nl = re.compile('\n')
-
 
 class Bot:
 
@@ -99,9 +97,8 @@ class Tools:
     return await d.send('```python\n{}```'.format(self.format(i, o)))
 
   async def refresh(self, m, i='', o=''):
-    global nl
-    output = m.content[10:-2]
-    if len(nl.findall(output)) <= 20:
+        output = m.content[9:-3]
+        if len(re.findall('\n', output)) <= 20:
       await m.edit(content='```python\n{}\n{}\n>>>```'.format(output, self.format(i, o)))
     else:
       await m.edit(content='```python\n{}```'.format(self.format(i, o)))
