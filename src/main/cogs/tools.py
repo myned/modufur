@@ -30,88 +30,88 @@ command_dict = {}
 
 class Utils:
 
-  def __init__(self, bot):
-    self.bot = bot
+    def __init__(self, bot):
+        self.bot = bot
 
-  @commands.command(name='last', aliases=['l', ','], brief='Reinvokes last command', description='Reinvokes previous command executed', hidden=True)
-  async def last_command(self, ctx):
-    global command_dict
+    @commands.command(name='last', aliases=['l', ','], brief='Reinvokes last command', description='Reinvokes previous command executed', hidden=True)
+    async def last_command(self, ctx):
+        global command_dict
 
-    if command_dict.get(str(ctx.author.id), {}).get('args', None) is not None:
-      args = command_dict.get(str(ctx.author.id), {})['args']
-    print(command_dict)
-    await ctx.invoke(command_dict.get(str(ctx.author.id), {}).get('command', None), args)
+        if command_dict.get(str(ctx.author.id), {}).get('args', None) is not None:
+            args = command_dict.get(str(ctx.author.id), {})['args']
+        print(command_dict)
+        await ctx.invoke(command_dict.get(str(ctx.author.id), {}).get('command', None), args)
 
-  # Displays latency
-  @commands.command(aliases=['p'], brief='Pong!', description='Returns latency from bot to Discord servers, not to user')
-  @checks.del_ctx()
-  async def ping(self, ctx):
-    global command_dict
+    # Displays latency
+    @commands.command(aliases=['p'], brief='Pong!', description='Returns latency from bot to Discord servers, not to user')
+    @checks.del_ctx()
+    async def ping(self, ctx):
+        global command_dict
 
-    await ctx.message.add_reaction('\N{TABLE TENNIS PADDLE AND BALL}')
+        await ctx.message.add_reaction('\N{TABLE TENNIS PADDLE AND BALL}')
 
-    await ctx.send(ctx.author.mention + '  \N{TABLE TENNIS PADDLE AND BALL}  `' + str(round(self.bot.latency * 1000)) + 'ms`', delete_after=5)
-    command_dict.setdefault(str(ctx.author.id), {}).update({'command': ctx.command})
+        await ctx.send(ctx.author.mention + '  \N{TABLE TENNIS PADDLE AND BALL}  `' + str(round(self.bot.latency * 1000)) + 'ms`', delete_after=5)
+        command_dict.setdefault(str(ctx.author.id), {}).update({'command': ctx.command})
 
-  @commands.command(aliases=['pre'], brief='List bot prefixes', description='Shows all used prefixes')
-  @checks.del_ctx()
-  async def prefix(self, ctx):
-    await ctx.send('**Prefix:** `{}`'.format(u.config['prefix']))
-    await ctx.message.add_reaction('\N{WHITE HEAVY CHECK MARK}')
+    @commands.command(aliases=['pre'], brief='List bot prefixes', description='Shows all used prefixes')
+    @checks.del_ctx()
+    async def prefix(self, ctx):
+        await ctx.send('**Prefix:** `{}`'.format('` or `'.join(u.settings['prefixes'][ctx.guild.id] if ctx.guild.id in u.settings['prefixes'] else u.config['prefix'])))
+        await ctx.message.add_reaction('\N{WHITE HEAVY CHECK MARK}')
 
-  @commands.group(name=',send', aliases=[',s'], hidden=True)
-  @commands.is_owner()
-  @checks.del_ctx()
-  async def send(self, ctx):
-    pass
+    @commands.group(name=',send', aliases=[',s'], hidden=True)
+    @commands.is_owner()
+    @checks.del_ctx()
+    async def send(self, ctx):
+        pass
 
-  @send.command(name='guild', aliases=['g', 'server', 's'])
-  async def send_guild(self, ctx, guild, channel, *, message):
-    await discord.utils.get(self.bot.get_all_channels(), guild__name=guild, name=channel).send(message)
-    await ctx.message.add_reaction('\N{WHITE HEAVY CHECK MARK}')
+    @send.command(name='guild', aliases=['g', 'server', 's'])
+    async def send_guild(self, ctx, guild, channel, *, message):
+        await discord.utils.get(self.bot.get_all_channels(), guild_name=guild, name=channel).send(message)
+        await ctx.message.add_reaction('\N{WHITE HEAVY CHECK MARK}')
 
-  @send.command(name='user', aliases=['u', 'member', 'm'])
-  async def send_user(self, ctx, user, *, message):
-    await discord.utils.get(self.bot.get_all_members(), id=int(user)).send(message)
-    await ctx.message.add_reaction('\N{WHITE HEAVY CHECK MARK}')
+    @send.command(name='user', aliases=['u', 'member', 'm'])
+    async def send_user(self, ctx, user, *, message):
+        await discord.utils.get(self.bot.get_all_members(), id=int(user)).send(message)
+        await ctx.message.add_reaction('\N{WHITE HEAVY CHECK MARK}')
 
-  @commands.command(aliases=['authenticateupload', 'authupload', 'authup', 'auth'])
-  async def authenticate_upload(self, ctx):
-    global youtube
-    flow = flow_from_clientsecrets('client_secrets.json', scope='https://www.googleapis.com/auth/youtube.upload',
-                                   login_hint='botmyned@gmail.com', redirect_uri='urn:ietf:wg:oauth:2.0:oob')
-    flow.params['access_type'] = 'offline'
-    webbrowser.open_new_tab(flow.step1_get_authorize_url())
-    credentials = flow.step2_exchange(input('Authorization code: '))
-    youtube = build('youtube', 'v3', http=credentials.authorize(http.build_http()))
-    print('Service built.')
+    @commands.command(aliases=['authenticateupload', 'authupload', 'authup', 'auth'])
+    async def authenticate_upload(self, ctx):
+        global youtube
+        flow = flow_from_clientsecrets('client_secrets.json', scope='https://www.googleapis.com/auth/youtube.upload',
+                                       login_hint='botmyned@gmail.com', redirect_uri='urn:ietf:wg:oauth:2.0:oob')
+        flow.params['access_type'] = 'offline'
+        webbrowser.open_new_tab(flow.step1_get_authorize_url())
+        credentials = flow.step2_exchange(input('Authorization code: '))
+        youtube = build('youtube', 'v3', http=credentials.authorize(http.build_http()))
+        print('Service built.')
 
-  @commands.command(aliases=['up', 'u', 'vid', 'v'])
-  @commands.has_permissions(administrator=True)
-  async def upload(self, ctx):
-    global youtube
-    attachments = ctx.message.attachments
-    try:
-      if not attachments:
-        raise exc.MissingAttachment
-      if len(attachments) > 1:
-        raise exc.TooManyAttachments(len(attachments))
-      mime = mimetypes.guess_type(attachments[0].filename)[0]
-      if 'video/' in mime:
-        with tempfile.NamedTemporaryFile() as temp:
-          await attachments[0].save(temp)
-      else:
-        raise exc.InvalidVideoFile(mime)
-      print('https://www.youtube.com/watch?v=' + youtube.videos().insert(part='snippet',
-                                                                         body={'categoryId': '24', 'title': 'Test'}, media_body=http.MediaFileUpload(temp.name, chunksize=-1)))
-    except exc.InvalidVideoFile as e:
-      await ctx.send('`' + str(e) + '` **not valid video type.**', delete_after=10)
-    except exc.TooManyAttachments as e:
-      await ctx.send('`' + str(e) + '` **too many attachments.** Only one attachment is permitted to upload.', delete_after=10)
-    except exc.MissingAttachment:
-      await ctx.send('**Missing attachment.**', delete_after=10)
+    @commands.command(aliases=['up', 'u', 'vid', 'v'])
+    @commands.has_permissions(administrator=True)
+    async def upload(self, ctx):
+        global youtube
+        attachments = ctx.message.attachments
+        try:
+            if not attachments:
+                raise exc.MissingAttachment
+            if len(attachments) > 1:
+                raise exc.TooManyAttachments(len(attachments))
+            mime = mimetypes.guess_type(attachments[0].filename)[0]
+            if 'video/' in mime:
+                with tempfile.NamedTemporaryFile() as temp:
+                    await attachments[0].save(temp)
+            else:
+                raise exc.InvalidVideoFile(mime)
+            print('https://www.youtube.com/watch?v=' + youtube.videos().insert(part='snippet',
+                                                                               body={'categoryId': '24', 'title': 'Test'}, media_body=http.MediaFileUpload(temp.name, chunksize=-1)))
+        except exc.InvalidVideoFile as e:
+            await ctx.send('`' + str(e) + '` **not valid video type.**', delete_after=10)
+        except exc.TooManyAttachments as e:
+            await ctx.send('`' + str(e) + '` **too many attachments.** Only one attachment is permitted to upload.', delete_after=10)
+        except exc.MissingAttachment:
+            await ctx.send('**Missing attachment.**', delete_after=10)
 
-  @upload.error
-  async def upload_error(self, ctx, error):
-    pass
+    @upload.error
+    async def upload_error(self, ctx, error):
+        pass
 # http.
