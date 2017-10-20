@@ -25,7 +25,7 @@ class MsG:
     self.LIMIT = 100
     self.HISTORY_LIMIT = 100
     self.RATE_LIMIT = u.RATE_LIMIT
-    self.queue = asyncio.Queue()
+        self.qualiqueue = asyncio.Queue()
     self.qualitifying = False
 
     self.favorites = u.setdefault('cogs/favorites.pkl', {'tags': set(), 'posts': set()})
@@ -36,10 +36,34 @@ class MsG:
     if u.tasks['auto_qual']:
       for channel in u.tasks['auto_qual']:
         temp = self.bot.get_channel(channel)
-        self.bot.loop.create_task(self.queue_for_qualitification(temp))
+                self.bot.loop.create_task(self.qualiqueue_for_qualitification(temp))
         print('AUTO-QUALITIFYING : #{}'.format(temp.name))
       self.bot.loop.create_task(self._qualitify())
       self.qualitifying = True
+
+    async def get_post(self, channel):
+        post_request = await u.fetch('https://e621.net/post/index.json', json=True)
+
+    @commands.command()
+    async def auto_post(self, ctx):
+        try:
+            if ctx.channel.id not in u.tasks['auto_post']:
+                u.tasks['auto_post'].append(ctx.channel.id)
+                u.dump(u.tasks, 'cogs/tasks.pkl')
+                self.bot.loop.create_task(self.qualiqueue_for_qualitification(ctx.channel))
+                if not self.qualitifying:
+                    self.bot.loop.create_task(self._qualitify())
+                    self.qualitifying = True
+
+                print('AUTO-POSTING : #{}'.format(ctx.channel.name))
+                await ctx.send('**Auto-posting all images in {}.**'.format(ctx.channel.mention), delete_after=5)
+                await ctx.message.add_reaction('\N{WHITE HEAVY CHECK MARK}')
+            else:
+                raise exc.Exists
+
+        except exc.Exists:
+            await ctx.send('**Already auto-posting in {}.** Type `stop` to stop.'.format(ctx.channel.mention), delete_after=10)
+            await ctx.message.add_reaction('\N{CROSS MARK}')
 
   # Tag search
   @commands.command(aliases=['rel'], brief='e621 Search for related tags', description='e621 | NSFW\nReturn related tags for a number of given tags', usage='[related|rel]')
@@ -351,7 +375,7 @@ class MsG:
 
   async def _qualitify(self):
     while self.qualitifying:
-      message = await self.queue.get()
+            message = await self.qualiqueue.get()
 
       for match in re.finditer('(http[a-z]?:\/\/[^ ]*\.(?:gif|png|jpg|jpeg))', message.content):
         try:
@@ -402,7 +426,7 @@ class MsG:
     try:
       while not self.bot.is_closed():
         message = await self.bot.wait_for('message', check=check)
-        await self.queue.put(message)
+                await self.qualiqueue.put(message)
         await message.add_reaction('\N{HOURGLASS WITH FLOWING SAND}')
 
     except exc.Abort:
@@ -420,7 +444,7 @@ class MsG:
       if ctx.channel.id not in u.tasks['auto_qual']:
         u.tasks['auto_qual'].append(ctx.channel.id)
         u.dump(u.tasks, 'cogs/tasks.pkl')
-        self.bot.loop.create_task(self.queue_for_qualitification(ctx.channel))
+                self.bot.loop.create_task(self.qualiqueue_for_qualitification(ctx.channel))
         if not self.qualitifying:
           self.bot.loop.create_task(self._qualitify())
           self.qualitifying = True
