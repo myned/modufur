@@ -20,49 +20,49 @@ print('\nPID : {}\n'.format(os.getpid()))
 
 
 try:
-  with open('config.json') as infile:
-    config = jsn.load(infile)
+    with open('config.json') as infile:
+        config = jsn.load(infile)
         print('LOADED : config.json')
 except FileNotFoundError:
-  with open('config.json', 'w') as outfile:
-    jsn.dump({'client_id': 0, 'info_channel': 0, 'owner_id': 0, 'permissions': 126016,
-              'playing': 'a game', 'prefix': [',', 'm,'], 'token': 'str'}, outfile, indent=4, sort_keys=True)
-    raise FileNotFoundError(
+    with open('config.json', 'w') as outfile:
+        jsn.dump({'client_id': 0, 'info_channel': 0, 'owner_id': 0, 'permissions': 126016,
+                  'playing': 'a game', 'prefix': [',', 'm,'], 'token': 'str'}, outfile, indent=4, sort_keys=True)
+        raise FileNotFoundError(
             'FILE NOT FOUND : config.json created with abstract values. Restart run.py with correct values')
 
 
 def setdefault(filename, default=None):
-  try:
-    with open(filename, 'rb') as infile:
+    try:
+        with open(filename, 'rb') as infile:
             print('LOADED : {}'.format(filename))
-      return pkl.load(infile)
-  except FileNotFoundError:
-    with open(filename, 'wb+') as iofile:
+            return pkl.load(infile)
+    except FileNotFoundError:
+        with open(filename, 'wb+') as iofile:
             print('FILE NOT FOUND : {} created and loaded with default values'.format(filename))
-      pkl.dump(default, iofile)
-      iofile.seek(0)
-      return pkl.load(iofile)
+            pkl.dump(default, iofile)
+            iofile.seek(0)
+            return pkl.load(iofile)
 
 
 def load(filename, *, json=False):
-  if not json:
-    with open(filename, 'rb') as infile:
-      return pkl.load(infile)
-  else:
-    with open(filename) as infile:
-      return jsn.load(infile)
+    if not json:
+        with open(filename, 'rb') as infile:
+            return pkl.load(infile)
+    else:
+        with open(filename) as infile:
+            return jsn.load(infile)
 
 
 def dump(obj, filename, *, json=False):
-  if not json:
-    with open(filename, 'wb') as outfile:
-      pkl.dump(obj, outfile)
-  else:
-    with open(filename, 'w') as outfile:
-      jsn.dump(obj, outfile, indent=4, sort_keys=True)
+    if not json:
+        with open(filename, 'wb') as outfile:
+            pkl.dump(obj, outfile)
+    else:
+        with open(filename, 'w') as outfile:
+            jsn.dump(obj, outfile, indent=4, sort_keys=True)
 
 
-settings = setdefault('settings.pkl', {'del_ctx': []})
+settings = setdefault('settings.pkl', {'del_ctx': [], 'prefixes': {}})
 tasks = setdefault('cogs/tasks.pkl', {'auto_del': [], 'auto_qual': [], 'auto_rev': []})
 temp = setdefault('temp.pkl', {})
 
@@ -87,62 +87,62 @@ session = aiohttp.ClientSession()
 
 
 def close(loop):
-  global session
+    global session
 
-  if session:
-    session.close()
+    if session:
+        session.close()
 
-  loop.stop()
-  pending = asyncio.Task.all_tasks()
-  for task in pending:
-    task.cancel()
-    # with suppress(asyncio.CancelledError):
-    #     loop.run_until_complete(task)
-  # loop.close()
+    loop.stop()
+    pending = asyncio.Task.all_tasks()
+    for task in pending:
+        task.cancel()
+        # with suppress(asyncio.CancelledError):
+        #     loop.run_until_complete(task)
+    # loop.close()
 
-  print('Finished cancelling tasks.')
+    print('Finished cancelling tasks.')
 
 
 async def fetch(url, *, params={}, json=False):
-  global session
+    global session
 
     async with session.get(url, params=params, headers={'User-Agent': 'Myned/Modumind/0.0.1'}) as r:
-    if json:
-      return await r.json()
-    return await r.read()
+        if json:
+            return await r.json()
+        return await r.read()
 
 
 # def geneate_embed(**kwargs):
 #     embed = d.Embed(title=kwargs['title'], )
 
 def get_kwargs(ctx, args, *, limit=False):
-  destination = ctx
-  remaining = list(args[:])
-  rm = False
-  lim = 1
+    destination = ctx
+    remaining = list(args[:])
+    rm = False
+    lim = 1
 
-  if '-d' in remaining or '-dm' in remaining:
-    destination = ctx.author
+    if '-d' in remaining or '-dm' in remaining:
+        destination = ctx.author
 
-    for flag in ('-d', '-dm'):
-      with suppress(ValueError):
-        remaining.remove(flag)
+        for flag in ('-d', '-dm'):
+            with suppress(ValueError):
+                remaining.remove(flag)
 
-  if ('-r' in remaining or '-rm' in remaining or '-remove' in remaining) and ctx.author.permissions_in(ctx.channel).manage_messages:
-    rm = True
+    if ('-r' in remaining or '-rm' in remaining or '-remove' in remaining) and ctx.author.permissions_in(ctx.channel).manage_messages:
+        rm = True
 
-    for flag in ('-r', '-rm', '-remove'):
-      with suppress(ValueError):
-        remaining.remove(flag)
+        for flag in ('-r', '-rm', '-remove'):
+            with suppress(ValueError):
+                remaining.remove(flag)
 
-  if limit:
-    for arg in remaining:
+    if limit:
+        for arg in remaining:
             if arg.isdigit():
-          if 1 <= int(arg) <= limit:
-            lim = int(arg)
-            remaining.remove(arg)
-            break
-          else:
-            raise exc.BoundsError(arg)
+                if 1 <= int(arg) <= limit:
+                    lim = int(arg)
+                    remaining.remove(arg)
+                    break
+                else:
+                    raise exc.BoundsError(arg)
 
-  return {'destination': destination, 'remaining': remaining, 'remove': rm, 'limit': lim}
+    return {'destination': destination, 'remaining': remaining, 'remove': rm, 'limit': lim}
