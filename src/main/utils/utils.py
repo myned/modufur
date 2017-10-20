@@ -22,23 +22,23 @@ print('\nPID : {}\n'.format(os.getpid()))
 try:
   with open('config.json') as infile:
     config = jsn.load(infile)
-    print('config.json loaded.')
+        print('LOADED : config.json')
 except FileNotFoundError:
   with open('config.json', 'w') as outfile:
     jsn.dump({'client_id': 0, 'info_channel': 0, 'owner_id': 0, 'permissions': 126016,
               'playing': 'a game', 'prefix': [',', 'm,'], 'token': 'str'}, outfile, indent=4, sort_keys=True)
     raise FileNotFoundError(
-        'Config file not found: config.json created with abstract values. Restart run.py with correct values.')
+            'FILE NOT FOUND : config.json created with abstract values. Restart run.py with correct values')
 
 
 def setdefault(filename, default=None):
   try:
     with open(filename, 'rb') as infile:
-      print('{} loaded.'.format(filename))
+            print('LOADED : {}'.format(filename))
       return pkl.load(infile)
   except FileNotFoundError:
     with open(filename, 'wb+') as iofile:
-      print('File not found: {} created and loaded with default values.'.format(filename))
+            print('FILE NOT FOUND : {} created and loaded with default values'.format(filename))
       pkl.dump(default, iofile)
       iofile.seek(0)
       return pkl.load(iofile)
