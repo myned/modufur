@@ -56,14 +56,22 @@ async def on_ready():
 
 
 @bot.event
+async def on_message(message):
+    if message.author.bot or message.author is bot.user:
+        return
+
+    await bot.process_commands(message)
+
+
+@bot.event
 async def on_error(error, *args, **kwargs):
-  print('\n! ! ! ! !\nE R R O R : {}\n! ! ! ! !\n'.format(error), file=sys.stderr)
-  tb.print_exc()
+    print('\n! ! ! ! !\nE R R O R : {}\n! ! ! ! !\n'.format(error), file=sys.stderr)
+    tb.print_exc()
   await bot.get_user(u.config['owner_id']).send('**ERROR** ⚠ `{}`'.format(error))
   await bot.get_channel(u.config['info_channel']).send('**ERROR** ⚠ `{}`'.format(error))
-  # u.notify('E R R O R')
-  await bot.logout()
-  u.close(bot.loop)
+    # u.notify('E R R O R')
+    await bot.logout()
+    u.close(bot.loop)
 
 
 @bot.event
