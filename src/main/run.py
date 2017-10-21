@@ -26,7 +26,8 @@ def get_prefix(bot, message):
     return u.config['prefix']
 
 
-bot = commands.Bot(command_prefix=get_prefix, description='Experimental miscellaneous bot')
+bot = commands.Bot(command_prefix=get_prefix, formatter=commands.HelpFormatter(
+    show_check_failure=True), description='Experimental miscellaneous bot')
 
 # Send and print ready message to #testing and console after logon
 
