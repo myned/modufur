@@ -6,6 +6,7 @@ import subprocess
 import sys
 import traceback as tb
 from contextlib import suppress
+from pprint import pprint
 
 import discord as d
 from discord import utils
@@ -135,8 +136,13 @@ def after(voice, error):
 @commands.is_owner()
 @checks.del_ctx()
 async def test(ctx):
-    channel = bot.get_channel(int(cid))
-    voice = await channel.connect()
-    voice.play(d.AudioSource, after=lambda: after(voice))
+    logs = []
+    async for entry in ctx.guild.audit_logs(limit=None, action=d.AuditLogAction.message_delete):
+        logs.append(
+            f'@{entry.user.name} deleted {entry.extra.count} messages from @{entry.target.name} in #{entry.extra.channel.name}')
+    pprint(logs)
+    # channel = bot.get_channel(int(cid))
+    # voice = await channel.connect()
+    # voice.play(d.AudioSource, after=lambda: after(voice))
 
 bot.run(u.config['token'])
