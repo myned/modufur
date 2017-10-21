@@ -530,7 +530,7 @@ class MsG:
 
         def on_message(msg):
             if msg.content.isdigit():
-                if int(msg.content) <= len(posts) and msg.author is ctx.author and msg.channel is ctx.channel:
+                if 1 <= int(msg.content) <= len(posts) and msg.author is ctx.author and msg.channel is ctx.channel:
                     return True
             return False
 
@@ -692,9 +692,9 @@ class MsG:
                     posts[post['id']] = {'author': post['author'], 'url': post['file_url']}
                 if len(posts) == limit:
                     break
-            c += 1
+                c += 1
 
-        return posts
+            return posts
 
     @commands.command(name='e621p', aliases=['e6p', '6p'])
     @checks.del_ctx()
@@ -715,7 +715,7 @@ class MsG:
 
         def on_message(msg):
             if msg.content.isdigit():
-                if int(msg.content) <= len(posts) and msg.author is ctx.author and msg.channel is ctx.channel:
+                if 1 <= int(msg.content) <= len(posts) and msg.author is ctx.author and msg.channel is ctx.channel:
                     return True
             return False
 
