@@ -212,3 +212,7 @@ class Tools:
     @debug.command(name='inspect', aliases=['ins'])
     async def _inspect(self, ctx, *, input_):
         pass
+
+    # @commands.command(name='endpoint', aliases=['end'])
+    # async def get_endpoint(self, ctx, *args):
+    #     await ctx.send(f'```\n{await u.fetch(f"https://{args[0]}/{args[1]}/{args[2]}", params={args[3]: args[4], "limit": 1}, json=True)}```')
