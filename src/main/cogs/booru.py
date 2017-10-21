@@ -459,7 +459,7 @@ class MsG:
             await ctx.send('**Already auto-qualitifying in {}.** Type `stop` to stop.'.format(ctx.channel.mention), delete_after=10)
             await ctx.message.add_reaction('\N{CROSS MARK}')
 
-    def get_favorites(self, ctx, args):
+    def _get_favorites(self, ctx, args):
         if '-f' in args or '-favs' in args or '-faves' in args or '-favorites' in args:
             if self.favorites.get(ctx.author.id, {}).get('tags', set()):
                 args = ['~{}'.format(tag) for tag in self.favorites[ctx.author.id]['tags']]
@@ -468,7 +468,7 @@ class MsG:
 
         return args
 
-    async def return_pool(self, ctx, *, booru='e621', query=[]):
+    async def _get_pool(self, ctx, *, booru='e621', query=[]):
         def on_message(msg):
             if msg.content.lower() == 'cancel' and msg.author is ctx.author and msg.channel is ctx.channel:
                 raise exc.Abort
