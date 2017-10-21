@@ -512,7 +512,7 @@ class MsG:
         return pool, posts
 
     # Creates reaction-based paginator for linked pools
-    @commands.command(name='pool', aliases=['e6pp'], brief='e621 pool paginator', description='e621 | NSFW\nShow pools in a page format', hidden=True)
+    @commands.command(name='pool', aliases=['e6pp', '6pp'], brief='e621 pool paginator', description='e621 | NSFW\nShow pools in a page format', hidden=True)
     @checks.del_ctx()
     async def pool_paginator(self, ctx, *args):
         def on_reaction(reaction, user):
