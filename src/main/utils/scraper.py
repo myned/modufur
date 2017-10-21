@@ -16,6 +16,7 @@ async def get_post(url):
             return value
         else:
             raise IndexError
+
     except IndexError:
         try:
             raise exc.MatchError(re.search('\/([^\/]+)$', url).group(1))

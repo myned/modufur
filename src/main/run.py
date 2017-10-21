@@ -6,6 +6,7 @@ import subprocess
 import sys
 import traceback as tb
 from contextlib import suppress
+from pprint import pprint
 
 import discord as d
 from discord import utils
@@ -25,7 +26,8 @@ def get_prefix(bot, message):
     return u.config['prefix']
 
 
-bot = commands.Bot(command_prefix=get_prefix, description='Experimental miscellaneous bot')
+bot = commands.Bot(command_prefix=get_prefix, formatter=commands.HelpFormatter(
+    show_check_failure=True), description='Experimental miscellaneous bot')
 
 # Send and print ready message to #testing and console after logon
 
@@ -67,8 +69,8 @@ async def on_message(message):
 async def on_error(error, *args, **kwargs):
     print('\n! ! ! ! !\nE R R O R : {}\n! ! ! ! !\n'.format(error), file=sys.stderr)
     tb.print_exc()
-    await bot.get_user(u.config['owner_id']).send('**ERROR** \N{WARNING SIGN} `{}`'.format(error))
-    await bot.get_channel(u.config['info_channel']).send('**ERROR** \N{WARNING SIGN} `{}`'.format(error))
+    await bot.get_user(u.config['owner_id']).send('**ERROR** \N{WARNING SIGN}\n```\n{}```'.format(error))
+    await bot.get_channel(u.config['info_channel']).send('**ERROR** \N{WARNING SIGN}\n```\n{}```'.format(error))
     if u.temp:
         channel = bot.get_channel(u.temp['restart_ch'])
         message = await channel.get_message(u.temp['restart_msg'])
@@ -91,8 +93,8 @@ async def on_command_error(ctx, error):
         print('\n! ! ! ! ! ! !  ! ! ! ! !\nC O M M A N D  E R R O R : {}\n! ! ! ! ! ! !  ! ! ! ! !\n'.format(
             error), file=sys.stderr)
         tb.print_exception(type(error), error, error.__traceback__, file=sys.stderr)
-        await bot.get_user(u.config['owner_id']).send('**COMMAND ERROR** \N{WARNING SIGN} `{}`'.format(error))
-        await bot.get_channel(u.config['info_channel']).send('**COMMAND ERROR** \N{WARNING SIGN} `{}`'.format(error))
+        await bot.get_user(u.config['owner_id']).send('**COMMAND ERROR** \N{WARNING SIGN}\n```\n{}```'.format(error))
+        await bot.get_channel(u.config['info_channel']).send('**COMMAND ERROR** \N{WARNING SIGN}\n```\n{}```'.format(error))
         await exc.send_error(ctx, error)
         await ctx.message.add_reaction('\N{WARNING SIGN}')
         # u.notify('C O M M A N D  E R R O R')
@@ -135,8 +137,13 @@ def after(voice, error):
 @commands.is_owner()
 @checks.del_ctx()
 async def test(ctx):
-    channel = bot.get_channel(int(cid))
-    voice = await channel.connect()
-    voice.play(d.AudioSource, after=lambda: after(voice))
+    logs = []
+    async for entry in ctx.guild.audit_logs(limit=None, action=d.AuditLogAction.message_delete):
+        logs.append(
+            f'@{entry.user.name} deleted {entry.extra.count} messages from @{entry.target.name} in #{entry.extra.channel.name}')
+    pprint(logs)
+    # channel = bot.get_channel(int(cid))
+    # voice = await channel.connect()
+    # voice.play(d.AudioSource, after=lambda: after(voice))
 
 bot.run(u.config['token'])
