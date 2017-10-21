@@ -487,7 +487,7 @@ class MsG:
                 pools.append(pool['name'])
             match = await ctx.send('**Multiple pools found.** Type in the correct match.\n```\n{}```\nor `cancel` to cancel.'.format('\n'.join(['{} {}'.format(c, elem) for c, elem in enumerate(pools, 1)])))
             try:
-                selection = await self.bot.wait_for('message', check=on_message, timeout=10 * 60)
+                selection = await self.bot.wait_for('message', check=on_message, timeout=5 * 60)
             except exc.Abort:
                 raise exc.Abort
             finally:
