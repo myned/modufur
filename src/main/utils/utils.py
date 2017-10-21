@@ -106,7 +106,7 @@ def close(loop):
 async def fetch(url, *, params={}, json=False):
     global session
 
-    async with session.get(url, params=params, headers={'User-Agent': 'Myned/Modumind/0.0.1'}) as r:
+    async with session.get(url, params=params, headers={'User-Agent': 'Myned/Modumind/dev'}) as r:
         if json:
             return await r.json()
         return await r.read()
