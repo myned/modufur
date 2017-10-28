@@ -36,7 +36,7 @@ class MsG:
         if u.tasks['auto_qual']:
             for channel in u.tasks['auto_qual']:
                 temp = self.bot.get_channel(channel)
-                self.bot.loop.create_task(self.qualiqueue_for_qualitification(temp))
+                self.bot.loop.create_task(self.queue_for_qualitification(temp))
                 print('AUTO-QUALITIFYING : #{}'.format(temp.name))
             self.bot.loop.create_task(self._qualitify())
             self.qualitifying = True
@@ -50,13 +50,13 @@ class MsG:
     #         if ctx.channel.id not in u.tasks['auto_post']:
     #             u.tasks['auto_post'].append(ctx.channel.id)
     #             u.dump(u.tasks, 'cogs/tasks.pkl')
-    #             self.bot.loop.create_task(self.qualiqueue_for_qualitification(ctx.channel))
+    #             self.bot.loop.create_task(self.queue_for_qualitification(ctx.channel))
     #             if not self.qualitifying:
     #                 self.bot.loop.create_task(self._qualitify())
     #                 self.qualitifying = True
     #
     #             print('AUTO-POSTING : #{}'.format(ctx.channel.name))
-    #             await ctx.send('**Auto-posting all images in {}.**'.format(ctx.channel.mention), delete_after=5)
+    #             await ctx.send('**Auto-posting all images in {}**'.format(ctx.channel.mention), delete_after=5)
     #             await ctx.message.add_reaction('\N{WHITE HEAVY CHECK MARK}')
     #         else:
     #             raise exc.Exists
@@ -484,7 +484,7 @@ class MsG:
             if ctx.channel.id not in u.tasks['auto_qual']:
                 u.tasks['auto_qual'].append(ctx.channel.id)
                 u.dump(u.tasks, 'cogs/tasks.pkl')
-                self.bot.loop.create_task(self.qualiqueue_for_qualitification(ctx.channel))
+                self.bot.loop.create_task(self.queue_for_qualitification(ctx.channel))
                 if not self.qualitifying:
                     self.bot.loop.create_task(self._qualitify())
                     self.qualitifying = True
