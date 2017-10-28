@@ -192,7 +192,7 @@ class MsG:
                 try:
                     await dest.trigger_typing()
 
-                    await dest.send('**Probable match:**\n{}'.format(await scraper.get_post(url)))
+                    await dest.send('**Probable match**\n{}'.format(await scraper.get_post(url)))
 
                     c += 1
                     await asyncio.sleep(self.RATE_LIMIT)
@@ -204,7 +204,7 @@ class MsG:
                 try:
                     await dest.trigger_typing()
 
-                    await dest.send('**Probable match:**\n{}'.format(await scraper.get_post(attachment.url)))
+                    await dest.send('**Probable match**\n{}'.format(await scraper.get_post(attachment.url)))
 
                     c += 1
                     await asyncio.sleep(self.RATE_LIMIT)
@@ -238,7 +238,7 @@ class MsG:
 
                     post = await scraper.get_post(url)
 
-                    await dest.send('**Probable match:**\n{}'.format(await scraper.get_image(post)))
+                    await dest.send('**Probable match**\n{}'.format(await scraper.get_image(post)))
 
                     c += 1
                     await asyncio.sleep(self.RATE_LIMIT)
@@ -252,7 +252,7 @@ class MsG:
 
                     post = await scraper.get_post(attachment.url)
 
-                    await dest.send('**Probable match:**\n{}'.format(await scraper.get_image(post)))
+                    await dest.send('**Probable match**\n{}'.format(await scraper.get_image(post)))
 
                     c += 1
                     await asyncio.sleep(self.RATE_LIMIT)
