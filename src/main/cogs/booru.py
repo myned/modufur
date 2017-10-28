@@ -525,12 +525,8 @@ class MsG:
         if len(pool_request) > 1:
             for pool in pool_request:
                 pools.append(pool['name'])
-            match = await ctx.send('**Multiple pools found.** Type in the correct match.\n```\n{}```\nor `cancel` to cancel.'.format('\n'.join(['{} {}'.format(c, elem) for c, elem in enumerate(pools, 1)])))
-            try:
-                selection = await self.bot.wait_for('message', check=on_message, timeout=5 * 60)
-            except exc.Abort:
-                raise exc.Abort
-            finally:
+            match = await ctx.send('**Multiple pools found for `{}`.** Type the number of the correct match.\n```\n{}```\n`0` or `cancel`'.format(' '.join(query), '\n'.join(['{} {}'.format(c, elem) for c, elem in enumerate(pools, 1)])))
+            selection = await self.bot.wait_for('message', check=on_message, timeout=60)
                 await match.delete()
             tempool = [pool for pool in pool_request if pool['name']
                        == pools[int(selection.content) - 1]][0]
