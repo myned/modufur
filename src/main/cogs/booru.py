@@ -510,7 +510,7 @@ class MsG:
 
     async def _get_pool(self, ctx, *, booru='e621', query=[]):
         def on_message(msg):
-            if msg.content.lower() == 'cancel' and msg.author is ctx.author and msg.channel is ctx.channel:
+            if (msg.content.isdigit() and int(msg.content) == 0) or msg.content.lower() == 'cancel' and msg.author is ctx.author and msg.channel is ctx.channel:
                 raise exc.Abort
             elif msg.content.isdigit():
                 if int(msg.content) <= len(pools) and int(msg.content) > 0 and msg.author is ctx.author and msg.channel is ctx.channel:
