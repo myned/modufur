@@ -815,7 +815,7 @@ class MsG:
             return hearted
 
     # Creates reaction-based paginator for linked pools
-    @commands.command(name='poolp', aliases=['e621pp', 'e6pp', '6pp'], brief='e621 pool paginator', description='e621 | NSFW\nShow pools in a page format', hidden=True)
+    @commands.command(name='poolpage', aliases=['poolp', 'pp', 'e621pp', 'e6pp', '6pp'], brief='e621 pool paginator', description='e621 | NSFW\nShow pools in a page format', hidden=True)
     @checks.del_ctx()
     async def pool_paginator(self, ctx, *args):
         try:
@@ -855,7 +855,7 @@ class MsG:
 
                 await ctx.message.add_reaction('\N{WHITE HEAVY CHECK MARK}')
 
-    @commands.command(name='e621p', aliases=['e6p', '6p'])
+    @commands.command(name='e621page', aliases=['e621p', 'e6p', '6p'])
     @checks.del_ctx()
     @checks.is_nsfw()
     async def e621_paginator(self, ctx, *args):
