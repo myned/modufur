@@ -111,6 +111,46 @@ class MsG:
 
         await ctx.message.add_reaction('\N{WHITE HEAVY CHECK MARK}')
 
+    @commands.command(name='pool', aliases=['getpool', 'getp', 'gp'], brief='e621 Search for pools', description='e621 | NSFW\nReturn pool for query', usage='[related|rel]')
+    @checks.del_ctx()
+    async def get_pool(self, ctx, *args):
+        def on_message(msg):
+            if (msg.content.isdigit() and int(msg.content) == 0) or msg.content.lower() == 'cancel' and msg.author is ctx.author and msg.channel is ctx.channel:
+                raise exc.Abort
+            elif msg.content.isdigit():
+                if int(msg.content) <= len(pools) and int(msg.content) > 0 and msg.author is ctx.author and msg.channel is ctx.channel:
+                    return True
+            return False
+
+        try:
+            kwargs = u.get_kwargs(ctx, args)
+            dest, query = kwargs['destination'], kwargs['remaining']
+            ident = None
+
+            await dest.trigger_typing()
+
+            pools = []
+            pool_request = await u.fetch('https://e621.net/pool/index.json', params={'query': ' '.join(query)}, json=True)
+            if len(pool_request) > 1:
+                for pool in pool_request:
+                    pools.append(pool['name'])
+                match = await ctx.send('**Multiple pools found for `{}`.** Type the number of the correct match.\n```\n{}```\n`0` or `cancel`'.format(' '.join(query), '\n'.join(['{} {}'.format(c, elem) for c, elem in enumerate(pools, 1)])))
+                selection = await self.bot.wait_for('message', check=on_message, timeout=60)
+                await match.delete()
+                tempool = [pool for pool in pool_request if pool['name'] == pools[int(selection.content) - 1]][0]
+                await selection.delete()
+            elif pool_request:
+                tempool = pool_request[0]
+            else:
+                raise exc.NotFound
+
+            await ctx.send(f'**{tempool["name"]}**\nhttps://e621.net/pool/show?id={tempool["id"]}')
+            await ctx.message.add_reaction('\N{WHITE HEAVY CHECK MARK}')
+
+        except exc.Abort:
+            await ctx.send('**Search aborted**', delete_after=10)
+            await ctx.message.add_reaction('\N{CROSS MARK}')
+
     @commands.command(name='getimage', aliases=['geti', 'gi'])
     @checks.del_ctx()
     async def get_image(self, ctx, *args):
