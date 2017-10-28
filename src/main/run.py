@@ -59,7 +59,7 @@ async def on_ready():
 
 @bot.event
 async def on_message(message):
-    if message.author.bot or message.author is bot.user:
+    if message.author is bot.user:
         return
 
     await bot.process_commands(message)
@@ -84,11 +84,11 @@ async def on_error(error, *args, **kwargs):
 @bot.event
 async def on_command_error(ctx, error):
     if isinstance(error, errext.CheckFailure):
-        await ctx.send('\N{NO ENTRY} **Insufficient permissions.**', delete_after=10)
+        await ctx.send('\N{NO ENTRY} **Insufficient permissions**', delete_after=10)
         await ctx.message.add_reaction('\N{NO ENTRY}')
     elif isinstance(error, errext.CommandNotFound):
         print('INVALID COMMAND : {}'.format(error), file=sys.stderr)
-        await ctx.message.add_reaction('\N{CROSS MARK}')
+        await ctx.message.add_reaction('\N{BLACK QUESTION MARK ORNAMENT}')
     else:
         print('\n! ! ! ! ! ! !  ! ! ! ! !\nC O M M A N D  E R R O R : {}\n! ! ! ! ! ! !  ! ! ! ! !\n'.format(
             error), file=sys.stderr)

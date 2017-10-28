@@ -87,8 +87,6 @@ session = aiohttp.ClientSession()
 
 
 def close(loop):
-    global session
-
     if session:
         session.close()
 
@@ -104,8 +102,6 @@ def close(loop):
 
 
 async def fetch(url, *, params={}, json=False):
-    global session
-
     async with session.get(url, params=params, headers={'User-Agent': 'Myned/Modumind/dev'}) as r:
         if json:
             return await r.json()
@@ -121,19 +117,17 @@ def get_kwargs(ctx, args, *, limit=False):
     rm = False
     lim = 1
 
-    if '-d' in remaining or '-dm' in remaining:
-        destination = ctx.author
+    for flag in ('-d', '-dm'):
+        if flag in remaining:
+            destination = ctx.author
 
-        for flag in ('-d', '-dm'):
-            with suppress(ValueError):
-                remaining.remove(flag)
+            remaining.remove(flag)
 
-    if ('-r' in remaining or '-rm' in remaining or '-remove' in remaining) and ctx.author.permissions_in(ctx.channel).manage_messages:
-        rm = True
+    for flag in ('-r', '-rm', '-remove', '-re', '-repl', '-replace'):
+        if flag in remaining and ctx.author.permissions_in(ctx.channel).manage_messages:
+            rm = True
 
-        for flag in ('-r', '-rm', '-remove'):
-            with suppress(ValueError):
-                remaining.remove(flag)
+            remaining.remove(flag)
 
     if limit:
         for arg in remaining:
