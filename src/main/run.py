@@ -88,7 +88,7 @@ async def on_command_error(ctx, error):
         await ctx.message.add_reaction('\N{NO ENTRY}')
     elif isinstance(error, errext.CommandNotFound):
         print('INVALID COMMAND : {}'.format(error), file=sys.stderr)
-        await ctx.message.add_reaction('\N{CROSS MARK}')
+        await ctx.message.add_reaction('\N{BLACK QUESTION MARK ORNAMENT}')
     else:
         print('\n! ! ! ! ! ! !  ! ! ! ! !\nC O M M A N D  E R R O R : {}\n! ! ! ! ! ! !  ! ! ! ! !\n'.format(
             error), file=sys.stderr)
