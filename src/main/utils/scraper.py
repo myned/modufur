@@ -1,3 +1,4 @@
+import asyncio
 import re
 
 from bs4 import BeautifulSoup
@@ -8,6 +9,8 @@ from utils import utils as u
 
 
 async def get_post(url):
+    await asyncio.sleep(u.RATE_LIMIT)
+
     content = await u.fetch('http://iqdb.harry.lu', params={'url': url})
 
     try:
