@@ -50,7 +50,7 @@ class Administration:
 
         history = []
         try:
-            pru_sent = await ctx.send('\N{HOURGLASS} **Pruning** <@{}>**\'s messages will take some time.**'.format(user))
+            pru_sent = await ctx.send('\N{HOURGLASS} **Pruning** <@{}>**\'s messages will take some time**'.format(user))
             ch_sent = await ctx.send('\N{FILE CABINET} **Caching channels...**')
 
             if when is None:
@@ -58,54 +58,54 @@ class Administration:
                     async for message in channel.history(limit=None):
                         if message.author.id == int(user):
                             history.append(message)
-                    await ch_sent.edit(content='\N{FILE CABINET} **Cached** `{}/{}` **channels.**'.format(channels.index(channel) + 1, len(channels)))
+                    await ch_sent.edit(content='\N{FILE CABINET} **Cached** `{}/{}` **channels**'.format(channels.index(channel) + 1, len(channels)))
                     await asyncio.sleep(self.RATE_LIMIT)
             elif when == 'before':
                 for channel in channels:
                     async for message in channel.history(limit=None, before=ref.created_at):
                         if message.author.id == int(user):
                             history.append(message)
-                    await ch_sent.edit(content='\N{FILE CABINET} **Cached** `{}/{}` **channels.**'.format(channels.index(channel) + 1, len(channels)))
+                    await ch_sent.edit(content='\N{FILE CABINET} **Cached** `{}/{}` **channels**'.format(channels.index(channel) + 1, len(channels)))
                     await asyncio.sleep(self.RATE_LIMIT)
             elif when == 'after':
                 for channel in channels:
                     async for message in channel.history(limit=None, after=ref.created_at):
                         if message.author.id == int(user):
                             history.append(message)
-                    await ch_sent.edit(content='\N{FILE CABINET} **Cached** `{}/{}` **channels.**'.format(channels.index(channel) + 1, len(channels)))
+                    await ch_sent.edit(content='\N{FILE CABINET} **Cached** `{}/{}` **channels**'.format(channels.index(channel) + 1, len(channels)))
                     await asyncio.sleep(self.RATE_LIMIT)
             elif when == 'about':
                 for channel in channels:
                     async for message in channel.history(limit=None, about=ref.created_at):
                         if message.author.id == int(user):
                             history.append(message)
-                    await ch_sent.edit(content='\N{FILE CABINET} **Cached** `{}/{}` **channels.**'.format(channels.index(channel) + 1, len(channels)))
+                    await ch_sent.edit(content='\N{FILE CABINET} **Cached** `{}/{}` **channels**'.format(channels.index(channel) + 1, len(channels)))
                     await asyncio.sleep(self.RATE_LIMIT)
 
             est_sent = await ctx.send('\N{STOPWATCH} **Estimated time to delete history:** `{}m {}s`'.format(int(self.RATE_LIMIT * len(history) / 60), int(self.RATE_LIMIT * len(history) % 60)))
             cont_sent = await ctx.send('{} **Continue?** `Y` or `N`'.format(ctx.author.mention))
             await self.bot.wait_for('message', check=yes, timeout=10 * 60)
             await cont_sent.delete()
-            del_sent = await ctx.send('\N{WASTEBASKET} **Deleting messages...**')
+            del_sent = await ctx.send('\N{WASTEBASKET} **Deleting messages..**')
             await del_sent.pin()
             c = 0
             for message in history:
                 with suppress(err.NotFound):
                     await message.delete()
                     c += 1
-                await del_sent.edit(content='\N{WASTEBASKET} **Deleted** `{}/{}` **messages.**'.format(history.index(message) + 1, len(history)))
+                await del_sent.edit(content='\N{WASTEBASKET} **Deleted** `{}/{}` **messages**'.format(history.index(message) + 1, len(history)))
                 await asyncio.sleep(self.RATE_LIMIT)
             await del_sent.unpin()
 
-            await ctx.send('\N{WASTEBASKET} `{}` **of** <@{}>**\'s messages left in** {}**.**'.format(len(history) - c, user, ctx.guild.name))
+            await ctx.send('\N{WASTEBASKET} `{}` **of** <@{}>**\'s messages left in** {}****'.format(len(history) - c, user, ctx.guild.name))
             await ctx.message.add_reaction('\N{WHITE HEAVY CHECK MARK}')
 
         except exc.CheckFail:
-            await ctx.send('**Deletion aborted.**', delete_after=10)
+            await ctx.send('**Deletion aborted**', delete_after=10)
             await ctx.message.add_reaction('\N{CROSS MARK}')
 
         except TimeoutError:
-            await ctx.send('**Deletion timed out.**', delete_after=10)
+            await ctx.send('**Deletion timed out**', delete_after=10)
             await ctx.message.add_reaction('\N{CROSS MARK}')
 
     async def delete(self):
@@ -143,9 +143,9 @@ class Administration:
             if not u.tasks['auto_del']:
                 self.deleting = False
             print('STOPPED : deleting #{}'.format(channel.id))
-            await channel.send('**Stopped queueing messages for deletion in** {}**.**'.format(channel.mention), delete_after=5)
+            await channel.send('**Stopped queueing messages for deletion in** {}'.format(channel.mention), delete_after=5)
 
-    @commands.command(name='autodelete', aliases=['autodel', 'ad'])
+    @commands.command(name='autodelete', aliases=['autodel'])
     @commands.has_permissions(administrator=True)
     @checks.del_ctx()
     async def auto_delete(self, ctx):
@@ -158,7 +158,7 @@ class Administration:
                     self.bot.loop.create_task(self.delete())
                     self.deleting = True
                 print('AUTO-DELETING : #{}'.format(ctx.channel.id))
-                await ctx.send('**Auto-deleting all messages in {}.**'.format(ctx.channel.mention), delete_after=5)
+                await ctx.send('**Auto-deleting all messages in {}**'.format(ctx.channel.mention), delete_after=5)
                 await ctx.message.add_reaction('\N{WHITE HEAVY CHECK MARK}')
             else:
                 raise exc.Exists

@@ -84,7 +84,7 @@ async def on_error(error, *args, **kwargs):
 @bot.event
 async def on_command_error(ctx, error):
     if isinstance(error, errext.CheckFailure):
-        await ctx.send('\N{NO ENTRY} **Insufficient permissions.**', delete_after=10)
+        await ctx.send('\N{NO ENTRY} **Insufficient permissions**', delete_after=10)
         await ctx.message.add_reaction('\N{NO ENTRY}')
     elif isinstance(error, errext.CommandNotFound):
         print('INVALID COMMAND : {}'.format(error), file=sys.stderr)
