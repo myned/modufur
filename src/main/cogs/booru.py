@@ -41,29 +41,29 @@ class MsG:
             self.bot.loop.create_task(self._qualitify())
             self.qualitifying = True
 
-    async def get_post(self, channel):
-        post_request = await u.fetch('https://e621.net/post/index.json', json=True)
-
-    @commands.command()
-    async def auto_post(self, ctx):
-        try:
-            if ctx.channel.id not in u.tasks['auto_post']:
-                u.tasks['auto_post'].append(ctx.channel.id)
-                u.dump(u.tasks, 'cogs/tasks.pkl')
-                self.bot.loop.create_task(self.qualiqueue_for_qualitification(ctx.channel))
-                if not self.qualitifying:
-                    self.bot.loop.create_task(self._qualitify())
-                    self.qualitifying = True
-
-                print('AUTO-POSTING : #{}'.format(ctx.channel.name))
-                await ctx.send('**Auto-posting all images in {}.**'.format(ctx.channel.mention), delete_after=5)
-                await ctx.message.add_reaction('\N{WHITE HEAVY CHECK MARK}')
-            else:
-                raise exc.Exists
-
-        except exc.Exists:
-            await ctx.send('**Already auto-posting in {}.** Type `stop` to stop.'.format(ctx.channel.mention), delete_after=10)
-            await ctx.message.add_reaction('\N{CROSS MARK}')
+    # async def get_post(self, channel):
+    #     post_request = await u.fetch('https://e621.net/post/index.json', json=True)
+    #
+    # @commands.command()
+    # async def auto_post(self, ctx):
+    #     try:
+    #         if ctx.channel.id not in u.tasks['auto_post']:
+    #             u.tasks['auto_post'].append(ctx.channel.id)
+    #             u.dump(u.tasks, 'cogs/tasks.pkl')
+    #             self.bot.loop.create_task(self.qualiqueue_for_qualitification(ctx.channel))
+    #             if not self.qualitifying:
+    #                 self.bot.loop.create_task(self._qualitify())
+    #                 self.qualitifying = True
+    #
+    #             print('AUTO-POSTING : #{}'.format(ctx.channel.name))
+    #             await ctx.send('**Auto-posting all images in {}.**'.format(ctx.channel.mention), delete_after=5)
+    #             await ctx.message.add_reaction('\N{WHITE HEAVY CHECK MARK}')
+    #         else:
+    #             raise exc.Exists
+    #
+    #     except exc.Exists:
+    #         await ctx.send('**Already auto-posting in {}.** Type `stop` to stop.'.format(ctx.channel.mention), delete_after=10)
+    #         await ctx.message.add_reaction('\N{CROSS MARK}')
 
     # Tag search
     @commands.command(aliases=['rel'], brief='e621 Search for related tags', description='e621 | NSFW\nReturn related tags for a number of given tags', usage='[related|rel]')
