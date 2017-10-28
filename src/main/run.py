@@ -136,12 +136,14 @@ def after(voice, error):
 @bot.command(name=',test', hidden=True)
 @commands.is_owner()
 @checks.del_ctx()
-async def test(ctx):
-    logs = []
-    async for entry in ctx.guild.audit_logs(limit=None, action=d.AuditLogAction.message_delete):
-        logs.append(
-            f'@{entry.user.name} deleted {entry.extra.count} messages from @{entry.target.name} in #{entry.extra.channel.name}')
-    pprint(logs)
+async def test(ctx, message):
+    if '<:N_:368917475531816962>' in message:
+        await ctx.send('<:N_:368917475531816962>')
+    # logs = []
+    # async for entry in ctx.guild.audit_logs(limit=None, action=d.AuditLogAction.message_delete):
+    #     logs.append(
+    #         f'@{entry.user.name} deleted {entry.extra.count} messages from @{entry.target.name} in #{entry.extra.channel.name}')
+    # pprint(logs)
     # channel = bot.get_channel(int(cid))
     # voice = await channel.connect()
     # voice.play(d.AudioSource, after=lambda: after(voice))
