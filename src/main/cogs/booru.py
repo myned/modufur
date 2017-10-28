@@ -144,7 +144,7 @@ class MsG:
             else:
                 raise exc.NotFound
 
-            await ctx.send(f'**{tempool["name"]}**\nhttps://e621.net/pool/show?id={tempool["id"]}')
+            await ctx.send(f'**{tempool["name"]}**\nhttps://e621.net/pool/show/{tempool["id"]}')
             await ctx.message.add_reaction('\N{WHITE HEAVY CHECK MARK}')
 
         except exc.Abort:
