@@ -276,44 +276,30 @@ class MsG:
             kwargs = u.get_kwargs(ctx, args, limit=self.HISTORY_LIMIT / 5)
             dest, remove, limit = kwargs['destination'], kwargs['remove'], kwargs['limit']
             urls = []
-            attachments = []
+            c = 0
 
             if not ctx.author.permissions_in(ctx.channel).manage_messages:
                 dest = ctx.author
 
             async for message in ctx.channel.history(limit=self.HISTORY_LIMIT * limit):
-                if len(urls) + len(attachments) >= limit:
+                if c >= limit:
                     break
-                if message.author.id != self.bot.user.id and re.search('(http[a-z]?:\/\/[^ ]*\.(?:gif|png|jpg|jpeg))', message.content) is not None:
-                    urls.append(message)
-                            await message.add_reaction('\N{HOURGLASS WITH FLOWING SAND}')
-                elif message.author.id != self.bot.user.id and message.attachments:
-                    attachments.append(message)
-                        await message.add_reaction('\N{HOURGLASS WITH FLOWING SAND}')
+                if message.author.id != self.bot.user.id and (re.search('(https?:\/\/[^ ]*\.(?:gif|png|jpg|jpeg))', message.content) is not None or message.embeds or message.attachments):
+                    for match in re.finditer('(https?:\/\/[^ ]*\.(?:gif|png|jpg|jpeg))', message.content):
+                        urls.append(match.group(0))
+                    for embed in message.embeds:
+                        if embed.image.url is not d.Embed.Empty:
+                            urls.append(embed.image.url)
+                    for attachment in message.attachments:
+                        urls.append(attachment.url)
 
-            if not urls and not attachments:
+                    await message.add_reaction('\N{HOURGLASS WITH FLOWING SAND}')
+                    c += 1
+
+            if not urls:
                 raise exc.NotFound
 
-            for message in urls:
-                for match in re.finditer('(http[a-z]?:\/\/[^ ]*\.(?:gif|png|jpg|jpeg))', message.content):
-                    try:
-                        await dest.trigger_typing()
-
-                        await dest.send('**Probable match from** {}**:**\n{}'.format(message.author.display_name, await scraper.get_post(match.group(0))))
-                        await message.add_reaction('\N{WHITE HEAVY CHECK MARK}')
-
-                        await asyncio.sleep(self.RATE_LIMIT)
-
-                        if remove:
-                            with suppress(err.NotFound):
-                                await message.delete()
-
-                    except exc.MatchError as e:
-                        await ctx.send('**No probable match for:** `{}`'.format(e), delete_after=10)
-                        await message.add_reaction('\N{CROSS MARK}')
-
-            for message in attachments:
-                for attachment in message.attachments:
+            for url in urls:
                 try:
                     await dest.trigger_typing()
 
@@ -322,15 +308,19 @@ class MsG:
 
                     await asyncio.sleep(self.RATE_LIMIT)
 
-                        if remove:
-                            with suppress(err.NotFound):
-                                await message.delete()
+                    if remove:
+                        with suppress(err.NotFound):
+                            await message.delete()
 
                 except exc.MatchError as e:
                     await ctx.send('**No probable match for:** `{}`'.format(e), delete_after=10)
                     await message.add_reaction('\N{CROSS MARK}')
+                    c -= 1
 
+            if c > 0:
                 await ctx.message.add_reaction('\N{WHITE HEAVY CHECK MARK}')
+            else:
+                await ctx.message.add_reaction('\N{CROSS MARK}')
 
         except exc.NotFound:
             await ctx.send('**No matches found**', delete_after=10)
@@ -346,65 +336,53 @@ class MsG:
             kwargs = u.get_kwargs(ctx, args, limit=self.HISTORY_LIMIT / 5)
             dest, remove, limit = kwargs['destination'], kwargs['remove'], kwargs['limit']
             urls = []
-            attachments = []
+            c = 0
 
             if not ctx.author.permissions_in(ctx.channel).manage_messages:
                 dest = ctx.author
 
             async for message in ctx.channel.history(limit=self.HISTORY_LIMIT * limit):
-                if len(urls) + len(attachments) >= limit:
+                if c >= limit:
                     break
-                if message.author.id != self.bot.user.id and re.search('(http[a-z]?:\/\/[^ ]*\.(?:gif|png|jpg|jpeg))', message.content) is not None:
-                    urls.append(message)
-                        await message.add_reaction('\N{HOURGLASS WITH FLOWING SAND}')
-                elif message.author.id != self.bot.user.id and message.attachments:
-                    attachments.append(message)
-                            await message.add_reaction('\N{HOURGLASS WITH FLOWING SAND}')
+                if message.author.id != self.bot.user.id and (re.search('(https?:\/\/[^ ]*\.(?:gif|png|jpg|jpeg))', message.content) is not None or message.embeds or message.attachments):
+                    for match in re.finditer('(https?:\/\/[^ ]*\.(?:gif|png|jpg|jpeg))', message.content):
+                        urls.append(match.group(0))
+                    for embed in message.embeds:
+                        if embed.image.url is not d.Embed.Empty:
+                            urls.append(embed.image.url)
+                    for attachment in message.attachments:
+                        urls.append(attachment.url)
 
-            if not urls and not attachments:
+                    await message.add_reaction('\N{HOURGLASS WITH FLOWING SAND}')
+                    c += 1
+
+            if not urls:
                 raise exc.NotFound
 
-            for message in urls:
-                for match in re.finditer('(http[a-z]?:\/\/[^ ]*\.(?:gif|png|jpg|jpeg))', message.content):
-                    try:
-                        await dest.trigger_typing()
-
-                        post = await scraper.get_post(match.group(0))
-
-                        await dest.send('**Probable match from** {}**:**\n{}'.format(message.author.display_name, await scraper.get_image(post)))
-                        await message.add_reaction('\N{WHITE HEAVY CHECK MARK}')
-
-                        await asyncio.sleep(self.RATE_LIMIT)
-
-                        if remove:
-                            with suppress(err.NotFound):
-                                await message.delete()
-
-                    except exc.MatchError as e:
-                        await ctx.send('**No probable match for:** `{}`'.format(e), delete_after=10)
-                        await message.add_reaction('\N{CROSS MARK}')
-
-            for message in attachments:
-                for attachment in message.attachments:
+            for url in urls:
                 try:
                     await dest.trigger_typing()
 
-                        post = await scraper.get_post(attachment.url)
+                    post = await scraper.get_post(url)
 
                     await dest.send('**Probable match from** {} `{} / {}`\n{}'.format(message.author.display_name, urls.index(url) + 1, len(urls), await scraper.get_image(post)))
                     await message.add_reaction('\N{WHITE HEAVY CHECK MARK}')
 
                     await asyncio.sleep(self.RATE_LIMIT)
 
-                        if remove:
-                            with suppress(err.NotFound):
-                                await message.delete()
+                    if remove:
+                        with suppress(err.NotFound):
+                            await message.delete()
 
                 except exc.MatchError as e:
                     await ctx.send('**No probable match for:** `{}`'.format(e), delete_after=10)
                     await message.add_reaction('\N{CROSS MARK}')
+                    c -= 1
 
+            if c > 0:
                 await ctx.message.add_reaction('\N{WHITE HEAVY CHECK MARK}')
+            else:
+                await ctx.message.add_reaction('\N{CROSS MARK}')
 
         except exc.NotFound:
             await ctx.send('**No matches found**', delete_after=10)
@@ -416,32 +394,24 @@ class MsG:
     async def _qualitify(self):
         while self.qualitifying:
             message = await self.qualiqueue.get()
+            urls = []
 
-            for match in re.finditer('(http[a-z]?:\/\/[^ ]*\.(?:gif|png|jpg|jpeg))', message.content):
-                try:
-                    await message.channel.trigger_typing()
-
-                    post = await scraper.get_post(match.group(0))
-
-                    await message.channel.send('**Probable match from** {}**:**\n{}'.format(message.author.display_name, await scraper.get_image(post)))
-                    await message.add_reaction('\N{WHITE HEAVY CHECK MARK}')
-
-                    await asyncio.sleep(self.RATE_LIMIT)
-
-                    with suppress(err.NotFound):
-                        await message.delete()
-
-                except exc.MatchError as e:
-                    await message.channel.send('**No probable match for:** `{}`'.format(e), delete_after=10)
-                    await message.add_reaction('\N{CROSS MARK}')
-
+            for match in re.finditer('(https?:\/\/[^ ]*\.(?:gif|png|jpg|jpeg))', message.content):
+                urls.append(match.group(0))
+            for embed in message.embeds:
+                if embed.image.url is not d.Embed.Empty:
+                    urls.append(embed.image.url)
             for attachment in message.attachments:
+                urls.append(attachment.url)
+
+            for url in urls:
                 try:
                     await message.channel.trigger_typing()
 
-                    post = await scraper.get_post(attachment.url)
+                    post = await scraper.get_post(url)
 
                     await message.channel.send('**Probable match from** {}\n{}'.format(message.author.display_name, await scraper.get_image(post)))
+                    with suppress(err.NotFound):
                         await message.add_reaction('\N{WHITE HEAVY CHECK MARK}')
 
                     await asyncio.sleep(self.RATE_LIMIT)
