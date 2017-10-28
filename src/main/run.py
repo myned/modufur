@@ -59,7 +59,7 @@ async def on_ready():
 
 @bot.event
 async def on_message(message):
-    if message.author.bot or message.author is bot.user:
+    if message.author is bot.user:
         return
 
     await bot.process_commands(message)
