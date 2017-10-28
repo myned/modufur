@@ -286,10 +286,10 @@ class MsG:
                     break
                 if message.author.id != self.bot.user.id and re.search('(http[a-z]?:\/\/[^ ]*\.(?:gif|png|jpg|jpeg))', message.content) is not None:
                     urls.append(message)
-                    await message.add_reaction('\N{HOURGLASS WITH FLOWING SAND}')
+                            await message.add_reaction('\N{HOURGLASS WITH FLOWING SAND}')
                 elif message.author.id != self.bot.user.id and message.attachments:
                     attachments.append(message)
-                    await message.add_reaction('\N{HOURGLASS WITH FLOWING SAND}')
+                        await message.add_reaction('\N{HOURGLASS WITH FLOWING SAND}')
 
             if not urls and not attachments:
                 raise exc.NotFound
@@ -314,13 +314,13 @@ class MsG:
 
             for message in attachments:
                 for attachment in message.attachments:
-                    try:
-                        await dest.trigger_typing()
+                try:
+                    await dest.trigger_typing()
 
-                        await dest.send('**Probable match from** {}**:**\n{}'.format(message.author.display_name, await scraper.get_post(attachment.url)))
-                        await message.add_reaction('\N{WHITE HEAVY CHECK MARK}')
+                    await dest.send('**Probable match from** {} `{} / {}`\n{}'.format(message.author.display_name, urls.index(url) + 1, len(urls), await scraper.get_post(url)))
+                    await message.add_reaction('\N{WHITE HEAVY CHECK MARK}')
 
-                        await asyncio.sleep(self.RATE_LIMIT)
+                    await asyncio.sleep(self.RATE_LIMIT)
 
                         if remove:
                             with suppress(err.NotFound):
@@ -356,10 +356,10 @@ class MsG:
                     break
                 if message.author.id != self.bot.user.id and re.search('(http[a-z]?:\/\/[^ ]*\.(?:gif|png|jpg|jpeg))', message.content) is not None:
                     urls.append(message)
-                    await message.add_reaction('\N{HOURGLASS WITH FLOWING SAND}')
+                        await message.add_reaction('\N{HOURGLASS WITH FLOWING SAND}')
                 elif message.author.id != self.bot.user.id and message.attachments:
                     attachments.append(message)
-                    await message.add_reaction('\N{HOURGLASS WITH FLOWING SAND}')
+                            await message.add_reaction('\N{HOURGLASS WITH FLOWING SAND}')
 
             if not urls and not attachments:
                 raise exc.NotFound
@@ -386,15 +386,15 @@ class MsG:
 
             for message in attachments:
                 for attachment in message.attachments:
-                    try:
-                        await dest.trigger_typing()
+                try:
+                    await dest.trigger_typing()
 
                         post = await scraper.get_post(attachment.url)
 
-                        await dest.send('**Probable match from** {}**:**\n{}'.format(message.author.display_name, await scraper.get_image(post)))
-                        await message.add_reaction('\N{WHITE HEAVY CHECK MARK}')
+                    await dest.send('**Probable match from** {} `{} / {}`\n{}'.format(message.author.display_name, urls.index(url) + 1, len(urls), await scraper.get_image(post)))
+                    await message.add_reaction('\N{WHITE HEAVY CHECK MARK}')
 
-                        await asyncio.sleep(self.RATE_LIMIT)
+                    await asyncio.sleep(self.RATE_LIMIT)
 
                         if remove:
                             with suppress(err.NotFound):
