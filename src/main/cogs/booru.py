@@ -23,7 +23,7 @@ class MsG:
         self.bot = bot
         self.color = d.Color(0x1A1A1A)
         self.LIMIT = 100
-        self.HISTORY_LIMIT = 100
+        self.HISTORY_LIMIT = 150
         self.RATE_LIMIT = u.RATE_LIMIT
         self.qualiqueue = asyncio.Queue()
         self.qualitifying = False
@@ -326,17 +326,17 @@ class MsG:
                             with suppress(err.NotFound):
                                 await message.delete()
 
-                    except exc.MatchError as e:
-                        await ctx.send('**No probable match for:** `{}`'.format(e), delete_after=10)
-                        await message.add_reaction('\N{CROSS MARK}')
+                except exc.MatchError as e:
+                    await ctx.send('**No probable match for:** `{}`'.format(e), delete_after=10)
+                    await message.add_reaction('\N{CROSS MARK}')
 
-            await ctx.message.add_reaction('\N{WHITE HEAVY CHECK MARK}')
+                await ctx.message.add_reaction('\N{WHITE HEAVY CHECK MARK}')
 
         except exc.NotFound:
             await ctx.send('**No matches found.**', delete_after=10)
             await ctx.message.add_reaction('\N{CROSS MARK}')
         except exc.BoundsError as e:
-            await ctx.send('`{}` **invalid limit.** Images limited to 20'.format(e), delete_after=10)
+            await ctx.send('`{}` **invalid limit.** Query limited to 30'.format(e), delete_after=10)
             await ctx.message.add_reaction('\N{CROSS MARK}')
 
     @commands.command(name='qualitify', aliases=['qualify', 'qrevify', 'qrisify', 'qify'])
@@ -400,17 +400,17 @@ class MsG:
                             with suppress(err.NotFound):
                                 await message.delete()
 
-                    except exc.MatchError as e:
-                        await ctx.send('**No probable match for:** `{}`'.format(e), delete_after=10)
-                        await message.add_reaction('\N{CROSS MARK}')
+                except exc.MatchError as e:
+                    await ctx.send('**No probable match for:** `{}`'.format(e), delete_after=10)
+                    await message.add_reaction('\N{CROSS MARK}')
 
-            await ctx.message.add_reaction('\N{WHITE HEAVY CHECK MARK}')
+                await ctx.message.add_reaction('\N{WHITE HEAVY CHECK MARK}')
 
         except exc.NotFound:
             await ctx.send('**No matches found.**', delete_after=10)
             await ctx.message.add_reaction('\N{CROSS MARK}')
         except exc.BoundsError as e:
-            await ctx.send('`{}` **invalid limit.** Images limited to 20'.format(e), delete_after=10)
+            await ctx.send('`{}` **invalid limit.** Query limited to 30'.format(e), delete_after=10)
             await ctx.message.add_reaction('\N{CROSS MARK}')
 
     async def _qualitify(self):
