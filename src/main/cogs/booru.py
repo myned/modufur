@@ -478,7 +478,7 @@ class MsG:
 
         return args
 
-    async def _get_pool(self, ctx, *, booru='e621', query=[]):
+    async def _get_pool(self, ctx, *, destination, booru='e621', query=[]):
         def on_message(msg):
             if (msg.content.isdigit() and int(msg.content) == 0) or msg.content.lower() == 'cancel' and msg.author is ctx.author and msg.channel is ctx.channel:
                 raise exc.Abort
@@ -502,6 +502,8 @@ class MsG:
                        == pools[int(selection.content) - 1]][0]
             await selection.delete()
             pool = {'name': tempool['name'], 'id': tempool['id']}
+
+            await destination.trigger_typing()
         elif pool_request:
             tempool = pool_request[0]
             pool = {'name': pool_request[0]['name'], 'id': pool_request[0]['id']}
