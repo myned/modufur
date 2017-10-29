@@ -514,7 +514,7 @@ class MsG:
         while len(posts) < tempool['post_count']:
             posts_request = await u.fetch('https://{}.net/pool/show.json'.format(booru), params={'id': tempool['id'], 'page': page}, json=True)
             for post in posts_request['posts']:
-                posts[post['id']] = {'author': post['author'], 'url': post['file_url']}
+                posts[post['id']] = {'artist': ', '.join(post['artist']), 'url': post['file_url']}
             page += 1
 
         return pool, posts
@@ -564,7 +564,7 @@ class MsG:
                 except exc.Continue:
                     continue
                 if post['id'] not in posts.keys() and post['id'] not in previous.keys():
-                    posts[post['id']] = {'author': post['author'], 'url': post['file_url']}
+                    posts[post['id']] = {'artist': ', '.join(post['artist']), 'url': post['file_url']}
                 if len(posts) == limit:
                     break
 
@@ -618,7 +618,7 @@ class MsG:
             values = list(posts.values())
 
             embed = d.Embed(
-                title=values[c - 1]['author'], url='https://e621.net/post/show/{}'.format(keys[c - 1]), color=dest.me.color if isinstance(dest.channel, d.TextChannel) else self.color)
+                title=values[c - 1]['artist'], url='https://e621.net/post/show/{}'.format(keys[c - 1]), color=dest.me.color if isinstance(dest.channel, d.TextChannel) else self.color)
             embed.set_image(url=values[c - 1]['url'])
             embed.set_author(name=pool['name'],
                              url='https://e621.net/pool/show?id={}'.format(pool['id']), icon_url=ctx.author.avatar_url)
@@ -652,7 +652,7 @@ class MsG:
                 except exc.Left:
                     if c > 1:
                         c -= 1
-                        embed.title = values[c - 1]['author']
+                        embed.title = values[c - 1]['artist']
                         embed.url = 'https://e621.net/post/show/{}'.format(keys[c - 1])
                         embed.set_footer(text='{} / {}'.format(c, len(posts)),
                                          icon_url='http://lh6.ggpht.com/d3pNZNFCcJM8snBsRSdKUhR9AVBnJMcYYrR92RRDBOzCrxZMhuTeoGOQSmSEn7DAPQ=w300')
@@ -668,7 +668,7 @@ class MsG:
 
                     c = int(number.content)
                     await number.delete()
-                    embed.title = values[c - 1]['author']
+                    embed.title = values[c - 1]['artist']
                     embed.url = 'https://e621.net/post/show/{}'.format(keys[c - 1])
                     embed.set_footer(text='{} / {}'.format(c, len(posts)),
                                      icon_url='http://lh6.ggpht.com/d3pNZNFCcJM8snBsRSdKUhR9AVBnJMcYYrR92RRDBOzCrxZMhuTeoGOQSmSEn7DAPQ=w300')
@@ -679,7 +679,7 @@ class MsG:
                 except exc.Right:
                     if c < len(keys):
                         c += 1
-                        embed.title = values[c - 1]['author']
+                        embed.title = values[c - 1]['artist']
                         embed.url = 'https://e621.net/post/show/{}'.format(keys[c - 1])
                         embed.set_footer(text='{} / {}'.format(c, len(posts)),
                                          icon_url='http://lh6.ggpht.com/d3pNZNFCcJM8snBsRSdKUhR9AVBnJMcYYrR92RRDBOzCrxZMhuTeoGOQSmSEn7DAPQ=w300')
@@ -762,7 +762,7 @@ class MsG:
             values = list(posts.values())
 
             embed = d.Embed(
-                title=values[c - 1]['author'], url='https://e621.net/post/show/{}'.format(keys[c - 1]), color=ctx.me.color if isinstance(ctx.channel, d.TextChannel) else self.color)
+                title=values[c - 1]['artist'], url='https://e621.net/post/show/{}'.format(keys[c - 1]), color=ctx.me.color if isinstance(ctx.channel, d.TextChannel) else self.color)
             embed.set_image(url=values[c - 1]['url'])
             embed.set_author(name=formatter.tostring(tags, random=True),
                              url='https://e621.net/post?tags={}'.format(','.join(tags)), icon_url=ctx.author.avatar_url)
@@ -796,7 +796,7 @@ class MsG:
                 except exc.Left:
                     if c > 1:
                         c -= 1
-                        embed.title = values[c - 1]['author']
+                        embed.title = values[c - 1]['artist']
                         embed.url = 'https://e621.net/post/show/{}'.format(keys[c - 1])
                         embed.set_footer(text='{} / {}'.format(c, len(posts)),
                                          icon_url='http://lh6.ggpht.com/d3pNZNFCcJM8snBsRSdKUhR9AVBnJMcYYrR92RRDBOzCrxZMhuTeoGOQSmSEn7DAPQ=w300')
@@ -812,7 +812,7 @@ class MsG:
 
                     c = int(number.content)
                     await number.delete()
-                    embed.title = values[c - 1]['author']
+                    embed.title = values[c - 1]['artist']
                     embed.url = 'https://e621.net/post/show/{}'.format(keys[c - 1])
                     embed.set_footer(text='{} / {}'.format(c, len(posts)),
                                      icon_url='http://lh6.ggpht.com/d3pNZNFCcJM8snBsRSdKUhR9AVBnJMcYYrR92RRDBOzCrxZMhuTeoGOQSmSEn7DAPQ=w300')
@@ -830,7 +830,7 @@ class MsG:
                             values = list(posts.values())
 
                         c += 1
-                        embed.title = values[c - 1]['author']
+                        embed.title = values[c - 1]['artist']
                         embed.url = 'https://e621.net/post/show/{}'.format(keys[c - 1])
                         embed.set_footer(text='{} / {}'.format(c, len(posts)),
                                          icon_url='http://lh6.ggpht.com/d3pNZNFCcJM8snBsRSdKUhR9AVBnJMcYYrR92RRDBOzCrxZMhuTeoGOQSmSEn7DAPQ=w300')
@@ -908,7 +908,7 @@ class MsG:
             posts = await self._get_posts(ctx, booru='e621', tags=tags, limit=limit)
 
             for ident, post in posts.items():
-                embed = d.Embed(title=post['author'], url='https://e621.net/post/show/{}'.format(ident),
+                embed = d.Embed(title=post['artist'], url='https://e621.net/post/show/{}'.format(ident),
                                 color=ctx.me.color if isinstance(ctx.channel, d.TextChannel) else self.color).set_image(url=post['url'])
                 embed.set_author(name=formatter.tostring(tags, random=True),
                                  url='https://e621.net/post?tags={}'.format(','.join(tags)), icon_url=ctx.author.avatar_url)
@@ -962,7 +962,7 @@ class MsG:
             posts = await self._get_posts(ctx, booru='e926', tags=tags, limit=limit)
 
             for ident, post in posts.items():
-                embed = d.Embed(title=post['author'], url='https://e926.net/post/show/{}'.format(ident),
+                embed = d.Embed(title=post['artist'], url='https://e926.net/post/show/{}'.format(ident),
                                 color=ctx.me.color if isinstance(ctx.channel, d.TextChannel) else self.color).set_image(url=post['url'])
                 embed.set_author(name=formatter.tostring(tags, random=True),
                                  url='https://e621.net/post?tags={}'.format(','.join(tags)), icon_url=ctx.author.avatar_url)
