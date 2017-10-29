@@ -59,10 +59,8 @@ async def on_ready():
 
 @bot.event
 async def on_message(message):
-    if message.author is bot.user:
-        return
-
-    await bot.process_commands(message)
+    if message.author is not bot.user:
+        await bot.process_commands(message)
 
 
 @bot.event
@@ -98,26 +96,6 @@ async def on_command_error(ctx, error):
         await exc.send_error(ctx, error)
         await ctx.message.add_reaction('\N{WARNING SIGN}')
         # u.notify('C O M M A N D  E R R O R')
-
-
-async def on_reaction_add(r, u):
-    pass
-
-
-async def on_reaction_remove(r, u):
-    pass
-
-
-async def reaction_add(r, u):
-    bot.add_listener(on_reaction_add)
-    print('Reacted')
-    bot.remove_listener(on_reaction_remove)
-
-
-async def reaction_remove(r, u):
-    bot.add_listener(on_reaction_remove)
-    print('Removed')
-    bot.remove_listener(on_reaction_remove)
 
 # d.opus.load_opus('opus')
 

@@ -478,7 +478,7 @@ class MsG:
 
         return args
 
-    async def _get_pool(self, ctx, *, booru='e621', query=[]):
+    async def _get_pool(self, ctx, *, destination, booru='e621', query=[]):
         def on_message(msg):
             if (msg.content.isdigit() and int(msg.content) == 0) or msg.content.lower() == 'cancel' and msg.author is ctx.author and msg.channel is ctx.channel:
                 raise exc.Abort
@@ -502,6 +502,8 @@ class MsG:
                        == pools[int(selection.content) - 1]][0]
             await selection.delete()
             pool = {'name': tempool['name'], 'id': tempool['id']}
+
+            await destination.trigger_typing()
         elif pool_request:
             tempool = pool_request[0]
             pool = {'name': pool_request[0]['name'], 'id': pool_request[0]['id']}
@@ -580,7 +582,10 @@ class MsG:
         else:
             raise exc.NotFound
 
-    async def paginate(self, ctx, *, args, pool=False):
+    # Creates reaction-based paginator for linked pools
+    @commands.command(name='poolpage', aliases=['poolp', 'pp', 'e621pp', 'e6pp', '6pp'], brief='e621 pool paginator', description='e621 | NSFW\nShow pools in a page format', hidden=True)
+    @checks.del_ctx()
+    async def pool_paginator(self, ctx, *args):
         def on_reaction(reaction, user):
             if reaction.emoji == '\N{OCTAGONAL SIGN}' and reaction.message.id == ctx.message.id and user is ctx.author:
                 raise exc.Abort
@@ -601,72 +606,52 @@ class MsG:
             return False
 
         try:
-            if not pool:
-                kwargs = u.get_kwargs(ctx, args)
-                dest, tags = kwargs['destination'], kwargs['remaining']
-                limit = self.LIMIT / 5
-                hearted = []
-                c = 1
+            kwargs = u.get_kwargs(ctx, args)
+            dest, query = kwargs['destination'], kwargs['remaining']
+            hearted = []
+            c = 1
 
-                tags = self._get_favorites(ctx, tags)
+            await dest.trigger_typing()
 
-                await ctx.trigger_typing()
+            pool, posts = await self._get_pool(ctx, destination=dest, booru='e621', query=query)
+            keys = list(posts.keys())
+            values = list(posts.values())
 
-                posts = await self._get_posts(ctx, booru='e621', tags=tags, limit=limit)
-                keys = list(posts.keys())
-                values = list(posts.values())
+            embed = d.Embed(
+                title=values[c - 1]['author'], url='https://e621.net/post/show/{}'.format(keys[c - 1]), color=dest.me.color if isinstance(dest.channel, d.TextChannel) else self.color)
+            embed.set_image(url=values[c - 1]['url'])
+            embed.set_author(name=pool['name'],
+                             url='https://e621.net/pool/show?id={}'.format(pool['id']), icon_url=ctx.author.avatar_url)
+            embed.set_footer(text='{} / {}'.format(c, len(posts)),
+                             icon_url='http://lh6.ggpht.com/d3pNZNFCcJM8snBsRSdKUhR9AVBnJMcYYrR92RRDBOzCrxZMhuTeoGOQSmSEn7DAPQ=w300')
 
-                embed = d.Embed(
-                    title=values[c - 1]['author'], url='https://e621.net/post/show/{}'.format(keys[c - 1]), color=ctx.me.color if isinstance(ctx.channel, d.TextChannel) else self.color)
-                embed.set_image(url=values[c - 1]['url'])
-                embed.set_author(name=formatter.tostring(tags, random=True),
-                                 url='https://e621.net/post?tags={}'.format(','.join(tags)), icon_url=ctx.author.avatar_url)
-                embed.set_footer(text='{} / {}'.format(c, len(posts)),
-                                 icon_url='http://lh6.ggpht.com/d3pNZNFCcJM8snBsRSdKUhR9AVBnJMcYYrR92RRDBOzCrxZMhuTeoGOQSmSEn7DAPQ=w300')
+            paginator = await dest.send(embed=embed)
 
-                paginator = await dest.send(embed=embed)
+            for emoji in ('\N{GROWING HEART}', '\N{LEFTWARDS BLACK ARROW}', '\N{NUMBER SIGN}\N{COMBINING ENCLOSING KEYCAP}', '\N{BLACK RIGHTWARDS ARROW}'):
+                await paginator.add_reaction(emoji)
+            await ctx.message.add_reaction('\N{OCTAGONAL SIGN}')
+            await asyncio.sleep(1)
 
-                for emoji in ('\N{GROWING HEART}', '\N{LEFTWARDS BLACK ARROW}', '\N{NUMBER SIGN}\N{COMBINING ENCLOSING KEYCAP}', '\N{BLACK RIGHTWARDS ARROW}'):
-                    await paginator.add_reaction(emoji)
-                await ctx.message.add_reaction('\N{OCTAGONAL SIGN}')
-                await asyncio.sleep(1)
+            while not self.bot.is_closed():
+                try:
+                    done, pending = await asyncio.wait([self.bot.wait_for('reaction_add', check=on_reaction, timeout=10 * 60),
+                                                        self.bot.wait_for('reaction_remove', check=on_reaction, timeout=10 * 60)], return_when=asyncio.FIRST_COMPLETED)
+                    for future in done:
+                        future.result()
 
-                while not self.bot.is_closed():
-                    try:
-                        done, pending = await asyncio.wait([self.bot.wait_for('reaction_add', check=on_reaction, timeout=10 * 60),
-                                                            self.bot.wait_for('reaction_remove', check=on_reaction, timeout=10 * 60)], return_when=asyncio.FIRST_COMPLETED)
-                        for future in done:
-                            future.result()
+                except exc.Save:
+                    if values[c - 1]['url'] not in hearted:
+                        hearted.append(values[c - 1]['url'])
 
-                    except exc.Save:
-                        if values[c - 1]['url'] not in hearted:
-                            hearted.append(values[c - 1]['url'])
+                        await paginator.edit(content='\N{HEAVY BLACK HEART}')
+                    else:
+                        hearted.remove(values[c - 1]['url'])
 
-                            await paginator.edit(content='\N{HEAVY BLACK HEART}')
-                        else:
-                            hearted.remove(values[c - 1]['url'])
+                        await paginator.edit(content='\N{BROKEN HEART}')
 
-                            await paginator.edit(content='\N{BROKEN HEART}')
-
-                    except exc.Left:
-                        if c > 1:
-                            c -= 1
-                            embed.title = values[c - 1]['author']
-                            embed.url = 'https://e621.net/post/show/{}'.format(keys[c - 1])
-                            embed.set_footer(text='{} / {}'.format(c, len(posts)),
-                                             icon_url='http://lh6.ggpht.com/d3pNZNFCcJM8snBsRSdKUhR9AVBnJMcYYrR92RRDBOzCrxZMhuTeoGOQSmSEn7DAPQ=w300')
-                            embed.set_image(url=values[c - 1]['url'])
-
-                            await paginator.edit(content='\N{HEAVY BLACK HEART}' if values[c - 1]['url'] in hearted else None, embed=embed)
-                        else:
-                            await paginator.edit(content='**First image**')
-
-                    except exc.GoTo:
-                        await paginator.edit(content='**Enter image number...**')
-                        number = await self.bot.wait_for('message', check=on_message, timeout=10 * 60)
-
-                        c = int(number.content)
-                        await number.delete()
+                except exc.Left:
+                    if c > 1:
+                        c -= 1
                         embed.title = values[c - 1]['author']
                         embed.url = 'https://e621.net/post/show/{}'.format(keys[c - 1])
                         embed.set_footer(text='{} / {}'.format(c, len(posts)),
@@ -674,92 +659,26 @@ class MsG:
                         embed.set_image(url=values[c - 1]['url'])
 
                         await paginator.edit(content='\N{HEAVY BLACK HEART}' if values[c - 1]['url'] in hearted else None, embed=embed)
+                    else:
+                        await paginator.edit(content='**First image**')
 
-                    except exc.Right:
-                        try:
-                            if c % limit == 0:
-                                await dest.trigger_typing()
-                                posts.update(await self._get_posts(ctx, booru='e621', tags=tags, limit=limit, previous=posts))
+                except exc.GoTo:
+                    await paginator.edit(content='**Enter image number...**')
+                    number = await self.bot.wait_for('message', check=on_message, timeout=10 * 60)
 
-                                keys = list(posts.keys())
-                                values = list(posts.values())
+                    c = int(number.content)
+                    await number.delete()
+                    embed.title = values[c - 1]['author']
+                    embed.url = 'https://e621.net/post/show/{}'.format(keys[c - 1])
+                    embed.set_footer(text='{} / {}'.format(c, len(posts)),
+                                     icon_url='http://lh6.ggpht.com/d3pNZNFCcJM8snBsRSdKUhR9AVBnJMcYYrR92RRDBOzCrxZMhuTeoGOQSmSEn7DAPQ=w300')
+                    embed.set_image(url=values[c - 1]['url'])
 
-                            c += 1
-                            embed.title = values[c - 1]['author']
-                            embed.url = 'https://e621.net/post/show/{}'.format(keys[c - 1])
-                            embed.set_footer(text='{} / {}'.format(c, len(posts)),
-                                             icon_url='http://lh6.ggpht.com/d3pNZNFCcJM8snBsRSdKUhR9AVBnJMcYYrR92RRDBOzCrxZMhuTeoGOQSmSEn7DAPQ=w300')
-                            embed.set_image(url=values[c - 1]['url'])
+                    await paginator.edit(content='\N{HEAVY BLACK HEART}' if values[c - 1]['url'] in hearted else None, embed=embed)
 
-                            await paginator.edit(content='\N{HEAVY BLACK HEART}' if values[c - 1]['url'] in hearted else None, embed=embed)
-
-                        except IndexError:
-                            await paginator.edit(content='**No more images found**')
-                        except exc.NotFound:
-                            await paginator.edit(content='**No more images found**')
-            else:
-                kwargs = u.get_kwargs(ctx, args)
-                dest, query = kwargs['destination'], kwargs['remaining']
-                hearted = []
-                c = 1
-
-                await dest.trigger_typing()
-
-                pool, posts = await self._get_pool(ctx, booru='e621', query=query)
-                keys = list(posts.keys())
-                values = list(posts.values())
-
-                embed = d.Embed(
-                    title=values[c - 1]['author'], url='https://e621.net/post/show/{}'.format(keys[c - 1]), color=dest.me.color if isinstance(dest.channel, d.TextChannel) else self.color)
-                embed.set_image(url=values[c - 1]['url'])
-                embed.set_author(name=pool['name'],
-                                 url='https://e621.net/pool/show?id={}'.format(pool['id']), icon_url=ctx.author.avatar_url)
-                embed.set_footer(text='{} / {}'.format(c, len(posts)),
-                                 icon_url='http://lh6.ggpht.com/d3pNZNFCcJM8snBsRSdKUhR9AVBnJMcYYrR92RRDBOzCrxZMhuTeoGOQSmSEn7DAPQ=w300')
-
-                paginator = await dest.send(embed=embed)
-
-                for emoji in ('\N{GROWING HEART}', '\N{LEFTWARDS BLACK ARROW}', '\N{NUMBER SIGN}\N{COMBINING ENCLOSING KEYCAP}', '\N{BLACK RIGHTWARDS ARROW}'):
-                    await paginator.add_reaction(emoji)
-                await ctx.message.add_reaction('\N{OCTAGONAL SIGN}')
-                await asyncio.sleep(1)
-
-                while not self.bot.is_closed():
-                    try:
-                        done, pending = await asyncio.wait([self.bot.wait_for('reaction_add', check=on_reaction, timeout=10 * 60),
-                                                            self.bot.wait_for('reaction_remove', check=on_reaction, timeout=10 * 60)], return_when=asyncio.FIRST_COMPLETED)
-                        for future in done:
-                            future.result()
-
-                    except exc.Save:
-                        if values[c - 1]['url'] not in hearted:
-                            hearted.append(values[c - 1]['url'])
-
-                            await paginator.edit(content='\N{HEAVY BLACK HEART}')
-                        else:
-                            hearted.remove(values[c - 1]['url'])
-
-                            await paginator.edit(content='\N{BROKEN HEART}')
-
-                    except exc.Left:
-                        if c > 1:
-                            c -= 1
-                            embed.title = values[c - 1]['author']
-                            embed.url = 'https://e621.net/post/show/{}'.format(keys[c - 1])
-                            embed.set_footer(text='{} / {}'.format(c, len(posts)),
-                                             icon_url='http://lh6.ggpht.com/d3pNZNFCcJM8snBsRSdKUhR9AVBnJMcYYrR92RRDBOzCrxZMhuTeoGOQSmSEn7DAPQ=w300')
-                            embed.set_image(url=values[c - 1]['url'])
-
-                            await paginator.edit(content='\N{HEAVY BLACK HEART}' if values[c - 1]['url'] in hearted else None, embed=embed)
-                        else:
-                            await paginator.edit(content='**First image**')
-
-                    except exc.GoTo:
-                        await paginator.edit(content='**Enter image number...**')
-                        number = await self.bot.wait_for('message', check=on_message, timeout=10 * 60)
-
-                        c = int(number.content)
-                        await number.delete()
+                except exc.Right:
+                    if c < len(keys):
+                        c += 1
                         embed.title = values[c - 1]['author']
                         embed.url = 'https://e621.net/post/show/{}'.format(keys[c - 1])
                         embed.set_footer(text='{} / {}'.format(c, len(posts)),
@@ -767,29 +686,8 @@ class MsG:
                         embed.set_image(url=values[c - 1]['url'])
 
                         await paginator.edit(content='\N{HEAVY BLACK HEART}' if values[c - 1]['url'] in hearted else None, embed=embed)
-
-                    except exc.Right:
-                        if c < len(keys):
-                            c += 1
-                            embed.title = values[c - 1]['author']
-                            embed.url = 'https://e621.net/post/show/{}'.format(keys[c - 1])
-                            embed.set_footer(text='{} / {}'.format(c, len(posts)),
-                                             icon_url='http://lh6.ggpht.com/d3pNZNFCcJM8snBsRSdKUhR9AVBnJMcYYrR92RRDBOzCrxZMhuTeoGOQSmSEn7DAPQ=w300')
-                            embed.set_image(url=values[c - 1]['url'])
-
-                            await paginator.edit(content='\N{HEAVY BLACK HEART}' if values[c - 1]['url'] in hearted else None, embed=embed)
-                        else:
-                            await paginator.edit(content='**Last image**')
-
-        finally:
-            return hearted
-
-    # Creates reaction-based paginator for linked pools
-    @commands.command(name='poolpage', aliases=['poolp', 'pp', 'e621pp', 'e6pp', '6pp'], brief='e621 pool paginator', description='e621 | NSFW\nShow pools in a page format', hidden=True)
-    @checks.del_ctx()
-    async def pool_paginator(self, ctx, *args):
-        try:
-            hearted = await self.paginate(pool=True)
+                    else:
+                        await paginator.edit(content='**Last image**')
 
         except exc.Abort:
             try:
@@ -829,8 +727,121 @@ class MsG:
     @checks.del_ctx()
     @checks.is_nsfw()
     async def e621_paginator(self, ctx, *args):
+        def on_reaction(reaction, user):
+            if reaction.emoji == '\N{OCTAGONAL SIGN}' and reaction.message.id == ctx.message.id and user is ctx.author:
+                raise exc.Abort
+            elif reaction.emoji == '\N{GROWING HEART}' and reaction.message.id == paginator.id and user is ctx.author:
+                raise exc.Save
+            elif reaction.emoji == '\N{LEFTWARDS BLACK ARROW}' and reaction.message.id == paginator.id and user is ctx.author:
+                raise exc.Left
+            elif reaction.emoji == '\N{NUMBER SIGN}\N{COMBINING ENCLOSING KEYCAP}' and reaction.message.id == paginator.id and user is ctx.author:
+                raise exc.GoTo
+            elif reaction.emoji == '\N{BLACK RIGHTWARDS ARROW}' and reaction.message.id == paginator.id and user is ctx.author:
+                raise exc.Right
+            return False
+
+        def on_message(msg):
+            if msg.content.isdigit():
+                if 1 <= int(msg.content) <= len(posts) and msg.author is ctx.author and msg.channel is ctx.channel:
+                    return True
+            return False
+
         try:
-            hearted = await self.paginate(ctx, args=args)
+            kwargs = u.get_kwargs(ctx, args)
+            dest, tags = kwargs['destination'], kwargs['remaining']
+            limit = self.LIMIT / 5
+            hearted = []
+            c = 1
+
+            tags = self._get_favorites(ctx, tags)
+
+            await ctx.trigger_typing()
+
+            posts = await self._get_posts(ctx, booru='e621', tags=tags, limit=limit)
+            keys = list(posts.keys())
+            values = list(posts.values())
+
+            embed = d.Embed(
+                title=values[c - 1]['author'], url='https://e621.net/post/show/{}'.format(keys[c - 1]), color=ctx.me.color if isinstance(ctx.channel, d.TextChannel) else self.color)
+            embed.set_image(url=values[c - 1]['url'])
+            embed.set_author(name=formatter.tostring(tags, random=True),
+                             url='https://e621.net/post?tags={}'.format(','.join(tags)), icon_url=ctx.author.avatar_url)
+            embed.set_footer(text='{} / {}'.format(c, len(posts)),
+                             icon_url='http://lh6.ggpht.com/d3pNZNFCcJM8snBsRSdKUhR9AVBnJMcYYrR92RRDBOzCrxZMhuTeoGOQSmSEn7DAPQ=w300')
+
+            paginator = await dest.send(embed=embed)
+
+            for emoji in ('\N{GROWING HEART}', '\N{LEFTWARDS BLACK ARROW}', '\N{NUMBER SIGN}\N{COMBINING ENCLOSING KEYCAP}', '\N{BLACK RIGHTWARDS ARROW}'):
+                await paginator.add_reaction(emoji)
+            await ctx.message.add_reaction('\N{OCTAGONAL SIGN}')
+            await asyncio.sleep(1)
+
+            while not self.bot.is_closed():
+                try:
+                    done, pending = await asyncio.wait([self.bot.wait_for('reaction_add', check=on_reaction, timeout=10 * 60),
+                                                        self.bot.wait_for('reaction_remove', check=on_reaction, timeout=10 * 60)], return_when=asyncio.FIRST_COMPLETED)
+                    for future in done:
+                        future.result()
+
+                except exc.Save:
+                    if values[c - 1]['url'] not in hearted:
+                        hearted.append(values[c - 1]['url'])
+
+                        await paginator.edit(content='\N{HEAVY BLACK HEART}')
+                    else:
+                        hearted.remove(values[c - 1]['url'])
+
+                        await paginator.edit(content='\N{BROKEN HEART}')
+
+                except exc.Left:
+                    if c > 1:
+                        c -= 1
+                        embed.title = values[c - 1]['author']
+                        embed.url = 'https://e621.net/post/show/{}'.format(keys[c - 1])
+                        embed.set_footer(text='{} / {}'.format(c, len(posts)),
+                                         icon_url='http://lh6.ggpht.com/d3pNZNFCcJM8snBsRSdKUhR9AVBnJMcYYrR92RRDBOzCrxZMhuTeoGOQSmSEn7DAPQ=w300')
+                        embed.set_image(url=values[c - 1]['url'])
+
+                        await paginator.edit(content='\N{HEAVY BLACK HEART}' if values[c - 1]['url'] in hearted else None, embed=embed)
+                    else:
+                        await paginator.edit(content='**First image**')
+
+                except exc.GoTo:
+                    await paginator.edit(content='**Enter image number...**')
+                    number = await self.bot.wait_for('message', check=on_message, timeout=10 * 60)
+
+                    c = int(number.content)
+                    await number.delete()
+                    embed.title = values[c - 1]['author']
+                    embed.url = 'https://e621.net/post/show/{}'.format(keys[c - 1])
+                    embed.set_footer(text='{} / {}'.format(c, len(posts)),
+                                     icon_url='http://lh6.ggpht.com/d3pNZNFCcJM8snBsRSdKUhR9AVBnJMcYYrR92RRDBOzCrxZMhuTeoGOQSmSEn7DAPQ=w300')
+                    embed.set_image(url=values[c - 1]['url'])
+
+                    await paginator.edit(content='\N{HEAVY BLACK HEART}' if values[c - 1]['url'] in hearted else None, embed=embed)
+
+                except exc.Right:
+                    try:
+                        if c % limit == 0:
+                            await dest.trigger_typing()
+                            posts.update(await self._get_posts(ctx, booru='e621', tags=tags, limit=limit, previous=posts))
+
+                            keys = list(posts.keys())
+                            values = list(posts.values())
+
+                        c += 1
+                        embed.title = values[c - 1]['author']
+                        embed.url = 'https://e621.net/post/show/{}'.format(keys[c - 1])
+                        embed.set_footer(text='{} / {}'.format(c, len(posts)),
+                                         icon_url='http://lh6.ggpht.com/d3pNZNFCcJM8snBsRSdKUhR9AVBnJMcYYrR92RRDBOzCrxZMhuTeoGOQSmSEn7DAPQ=w300')
+                        embed.set_image(url=values[c - 1]['url'])
+
+                        await paginator.edit(content='\N{HEAVY BLACK HEART}' if values[c - 1]['url'] in hearted else None, embed=embed)
+
+                    except IndexError:
+                        await paginator.edit(content='**No more images found**')
+                    except exc.NotFound:
+                        await paginator.edit(content='**No more images found**')
 
         except exc.Abort:
             try:
