@@ -67,13 +67,26 @@ class Utils:
 
     @send.command(name='guild', aliases=['g', 'server', 's'])
     async def send_guild(self, ctx, guild, channel, *, message):
-        await discord.utils.get(self.bot.get_all_channels(), guild_name=guild, name=channel).send(message)
-        await ctx.message.add_reaction('\N{WHITE HEAVY CHECK MARK}')
+        try:
+            tempchannel = d.utils.find(lambda m: m.name == channel, d.utils.find(
+                lambda m: m.name == guild, self.bot.guilds).channels)
+
+            try:
+                await tempchannel.send(message)
+                await ctx.message.add_reaction('✅')
+
+            except AttributeError:
+                await ctx.send('**Invalid channel**', delete_after=10)
+                await ctx.message.add_reaction('❌')
+
+        except AttributeError:
+            await ctx.send('**Invalid guild**', delete_after=10)
+            await ctx.message.add_reaction('❌')
 
     @send.command(name='user', aliases=['u', 'member', 'm'])
     async def send_user(self, ctx, user, *, message):
-        await discord.utils.get(self.bot.get_all_members(), id=int(user)).send(message)
-        await ctx.message.add_reaction('\N{WHITE HEAVY CHECK MARK}')
+        await d.utils.get(self.bot.get_all_members(), id=int(user)).send(message)
+        await ctx.message.add_reaction('✅')
 
     @commands.command(aliases=['authenticateupload', 'authupload', 'authup', 'auth'])
     async def authenticate_upload(self, ctx):
