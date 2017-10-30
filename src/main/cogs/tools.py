@@ -6,7 +6,7 @@ import tempfile
 import traceback as tb
 import webbrowser
 
-import discord
+import discord as d
 import httplib2
 import requests_oauthlib as ro
 from apiclient import http
