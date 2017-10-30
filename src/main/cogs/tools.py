@@ -6,7 +6,7 @@ import tempfile
 import traceback as tb
 import webbrowser
 
-import discord
+import discord as d
 import httplib2
 import requests_oauthlib as ro
 from apiclient import http
@@ -48,16 +48,16 @@ class Utils:
     async def ping(self, ctx):
         global command_dict
 
-        await ctx.message.add_reaction('\N{TABLE TENNIS PADDLE AND BALL}')
+        await ctx.message.add_reaction('🏓')
 
-        await ctx.send(ctx.author.mention + '  \N{TABLE TENNIS PADDLE AND BALL}  `' + str(round(self.bot.latency * 1000)) + 'ms`', delete_after=5)
+        await ctx.send(ctx.author.mention + '  🏓  `' + str(round(self.bot.latency * 1000)) + 'ms`', delete_after=5)
         command_dict.setdefault(str(ctx.author.id), {}).update({'command': ctx.command})
 
     @commands.command(aliases=['pre'], brief='List bot prefixes', description='Shows all used prefixes')
     @checks.del_ctx()
     async def prefix(self, ctx):
         await ctx.send('**Prefix:** `{}`'.format('` or `'.join(u.settings['prefixes'][ctx.guild.id] if ctx.guild.id in u.settings['prefixes'] else u.config['prefix'])))
-        await ctx.message.add_reaction('\N{WHITE HEAVY CHECK MARK}')
+        await ctx.message.add_reaction('✅')
 
     @commands.group(name=',send', aliases=[',s'], hidden=True)
     @commands.is_owner()
@@ -67,13 +67,26 @@ class Utils:
 
     @send.command(name='guild', aliases=['g', 'server', 's'])
     async def send_guild(self, ctx, guild, channel, *, message):
-        await discord.utils.get(self.bot.get_all_channels(), guild_name=guild, name=channel).send(message)
-        await ctx.message.add_reaction('\N{WHITE HEAVY CHECK MARK}')
+        try:
+            tempchannel = d.utils.find(lambda m: m.name == channel, d.utils.find(
+                lambda m: m.name == guild, self.bot.guilds).channels)
+
+            try:
+                await tempchannel.send(message)
+                await ctx.message.add_reaction('✅')
+
+            except AttributeError:
+                await ctx.send('**Invalid channel**', delete_after=10)
+                await ctx.message.add_reaction('❌')
+
+        except AttributeError:
+            await ctx.send('**Invalid guild**', delete_after=10)
+            await ctx.message.add_reaction('❌')
 
     @send.command(name='user', aliases=['u', 'member', 'm'])
     async def send_user(self, ctx, user, *, message):
-        await discord.utils.get(self.bot.get_all_members(), id=int(user)).send(message)
-        await ctx.message.add_reaction('\N{WHITE HEAVY CHECK MARK}')
+        await d.utils.get(self.bot.get_all_members(), id=int(user)).send(message)
+        await ctx.message.add_reaction('✅')
 
     @commands.command(aliases=['authenticateupload', 'authupload', 'authup', 'auth'])
     async def authenticate_upload(self, ctx):

@@ -106,7 +106,8 @@ class CheckFail(Exception):
 
 
 class Abort(Exception):
-    pass
+    def __init__(self, message=None):
+        self.message = message
 
 
 class Continue(Exception):
