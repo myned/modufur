@@ -557,6 +557,11 @@ class MsG:
                     raise exc.TagBlacklisted(tag)
 
         # Checks for blacklisted tags in endpoint blacklists - try/except is for continuing the parent loop
+        order = False
+        for tag in tags:
+            if 'order:' in tag:
+                order = True
+        tags = ','.join(['order:random'] + tags) if not order else ','.join(tags)
         posts = {}
         temposts = len(posts)
         empty = 0
@@ -564,7 +569,7 @@ class MsG:
         while len(posts) < limit:
             if c == limit * 5 + self.LIMIT:
                 raise exc.Timeout
-            request = await u.fetch('https://{}.net/post/index.json'.format(booru), params={'tags': ','.join(['order:random'] + tags), 'limit': int(self.LIMIT * limit)}, json=True)
+            request = await u.fetch('https://{}.net/post/index.json'.format(booru), params={'tags': tags, 'limit': int(self.LIMIT * limit)}, json=True)
             if len(request) == 0:
                 raise exc.NotFound(formatter.tostring(tags))
             if len(request) < limit:
