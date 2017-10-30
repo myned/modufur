@@ -29,6 +29,11 @@ class Bot:
         await ctx.message.add_reaction('🌙')
 
         await self.bot.get_channel(u.config['info_channel']).send('**Shutting down** 🌙 . . .')
+
+        u.temp['restart_ch'] = ctx.channel.id
+        u.temp['restart_msg'] = ctx.message.id
+        u.dump(u.temp, 'temp.pkl')
+
         # loop = self.bot.loop.all_tasks()
         # for task in loop:
         #     task.cancel()
