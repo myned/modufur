@@ -48,12 +48,12 @@ async def on_ready():
         await bot.change_presence(game=None)
 
     print('\n\\ \\ \\ \\ \\ \\ \\ \\ \\\nC O N N E C T E D : {}\n/ / / / / / / / /\n'.format(bot.user.name))
-    await bot.get_channel(u.config['info_channel']).send('**Started** \N{BLACK SUN WITH RAYS} .')
+    await bot.get_channel(u.config['info_channel']).send('**Started** ☀️ .')
     # u.notify('C O N N E C T E D')
     if u.temp:
         channel = bot.get_channel(u.temp['restart_ch'])
         message = await channel.get_message(u.temp['restart_msg'])
-        await message.add_reaction('\N{WHITE HEAVY CHECK MARK}')
+        await message.add_reaction('✅')
         u.temp.clear()
 
 
@@ -67,12 +67,12 @@ async def on_message(message):
 async def on_error(error, *args, **kwargs):
     print('\n! ! ! ! !\nE R R O R : {}\n! ! ! ! !\n'.format(error), file=sys.stderr)
     tb.print_exc()
-    await bot.get_user(u.config['owner_id']).send('**ERROR** \N{WARNING SIGN}\n```\n{}```'.format(error))
-    await bot.get_channel(u.config['info_channel']).send('**ERROR** \N{WARNING SIGN}\n```\n{}```'.format(error))
+    await bot.get_user(u.config['owner_id']).send('**ERROR** ⚠\n```\n{}```'.format(error))
+    await bot.get_channel(u.config['info_channel']).send('**ERROR** ⚠\n```\n{}```'.format(error))
     if u.temp:
         channel = bot.get_channel(u.temp['restart_ch'])
         message = await channel.get_message(u.temp['restart_msg'])
-        await message.add_reaction('\N{WARNING SIGN}')
+        await message.add_reaction('⚠')
         u.temp.clear()
     # u.notify('E R R O R')
     await bot.logout()
@@ -82,19 +82,19 @@ async def on_error(error, *args, **kwargs):
 @bot.event
 async def on_command_error(ctx, error):
     if isinstance(error, errext.CheckFailure):
-        await ctx.send('\N{NO ENTRY} **Insufficient permissions**', delete_after=10)
-        await ctx.message.add_reaction('\N{NO ENTRY}')
+        await ctx.send('⛔️ **Insufficient permissions**', delete_after=10)
+        await ctx.message.add_reaction('⛔️')
     elif isinstance(error, errext.CommandNotFound):
         print('INVALID COMMAND : {}'.format(error), file=sys.stderr)
-        await ctx.message.add_reaction('\N{BLACK QUESTION MARK ORNAMENT}')
+        await ctx.message.add_reaction('❓')
     else:
         print('\n! ! ! ! ! ! !  ! ! ! ! !\nC O M M A N D  E R R O R : {}\n! ! ! ! ! ! !  ! ! ! ! !\n'.format(
             error), file=sys.stderr)
         tb.print_exception(type(error), error, error.__traceback__, file=sys.stderr)
-        await bot.get_user(u.config['owner_id']).send('**COMMAND ERROR** \N{WARNING SIGN}\n```\n{}```'.format(error))
-        await bot.get_channel(u.config['info_channel']).send('**COMMAND ERROR** \N{WARNING SIGN}\n```\n{}```'.format(error))
+        await bot.get_user(u.config['owner_id']).send('**COMMAND ERROR** ⚠\n```\n{}```'.format(error))
+        await bot.get_channel(u.config['info_channel']).send('**COMMAND ERROR** ⚠\n```\n{}```'.format(error))
         await exc.send_error(ctx, error)
-        await ctx.message.add_reaction('\N{WARNING SIGN}')
+        await ctx.message.add_reaction('⚠')
         # u.notify('C O M M A N D  E R R O R')
 
 # d.opus.load_opus('opus')

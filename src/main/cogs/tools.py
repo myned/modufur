@@ -48,16 +48,16 @@ class Utils:
     async def ping(self, ctx):
         global command_dict
 
-        await ctx.message.add_reaction('\N{TABLE TENNIS PADDLE AND BALL}')
+        await ctx.message.add_reaction('🏓')
 
-        await ctx.send(ctx.author.mention + '  \N{TABLE TENNIS PADDLE AND BALL}  `' + str(round(self.bot.latency * 1000)) + 'ms`', delete_after=5)
+        await ctx.send(ctx.author.mention + '  🏓  `' + str(round(self.bot.latency * 1000)) + 'ms`', delete_after=5)
         command_dict.setdefault(str(ctx.author.id), {}).update({'command': ctx.command})
 
     @commands.command(aliases=['pre'], brief='List bot prefixes', description='Shows all used prefixes')
     @checks.del_ctx()
     async def prefix(self, ctx):
         await ctx.send('**Prefix:** `{}`'.format('` or `'.join(u.settings['prefixes'][ctx.guild.id] if ctx.guild.id in u.settings['prefixes'] else u.config['prefix'])))
-        await ctx.message.add_reaction('\N{WHITE HEAVY CHECK MARK}')
+        await ctx.message.add_reaction('✅')
 
     @commands.group(name=',send', aliases=[',s'], hidden=True)
     @commands.is_owner()
