@@ -39,7 +39,7 @@ class Bot:
         #     task.cancel()
         await self.bot.logout()
         u.close(self.bot.loop)
-        print('\n/ / / / / / / / / / / /\nD I S C O N N E C T E D\n\\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\\n')
+        print('\n< < < < < < < < < < < <\nD I S C O N N E C T E D\n< < < < < < < < < < < <\n')
         # u.notify('D I S C O N N E C T E D')
 
     @commands.command(name=',restart', aliases=[',res', ',r'], hidden=True)
@@ -48,7 +48,7 @@ class Bot:
     async def restart(self, ctx):
         await ctx.message.add_reaction('💤')
 
-        print('\n| | | | | | | | | |\nR E S T A R T I N G\n| | | | | | | | | |\n')
+        print('\n^ ^ ^ ^ ^ ^ ^ ^ ^ ^\nR E S T A R T I N G\n^ ^ ^ ^ ^ ^ ^ ^ ^ ^\n')
         await self.bot.get_channel(u.config['info_channel']).send('**Restarting** 💤 . . .')
         # u.notify('R E S T A R T I N G')
 
