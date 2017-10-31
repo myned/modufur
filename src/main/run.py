@@ -114,9 +114,13 @@ def after(voice, error):
 @bot.command(name=',test', hidden=True)
 @commands.is_owner()
 @checks.del_ctx()
-async def test(ctx, message):
-    if '<:N_:368917475531816962>' in message:
-        await ctx.send('<:N_:368917475531816962>')
+async def test(ctx):
+    embed = d.Embed(
+        title='title', url='http://lh6.ggpht.com/d3pNZNFCcJM8snBsRSdKUhR9AVBnJMcYYrR92RRDBOzCrxZMhuTeoGOQSmSEn7DAPQ=w300')
+    embed.add_field(name='name', value='value', inline=False)
+    await ctx.send(embed=embed)
+    # if '<:N_:368917475531816962>' in message:
+    #     await ctx.send('<:N_:368917475531816962>')
     # logs = []
     # async for entry in ctx.guild.audit_logs(limit=None, action=d.AuditLogAction.message_delete):
     #     logs.append(
