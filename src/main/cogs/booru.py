@@ -573,6 +573,13 @@ class MsG:
             blacklist.update(list(self.aliases[tag]) + [tag])
         for tag in self.blacklists['user_blacklist'].get(ctx.author.id, set()):
             blacklist.update(list(self.aliases[tag]) + [tag])
+        # Checks for, assigns, and removes first order in tags if possible
+        order = [tag for tag in tags if 'order:' in tag]
+        if order:
+            order = order[0]
+            tags.remove(order)
+        else:
+            order = 'order:random'
         # Checks if tags are in local blacklists
         if tags:
             if (len(tags) > 5 and booru == 'e621') or (len(tags) > 4 and booru == 'e926'):
@@ -580,13 +587,6 @@ class MsG:
             for tag in tags:
                 if tag == 'swf' or tag == 'webm' or tag in blacklist:
                     raise exc.TagBlacklisted(tag)
-
-        order = [tag for tag in tags if 'order:' in tag]
-        if order:
-            order = order[0]
-            tags.remove(order)
-        else:
-            order = 'order:random'
 
         # Checks for blacklisted tags in endpoint blacklists - try/except is for continuing the parent loop
         posts = {}
