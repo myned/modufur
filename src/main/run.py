@@ -47,7 +47,7 @@ async def on_ready():
     else:
         await bot.change_presence(game=None)
 
-    print('\n\\ \\ \\ \\ \\ \\ \\ \\ \\\nC O N N E C T E D : {}\n/ / / / / / / / /\n'.format(bot.user.name))
+    print('\n> > > > > > > > >\nC O N N E C T E D : {}\n> > > > > > > > >\n'.format(bot.user.name))
     await bot.get_channel(u.config['info_channel']).send('**Started** ☀️ .')
     # u.notify('C O N N E C T E D')
     if u.temp:
