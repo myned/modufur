@@ -305,12 +305,13 @@ class MsG:
             if not links:
                 raise exc.NotFound
 
+            n = 1
             for message, urls in links.items():
                 for url in urls:
                     try:
                         await dest.trigger_typing()
 
-                        await dest.send('`{} / {}` **Probable match from** {}\n{}'.format(urls.index(url) + 1, len(urls), message.author.display_name, await scraper.get_post(url)))
+                        await dest.send('`{} / {}` **Probable match from** {}\n{}'.format(n, len(links), message.author.display_name, await scraper.get_post(url)))
                         await message.add_reaction('✅')
 
                         await asyncio.sleep(self.RATE_LIMIT)
@@ -320,9 +321,12 @@ class MsG:
                                 await message.delete()
 
                     except exc.MatchError as e:
-                        await ctx.send('**No probable match for:** `{}`'.format(e), delete_after=10)
+                        await ctx.send('`{} / {}` **No probable match for:** `{}`'.format(n, len(links), e), delete_after=10)
                         await message.add_reaction('❌')
                         c -= 1
+
+                    finally:
+                        n += 1
 
             if c > 0:
                 await ctx.message.add_reaction('✅')
@@ -367,6 +371,7 @@ class MsG:
             if not links:
                 raise exc.NotFound
 
+            n = 1
             for message, urls in links.items():
                 for url in urls:
                     try:
@@ -374,7 +379,7 @@ class MsG:
 
                         post = await scraper.get_post(url)
 
-                        await dest.send('`{} / {}` **Probable match from** {}\n{}'.format(urls.index(url) + 1, len(urls), message.author.display_name, await scraper.get_image(post)))
+                        await dest.send('`{} / {}` **Probable match from** {}\n{}'.format(n, len(links), message.author.display_name, await scraper.get_image(post)))
                         await message.add_reaction('✅')
 
                         await asyncio.sleep(self.RATE_LIMIT)
@@ -384,9 +389,12 @@ class MsG:
                                 await message.delete()
 
                     except exc.MatchError as e:
-                        await ctx.send('**No probable match for:** `{}`'.format(e), delete_after=10)
+                        await ctx.send('`{} / {}` **No probable match for:** `{}`'.format(n, len(links), e), delete_after=10)
                         await message.add_reaction('❌')
                         c -= 1
+
+                    finally:
+                        n += 1
 
             if c > 0:
                 await ctx.message.add_reaction('✅')
