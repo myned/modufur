@@ -223,7 +223,7 @@ class MsG:
                 await ctx.message.add_reaction('❌')
 
         except exc.MissingArgument:
-            await ctx.send('**Invalid url or file**', delete_after=10)
+            await ctx.send('**Invalid url or file** Be sure the link directs to an image file', delete_after=10)
             await ctx.message.add_reaction('❌')
 
     @commands.command(name='quality', aliases=['qual', 'qrev', 'qis'])
@@ -271,7 +271,7 @@ class MsG:
                 await ctx.message.add_reaction('❌')
 
         except exc.MissingArgument:
-            await ctx.send('**Invalid url or file**', delete_after=10)
+            await ctx.send('**Invalid url or file** Be sure the link directs to an image file', delete_after=10)
             await ctx.message.add_reaction('❌')
 
     @commands.command(name='reversify', aliases=['revify', 'risify', 'rify'])
