@@ -594,7 +594,7 @@ class MsG:
         empty = 0
         c = 0
         while len(posts) < limit:
-            if c == limit * 5 + self.LIMIT:
+            if c == limit * 5 + (self.LIMIT / 5):
                 raise exc.Timeout
             request = await u.fetch('https://{}.net/post/index.json'.format(booru), params={'tags': ','.join([order] + tags), 'limit': int(self.LIMIT * limit)}, json=True)
             if len(request) == 0:
