@@ -280,7 +280,7 @@ class MsG:
         try:
             kwargs = u.get_kwargs(ctx, args, limit=self.HISTORY_LIMIT / 5)
             dest, remove, limit = kwargs['destination'], kwargs['remove'], kwargs['limit']
-            urls = []
+            links = {}
             c = 0
 
             if not ctx.author.permissions_in(ctx.channel).manage_messages:
@@ -290,37 +290,39 @@ class MsG:
                 if c >= limit:
                     break
                 if message.author.id != self.bot.user.id and (re.search('(https?:\/\/[^ ]*\.(?:gif|png|jpg|jpeg))', message.content) is not None or message.embeds or message.attachments):
+                    links[message] = []
                     for match in re.finditer('(https?:\/\/[^ ]*\.(?:gif|png|jpg|jpeg))', message.content):
-                        urls.append(match.group(0))
+                        links[message].append(match.group(0))
                     for embed in message.embeds:
                         if embed.image.url is not d.Embed.Empty:
-                            urls.append(embed.image.url)
+                            links[message].append(embed.image.url)
                     for attachment in message.attachments:
-                        urls.append(attachment.url)
+                        links[message].append(attachment.url)
 
                     await message.add_reaction('⏳')
                     c += 1
 
-            if not urls:
+            if not links:
                 raise exc.NotFound
 
-            for url in urls:
-                try:
-                    await dest.trigger_typing()
+            for message, urls in links.items():
+                for url in urls:
+                    try:
+                        await dest.trigger_typing()
 
-                    await dest.send('**Probable match from** {} `{} / {}`\n{}'.format(message.author.display_name, urls.index(url) + 1, len(urls), await scraper.get_post(url)))
-                    await message.add_reaction('✅')
+                        await dest.send('`{} / {}` **Probable match from** {}\n{}'.format(urls.index(url) + 1, len(urls), message.author.display_name, await scraper.get_post(url)))
+                        await message.add_reaction('✅')
 
-                    await asyncio.sleep(self.RATE_LIMIT)
+                        await asyncio.sleep(self.RATE_LIMIT)
 
-                    if remove:
-                        with suppress(err.NotFound):
-                            await message.delete()
+                        if remove:
+                            with suppress(err.NotFound):
+                                await message.delete()
 
-                except exc.MatchError as e:
-                    await ctx.send('**No probable match for:** `{}`'.format(e), delete_after=10)
-                    await message.add_reaction('❌')
-                    c -= 1
+                    except exc.MatchError as e:
+                        await ctx.send('**No probable match for:** `{}`'.format(e), delete_after=10)
+                        await message.add_reaction('❌')
+                        c -= 1
 
             if c > 0:
                 await ctx.message.add_reaction('✅')
@@ -340,7 +342,7 @@ class MsG:
         try:
             kwargs = u.get_kwargs(ctx, args, limit=self.HISTORY_LIMIT / 5)
             dest, remove, limit = kwargs['destination'], kwargs['remove'], kwargs['limit']
-            urls = []
+            links = {}
             c = 0
 
             if not ctx.author.permissions_in(ctx.channel).manage_messages:
@@ -350,39 +352,41 @@ class MsG:
                 if c >= limit:
                     break
                 if message.author.id != self.bot.user.id and (re.search('(https?:\/\/[^ ]*\.(?:gif|png|jpg|jpeg))', message.content) is not None or message.embeds or message.attachments):
+                    links[message] = []
                     for match in re.finditer('(https?:\/\/[^ ]*\.(?:gif|png|jpg|jpeg))', message.content):
-                        urls.append(match.group(0))
+                        links[message].append(match.group(0))
                     for embed in message.embeds:
                         if embed.image.url is not d.Embed.Empty:
-                            urls.append(embed.image.url)
+                            links[message].append(embed.image.url)
                     for attachment in message.attachments:
-                        urls.append(attachment.url)
+                        links[message].append(attachment.url)
 
                     await message.add_reaction('⏳')
                     c += 1
 
-            if not urls:
+            if not links:
                 raise exc.NotFound
 
-            for url in urls:
-                try:
-                    await dest.trigger_typing()
+            for message, urls in links.items():
+                for url in urls:
+                    try:
+                        await dest.trigger_typing()
 
-                    post = await scraper.get_post(url)
+                        post = await scraper.get_post(url)
 
-                    await dest.send('**Probable match from** {} `{} / {}`\n{}'.format(message.author.display_name, urls.index(url) + 1, len(urls), await scraper.get_image(post)))
-                    await message.add_reaction('✅')
+                        await dest.send('`{} / {}` **Probable match from** {}\n{}'.format(urls.index(url) + 1, len(urls), message.author.display_name, await scraper.get_image(post)))
+                        await message.add_reaction('✅')
 
-                    await asyncio.sleep(self.RATE_LIMIT)
+                        await asyncio.sleep(self.RATE_LIMIT)
 
-                    if remove:
-                        with suppress(err.NotFound):
-                            await message.delete()
+                        if remove:
+                            with suppress(err.NotFound):
+                                await message.delete()
 
-                except exc.MatchError as e:
-                    await ctx.send('**No probable match for:** `{}`'.format(e), delete_after=10)
-                    await message.add_reaction('❌')
-                    c -= 1
+                    except exc.MatchError as e:
+                        await ctx.send('**No probable match for:** `{}`'.format(e), delete_after=10)
+                        await message.add_reaction('❌')
+                        c -= 1
 
             if c > 0:
                 await ctx.message.add_reaction('✅')
