@@ -569,12 +569,14 @@ class MsG:
                 if tag == 'swf' or tag == 'webm' or tag in blacklist:
                     raise exc.TagBlacklisted(tag)
 
+        order = [tag for tag in tags if 'order:' in tag]
+        if order:
+            order = order[0]
+            tags.remove(order)
+        else:
+            order = 'order:random'
+
         # Checks for blacklisted tags in endpoint blacklists - try/except is for continuing the parent loop
-        order = False
-        for tag in tags:
-            if 'order:' in tag:
-                order = True
-        tags = ','.join(['order:random'] + tags) if not order else ','.join(tags)
         posts = {}
         temposts = len(posts)
         empty = 0
@@ -582,7 +584,7 @@ class MsG:
         while len(posts) < limit:
             if c == limit * 5 + self.LIMIT:
                 raise exc.Timeout
-            request = await u.fetch('https://{}.net/post/index.json'.format(booru), params={'tags': tags, 'limit': int(self.LIMIT * limit)}, json=True)
+            request = await u.fetch('https://{}.net/post/index.json'.format(booru), params={'tags': ','.join([order] + tags), 'limit': int(self.LIMIT * limit)}, json=True)
             if len(request) == 0:
                 raise exc.NotFound(formatter.tostring(tags))
             if len(request) < limit:
@@ -613,7 +615,7 @@ class MsG:
                 c += 1
 
         if posts:
-            return posts
+            return posts, order
         else:
             raise exc.NotFound
 
@@ -788,14 +790,14 @@ class MsG:
 
             await ctx.trigger_typing()
 
-            posts = await self._get_posts(ctx, booru='e621', tags=tags, limit=limit)
+            posts, order = await self._get_posts(ctx, booru='e621', tags=tags, limit=limit)
             keys = list(posts.keys())
             values = list(posts.values())
 
             embed = d.Embed(
                 title=values[c - 1]['artist'], url='https://e621.net/post/show/{}'.format(keys[c - 1]), color=ctx.me.color if isinstance(ctx.channel, d.TextChannel) else self.color)
             embed.set_image(url=values[c - 1]['url'])
-            embed.set_author(name=formatter.tostring(tags, random=True),
+            embed.set_author(name=formatter.tostring(tags, order=order),
                              url='https://e621.net/post?tags={}'.format(','.join(tags)), icon_url=ctx.author.avatar_url)
             embed.set_footer(text='{}   {} / {}'.format(values[c - 1]['score'], c, len(posts)),
                              icon_url=self._get_score(values[c - 1]['score']))
@@ -936,12 +938,12 @@ class MsG:
 
             await dest.trigger_typing()
 
-            posts = await self._get_posts(ctx, booru='e621', tags=tags, limit=limit)
+            posts, order = await self._get_posts(ctx, booru='e621', tags=tags, limit=limit)
 
             for ident, post in posts.items():
                 embed = d.Embed(title=post['artist'], url='https://e621.net/post/show/{}'.format(ident),
                                 color=ctx.me.color if isinstance(ctx.channel, d.TextChannel) else self.color).set_image(url=post['url'])
-                embed.set_author(name=formatter.tostring(tags, random=True),
+                embed.set_author(name=formatter.tostring(tags, order=order),
                                  url='https://e621.net/post?tags={}'.format(','.join(tags)), icon_url=ctx.author.avatar_url)
                 embed.set_footer(
                     text=post['score'], icon_url=self._get_score(post['score']))
@@ -990,12 +992,12 @@ class MsG:
 
             await dest.trigger_typing()
 
-            posts = await self._get_posts(ctx, booru='e926', tags=tags, limit=limit)
+            posts, order = await self._get_posts(ctx, booru='e926', tags=tags, limit=limit)
 
             for ident, post in posts.items():
                 embed = d.Embed(title=post['artist'], url='https://e926.net/post/show/{}'.format(ident),
                                 color=ctx.me.color if isinstance(ctx.channel, d.TextChannel) else self.color).set_image(url=post['url'])
-                embed.set_author(name=formatter.tostring(tags, random=True),
+                embed.set_author(name=formatter.tostring(tags, order=order),
                                  url='https://e621.net/post?tags={}'.format(','.join(tags)), icon_url=ctx.author.avatar_url)
                 embed.set_footer(
                     text=post['score'], icon_url=self._get_score(post['score']))
