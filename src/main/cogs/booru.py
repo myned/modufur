@@ -483,6 +483,19 @@ class MsG:
 
         return args
 
+    def _get_score(self, score):
+        if score <= 0:
+            return 'https://emojipedia-us.s3.amazonaws.com/thumbs/320/mozilla/36/pile-of-poo_1f4a9.png'
+        elif 10 > score > 0:
+            return 'https://emojipedia-us.s3.amazonaws.com/thumbs/320/twitter/103/white-medium-star_2b50.png'
+        elif 50 > score >= 10:
+            return 'https://emojipedia-us.s3.amazonaws.com/thumbs/320/twitter/103/glowing-star_1f31f.png'
+        elif 100 > score >= 50:
+            return 'https://emojipedia-us.s3.amazonaws.com/thumbs/320/twitter/103/dizzy-symbol_1f4ab.png'
+        elif score >= 100:
+            return 'https://emojipedia-us.s3.amazonaws.com/thumbs/320/twitter/103/sparkles_2728.png'
+        return None
+
     async def _get_pool(self, ctx, *, destination, booru='e621', query=[]):
         def on_reaction(reaction, user):
             if reaction.emoji == '🛑' and reaction.message.id == ctx.message.id and user is ctx.author:
@@ -556,12 +569,14 @@ class MsG:
                 if tag == 'swf' or tag == 'webm' or tag in blacklist:
                     raise exc.TagBlacklisted(tag)
 
+        order = [tag for tag in tags if 'order:' in tag]
+        if order:
+            order = order[0]
+            tags.remove(order)
+        else:
+            order = 'order:random'
+
         # Checks for blacklisted tags in endpoint blacklists - try/except is for continuing the parent loop
-        order = False
-        for tag in tags:
-            if 'order:' in tag:
-                order = True
-        tags = ','.join(['order:random'] + tags) if not order else ','.join(tags)
         posts = {}
         temposts = len(posts)
         empty = 0
@@ -569,7 +584,7 @@ class MsG:
         while len(posts) < limit:
             if c == limit * 5 + self.LIMIT:
                 raise exc.Timeout
-            request = await u.fetch('https://{}.net/post/index.json'.format(booru), params={'tags': tags, 'limit': int(self.LIMIT * limit)}, json=True)
+            request = await u.fetch('https://{}.net/post/index.json'.format(booru), params={'tags': ','.join([order] + tags), 'limit': int(self.LIMIT * limit)}, json=True)
             if len(request) == 0:
                 raise exc.NotFound(formatter.tostring(tags))
             if len(request) < limit:
@@ -585,7 +600,8 @@ class MsG:
                 except exc.Continue:
                     continue
                 if post['id'] not in posts.keys() and post['id'] not in previous.keys():
-                    posts[post['id']] = {'artist': ', '.join(post['artist']), 'url': post['file_url']}
+                    posts[post['id']] = {'artist': ', '.join(
+                        post['artist']), 'url': post['file_url'], 'score': post['score']}
                 if len(posts) == limit:
                     break
 
@@ -599,7 +615,7 @@ class MsG:
                 c += 1
 
         if posts:
-            return posts
+            return posts, order
         else:
             raise exc.NotFound
 
@@ -640,8 +656,8 @@ class MsG:
             embed.set_image(url=values[c - 1]['url'])
             embed.set_author(name=pool['name'],
                              url='https://e621.net/pool/show?id={}'.format(pool['id']), icon_url=ctx.author.avatar_url)
-            embed.set_footer(text='{} / {}'.format(c, len(posts)),
-                             icon_url='http://lh6.ggpht.com/d3pNZNFCcJM8snBsRSdKUhR9AVBnJMcYYrR92RRDBOzCrxZMhuTeoGOQSmSEn7DAPQ=w300')
+            embed.set_footer(text='{}   {} / {}'.format(values[c - 1]['score'], c, len(posts)),
+                             icon_url=self._get_score(values[c - 1]['score']))
 
             paginator = await dest.send(embed=embed)
 
@@ -672,8 +688,8 @@ class MsG:
                         c -= 1
                         embed.title = values[c - 1]['artist']
                         embed.url = 'https://e621.net/post/show/{}'.format(keys[c - 1])
-                        embed.set_footer(text='{} / {}'.format(c, len(posts)),
-                                         icon_url='http://lh6.ggpht.com/d3pNZNFCcJM8snBsRSdKUhR9AVBnJMcYYrR92RRDBOzCrxZMhuTeoGOQSmSEn7DAPQ=w300')
+                        embed.set_footer(text='{}   {} / {}'.format(values[c - 1]['score'], c, len(posts)),
+                                         icon_url=self._get_score(values[c - 1]['score']))
                         embed.set_image(url=values[c - 1]['url'])
 
                         await paginator.edit(content='❤' if values[c - 1]['url'] in hearted else None, embed=embed)
@@ -688,8 +704,8 @@ class MsG:
                     await number.delete()
                     embed.title = values[c - 1]['artist']
                     embed.url = 'https://e621.net/post/show/{}'.format(keys[c - 1])
-                    embed.set_footer(text='{} / {}'.format(c, len(posts)),
-                                     icon_url='http://lh6.ggpht.com/d3pNZNFCcJM8snBsRSdKUhR9AVBnJMcYYrR92RRDBOzCrxZMhuTeoGOQSmSEn7DAPQ=w300')
+                    embed.set_footer(text='{}   {} / {}'.format(values[c - 1]['score'], c, len(posts)),
+                                     icon_url=self._get_score(values[c - 1]['score']))
                     embed.set_image(url=values[c - 1]['url'])
 
                     await paginator.edit(content='❤' if values[c - 1]['url'] in hearted else None, embed=embed)
@@ -699,8 +715,8 @@ class MsG:
                         c += 1
                         embed.title = values[c - 1]['artist']
                         embed.url = 'https://e621.net/post/show/{}'.format(keys[c - 1])
-                        embed.set_footer(text='{} / {}'.format(c, len(posts)),
-                                         icon_url='http://lh6.ggpht.com/d3pNZNFCcJM8snBsRSdKUhR9AVBnJMcYYrR92RRDBOzCrxZMhuTeoGOQSmSEn7DAPQ=w300')
+                        embed.set_footer(text='{}   {} / {}'.format(values[c - 1]['score'], c, len(posts)),
+                                         icon_url=self._get_score(values[c - 1]['score']))
                         embed.set_image(url=values[c - 1]['url'])
 
                         await paginator.edit(content='❤' if values[c - 1]['url'] in hearted else None, embed=embed)
@@ -774,17 +790,17 @@ class MsG:
 
             await ctx.trigger_typing()
 
-            posts = await self._get_posts(ctx, booru='e621', tags=tags, limit=limit)
+            posts, order = await self._get_posts(ctx, booru='e621', tags=tags, limit=limit)
             keys = list(posts.keys())
             values = list(posts.values())
 
             embed = d.Embed(
                 title=values[c - 1]['artist'], url='https://e621.net/post/show/{}'.format(keys[c - 1]), color=ctx.me.color if isinstance(ctx.channel, d.TextChannel) else self.color)
             embed.set_image(url=values[c - 1]['url'])
-            embed.set_author(name=formatter.tostring(tags, random=True),
+            embed.set_author(name=formatter.tostring(tags, order=order),
                              url='https://e621.net/post?tags={}'.format(','.join(tags)), icon_url=ctx.author.avatar_url)
-            embed.set_footer(text='{} / {}'.format(c, len(posts)),
-                             icon_url='http://lh6.ggpht.com/d3pNZNFCcJM8snBsRSdKUhR9AVBnJMcYYrR92RRDBOzCrxZMhuTeoGOQSmSEn7DAPQ=w300')
+            embed.set_footer(text='{}   {} / {}'.format(values[c - 1]['score'], c, len(posts)),
+                             icon_url=self._get_score(values[c - 1]['score']))
 
             paginator = await dest.send(embed=embed)
 
@@ -815,8 +831,8 @@ class MsG:
                         c -= 1
                         embed.title = values[c - 1]['artist']
                         embed.url = 'https://e621.net/post/show/{}'.format(keys[c - 1])
-                        embed.set_footer(text='{} / {}'.format(c, len(posts)),
-                                         icon_url='http://lh6.ggpht.com/d3pNZNFCcJM8snBsRSdKUhR9AVBnJMcYYrR92RRDBOzCrxZMhuTeoGOQSmSEn7DAPQ=w300')
+                        embed.set_footer(text='{}   {} / {}'.format(values[c - 1]['score'], c, len(posts)),
+                                         icon_url=self._get_score(values[c - 1]['score']))
                         embed.set_image(url=values[c - 1]['url'])
 
                         await paginator.edit(content='❤' if values[c - 1]['url'] in hearted else None, embed=embed)
@@ -831,8 +847,8 @@ class MsG:
                     await number.delete()
                     embed.title = values[c - 1]['artist']
                     embed.url = 'https://e621.net/post/show/{}'.format(keys[c - 1])
-                    embed.set_footer(text='{} / {}'.format(c, len(posts)),
-                                     icon_url='http://lh6.ggpht.com/d3pNZNFCcJM8snBsRSdKUhR9AVBnJMcYYrR92RRDBOzCrxZMhuTeoGOQSmSEn7DAPQ=w300')
+                    embed.set_footer(text='{}   {} / {}'.format(values[c - 1]['score'], c, len(posts)),
+                                     icon_url=self._get_score(values[c - 1]['score']))
                     embed.set_image(url=values[c - 1]['url'])
 
                     await paginator.edit(content='❤' if values[c - 1]['url'] in hearted else None, embed=embed)
@@ -849,8 +865,8 @@ class MsG:
                         c += 1
                         embed.title = values[c - 1]['artist']
                         embed.url = 'https://e621.net/post/show/{}'.format(keys[c - 1])
-                        embed.set_footer(text='{} / {}'.format(c, len(posts)),
-                                         icon_url='http://lh6.ggpht.com/d3pNZNFCcJM8snBsRSdKUhR9AVBnJMcYYrR92RRDBOzCrxZMhuTeoGOQSmSEn7DAPQ=w300')
+                        embed.set_footer(text='{}   {} / {}'.format(values[c - 1]['score'], c, len(posts)),
+                                         icon_url=self._get_score(values[c - 1]['score']))
                         embed.set_image(url=values[c - 1]['url'])
 
                         await paginator.edit(content='❤' if values[c - 1]['url'] in hearted else None, embed=embed)
@@ -922,15 +938,15 @@ class MsG:
 
             await dest.trigger_typing()
 
-            posts = await self._get_posts(ctx, booru='e621', tags=tags, limit=limit)
+            posts, order = await self._get_posts(ctx, booru='e621', tags=tags, limit=limit)
 
             for ident, post in posts.items():
                 embed = d.Embed(title=post['artist'], url='https://e621.net/post/show/{}'.format(ident),
                                 color=ctx.me.color if isinstance(ctx.channel, d.TextChannel) else self.color).set_image(url=post['url'])
-                embed.set_author(name=formatter.tostring(tags, random=True),
+                embed.set_author(name=formatter.tostring(tags, order=order),
                                  url='https://e621.net/post?tags={}'.format(','.join(tags)), icon_url=ctx.author.avatar_url)
                 embed.set_footer(
-                    text=str(ident), icon_url='http://lh6.ggpht.com/d3pNZNFCcJM8snBsRSdKUhR9AVBnJMcYYrR92RRDBOzCrxZMhuTeoGOQSmSEn7DAPQ=w300')
+                    text=post['score'], icon_url=self._get_score(post['score']))
 
                 await dest.send(embed=embed)
 
@@ -976,15 +992,15 @@ class MsG:
 
             await dest.trigger_typing()
 
-            posts = await self._get_posts(ctx, booru='e926', tags=tags, limit=limit)
+            posts, order = await self._get_posts(ctx, booru='e926', tags=tags, limit=limit)
 
             for ident, post in posts.items():
                 embed = d.Embed(title=post['artist'], url='https://e926.net/post/show/{}'.format(ident),
                                 color=ctx.me.color if isinstance(ctx.channel, d.TextChannel) else self.color).set_image(url=post['url'])
-                embed.set_author(name=formatter.tostring(tags, random=True),
+                embed.set_author(name=formatter.tostring(tags, order=order),
                                  url='https://e621.net/post?tags={}'.format(','.join(tags)), icon_url=ctx.author.avatar_url)
                 embed.set_footer(
-                    text=str(ident), icon_url='http://lh6.ggpht.com/d3pNZNFCcJM8snBsRSdKUhR9AVBnJMcYYrR92RRDBOzCrxZMhuTeoGOQSmSEn7DAPQ=w300')
+                    text=post['score'], icon_url=self._get_score(post['score']))
 
                 await dest.send(embed=embed)
 
