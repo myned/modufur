@@ -668,7 +668,7 @@ class MsG:
             embed.set_image(url=values[c - 1]['url'])
             embed.set_author(name=pool['name'],
                              url='https://e621.net/pool/show?id={}'.format(pool['id']), icon_url=ctx.author.avatar_url)
-            embed.set_footer(text='{} / {}'.format(values[c - 1]['score'], c, len(posts)),
+            embed.set_footer(text='{} / {}'.format(c, len(posts)),
                              icon_url=self._get_score(values[c - 1]['score']))
 
             paginator = await dest.send(embed=embed)
@@ -700,7 +700,7 @@ class MsG:
                         c -= 1
                         embed.title = values[c - 1]['artist']
                         embed.url = 'https://e621.net/post/show/{}'.format(keys[c - 1])
-                        embed.set_footer(text='{} / {}'.format(values[c - 1]['score'], c, len(posts)),
+                        embed.set_footer(text='{} / {}'.format(c, len(posts)),
                                          icon_url=self._get_score(values[c - 1]['score']))
                         embed.set_image(url=values[c - 1]['url'])
 
@@ -716,7 +716,7 @@ class MsG:
                     await number.delete()
                     embed.title = values[c - 1]['artist']
                     embed.url = 'https://e621.net/post/show/{}'.format(keys[c - 1])
-                    embed.set_footer(text='{} / {}'.format(values[c - 1]['score'], c, len(posts)),
+                    embed.set_footer(text='{} / {}'.format(c, len(posts)),
                                      icon_url=self._get_score(values[c - 1]['score']))
                     embed.set_image(url=values[c - 1]['url'])
 
@@ -727,7 +727,7 @@ class MsG:
                         c += 1
                         embed.title = values[c - 1]['artist']
                         embed.url = 'https://e621.net/post/show/{}'.format(keys[c - 1])
-                        embed.set_footer(text='{} / {}'.format(values[c - 1]['score'], c, len(posts)),
+                        embed.set_footer(text='{} / {}'.format(c, len(posts)),
                                          icon_url=self._get_score(values[c - 1]['score']))
                         embed.set_image(url=values[c - 1]['url'])
 
@@ -811,7 +811,7 @@ class MsG:
             embed.set_image(url=values[c - 1]['url'])
             embed.set_author(name=formatter.tostring(tags, order=order),
                              url='https://e621.net/post?tags={}'.format(','.join(tags)), icon_url=ctx.author.avatar_url)
-            embed.set_footer(text='{} / {}'.format(values[c - 1]['score'], c, len(posts)),
+            embed.set_footer(text='{} / {}'.format(c, len(posts)),
                              icon_url=self._get_score(values[c - 1]['score']))
 
             paginator = await dest.send(embed=embed)
@@ -843,7 +843,7 @@ class MsG:
                         c -= 1
                         embed.title = values[c - 1]['artist']
                         embed.url = 'https://e621.net/post/show/{}'.format(keys[c - 1])
-                        embed.set_footer(text='{} / {}'.format(values[c - 1]['score'], c, len(posts)),
+                        embed.set_footer(text='{} / {}'.format(c, len(posts)),
                                          icon_url=self._get_score(values[c - 1]['score']))
                         embed.set_image(url=values[c - 1]['url'])
 
@@ -859,7 +859,7 @@ class MsG:
                     await number.delete()
                     embed.title = values[c - 1]['artist']
                     embed.url = 'https://e621.net/post/show/{}'.format(keys[c - 1])
-                    embed.set_footer(text='{} / {}'.format(values[c - 1]['score'], c, len(posts)),
+                    embed.set_footer(text='{} / {}'.format(c, len(posts)),
                                      icon_url=self._get_score(values[c - 1]['score']))
                     embed.set_image(url=values[c - 1]['url'])
 
@@ -877,7 +877,7 @@ class MsG:
                         c += 1
                         embed.title = values[c - 1]['artist']
                         embed.url = 'https://e621.net/post/show/{}'.format(keys[c - 1])
-                        embed.set_footer(text='{} / {}'.format(values[c - 1]['score'], c, len(posts)),
+                        embed.set_footer(text='{} / {}'.format(c, len(posts)),
                                          icon_url=self._get_score(values[c - 1]['score']))
                         embed.set_image(url=values[c - 1]['url'])
 
@@ -976,7 +976,7 @@ class MsG:
             embed.set_image(url=values[c - 1]['url'])
             embed.set_author(name=formatter.tostring(tags, order=order),
                              url='https://e926.net/post?tags={}'.format(','.join(tags)), icon_url=ctx.author.avatar_url)
-            embed.set_footer(text='{} / {}'.format(values[c - 1]['score'], c, len(posts)),
+            embed.set_footer(text='{} / {}'.format(c, len(posts)),
                              icon_url=self._get_score(values[c - 1]['score']))
 
             paginator = await dest.send(embed=embed)
@@ -1008,7 +1008,7 @@ class MsG:
                         c -= 1
                         embed.title = values[c - 1]['artist']
                         embed.url = 'https://e926.net/post/show/{}'.format(keys[c - 1])
-                        embed.set_footer(text='{} / {}'.format(values[c - 1]['score'], c, len(posts)),
+                        embed.set_footer(text='{} / {}'.format(c, len(posts)),
                                          icon_url=self._get_score(values[c - 1]['score']))
                         embed.set_image(url=values[c - 1]['url'])
 
@@ -1024,7 +1024,7 @@ class MsG:
                     await number.delete()
                     embed.title = values[c - 1]['artist']
                     embed.url = 'https://e926.net/post/show/{}'.format(keys[c - 1])
-                    embed.set_footer(text='{} / {}'.format(values[c - 1]['score'], c, len(posts)),
+                    embed.set_footer(text='{} / {}'.format(c, len(posts)),
                                      icon_url=self._get_score(values[c - 1]['score']))
                     embed.set_image(url=values[c - 1]['url'])
 
@@ -1042,7 +1042,7 @@ class MsG:
                         c += 1
                         embed.title = values[c - 1]['artist']
                         embed.url = 'https://e926.net/post/show/{}'.format(keys[c - 1])
-                        embed.set_footer(text='{} / {}'.format(values[c - 1]['score'], c, len(posts)),
+                        embed.set_footer(text='{} / {}'.format(c, len(posts)),
                                          icon_url=self._get_score(values[c - 1]['score']))
                         embed.set_image(url=values[c - 1]['url'])
 
