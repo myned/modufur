@@ -937,6 +937,165 @@ class MsG:
             await ctx.send('⛔️ {} **is not an NSFW channel**'.format(ctx.channel.mention), delete_after=10)
             return await ctx.message.add_reaction('⛔️')
 
+    @commands.command(name='e926page', aliases=['e926p', 'e9p', '9p'])
+    @checks.del_ctx()
+    async def e926_paginator(self, ctx, *args):
+        def on_reaction(reaction, user):
+            if reaction.emoji == '🛑' and reaction.message.id == ctx.message.id and user is ctx.author:
+                raise exc.Abort
+            elif reaction.emoji == '❤' and reaction.message.id == paginator.id and user is ctx.author:
+                raise exc.Save
+            elif reaction.emoji == '⬅' and reaction.message.id == paginator.id and user is ctx.author:
+                raise exc.Left
+            elif reaction.emoji == '#⃣' and reaction.message.id == paginator.id and user is ctx.author:
+                raise exc.GoTo
+            elif reaction.emoji == '➡' and reaction.message.id == paginator.id and user is ctx.author:
+                raise exc.Right
+            return False
+
+        def on_message(msg):
+            return msg.content.isdigit() and 1 <= int(msg.content) <= len(posts) and msg.author is ctx.author and msg.channel is ctx.channel
+
+        try:
+            kwargs = u.get_kwargs(ctx, args)
+            dest, tags = kwargs['destination'], kwargs['remaining']
+            limit = self.LIMIT / 5
+            hearted = []
+            c = 1
+
+            tags = self._get_favorites(ctx, tags)
+
+            await ctx.trigger_typing()
+
+            posts, order = await self._get_posts(ctx, booru='e926', tags=tags, limit=limit)
+            keys = list(posts.keys())
+            values = list(posts.values())
+
+            embed = d.Embed(
+                title=values[c - 1]['artist'], url='https://e926.net/post/show/{}'.format(keys[c - 1]), color=ctx.me.color if isinstance(ctx.channel, d.TextChannel) else self.color)
+            embed.set_image(url=values[c - 1]['url'])
+            embed.set_author(name=formatter.tostring(tags, order=order),
+                             url='https://e926.net/post?tags={}'.format(','.join(tags)), icon_url=ctx.author.avatar_url)
+            embed.set_footer(text='{}   {} / {}'.format(values[c - 1]['score'], c, len(posts)),
+                             icon_url=self._get_score(values[c - 1]['score']))
+
+            paginator = await dest.send(embed=embed)
+
+            for emoji in ('❤', '⬅', '#⃣', '➡'):
+                await paginator.add_reaction(emoji)
+            await ctx.message.add_reaction('🛑')
+            await asyncio.sleep(1)
+
+            while not self.bot.is_closed():
+                try:
+                    done, pending = await asyncio.wait([self.bot.wait_for('reaction_add', check=on_reaction, timeout=10 * 60),
+                                                        self.bot.wait_for('reaction_remove', check=on_reaction, timeout=10 * 60)], return_when=asyncio.FIRST_COMPLETED)
+                    for future in done:
+                        future.result()
+
+                except exc.Save:
+                    if values[c - 1]['url'] not in hearted:
+                        hearted.append(values[c - 1]['url'])
+
+                        await paginator.edit(content='❤')
+                    else:
+                        hearted.remove(values[c - 1]['url'])
+
+                        await paginator.edit(content='💔')
+
+                except exc.Left:
+                    if c > 1:
+                        c -= 1
+                        embed.title = values[c - 1]['artist']
+                        embed.url = 'https://e926.net/post/show/{}'.format(keys[c - 1])
+                        embed.set_footer(text='{}   {} / {}'.format(values[c - 1]['score'], c, len(posts)),
+                                         icon_url=self._get_score(values[c - 1]['score']))
+                        embed.set_image(url=values[c - 1]['url'])
+
+                        await paginator.edit(content='❤' if values[c - 1]['url'] in hearted else None, embed=embed)
+                    else:
+                        await paginator.edit(content='**First image**')
+
+                except exc.GoTo:
+                    await paginator.edit(content='**Enter image number...**')
+                    number = await self.bot.wait_for('message', check=on_message, timeout=10 * 60)
+
+                    c = int(number.content)
+                    await number.delete()
+                    embed.title = values[c - 1]['artist']
+                    embed.url = 'https://e926.net/post/show/{}'.format(keys[c - 1])
+                    embed.set_footer(text='{}   {} / {}'.format(values[c - 1]['score'], c, len(posts)),
+                                     icon_url=self._get_score(values[c - 1]['score']))
+                    embed.set_image(url=values[c - 1]['url'])
+
+                    await paginator.edit(content='❤' if values[c - 1]['url'] in hearted else None, embed=embed)
+
+                except exc.Right:
+                    try:
+                        if c % limit == 0:
+                            await dest.trigger_typing()
+                            posts.update(await self._get_posts(ctx, booru='e926', tags=tags, limit=limit, previous=posts))
+
+                            keys = list(posts.keys())
+                            values = list(posts.values())
+
+                        c += 1
+                        embed.title = values[c - 1]['artist']
+                        embed.url = 'https://e926.net/post/show/{}'.format(keys[c - 1])
+                        embed.set_footer(text='{}   {} / {}'.format(values[c - 1]['score'], c, len(posts)),
+                                         icon_url=self._get_score(values[c - 1]['score']))
+                        embed.set_image(url=values[c - 1]['url'])
+
+                        await paginator.edit(content='❤' if values[c - 1]['url'] in hearted else None, embed=embed)
+
+                    except IndexError:
+                        await paginator.edit(content='**No more images found**')
+                    except exc.NotFound:
+                        await paginator.edit(content='**No more images found**')
+
+        except exc.Abort:
+            try:
+                await paginator.edit(content='**Exited paginator**')
+            except UnboundLocalError:
+                await dest.send('**Exited paginator**')
+
+            if not hearted:
+                await ctx.message.add_reaction('✅')
+        except asyncio.TimeoutError:
+            try:
+                await paginator.edit(content='**Paginator timed out**')
+            except UnboundLocalError:
+                await dest.send('**Paginator timed out**')
+
+            if not hearted:
+                await ctx.message.add_reaction('✅')
+        except exc.NotFound as e:
+            await ctx.send('`{}` **not found**'.format(e), delete_after=10)
+            await ctx.message.add_reaction('❌')
+        except exc.TagBlacklisted as e:
+            await ctx.send('🚫 `{}` **blacklisted**'.format(e), delete_after=10)
+            await ctx.message.add_reaction('🚫')
+        except exc.TagBoundsError as e:
+            await ctx.send('`{}` **out of bounds.** Tags limited to 5.'.format(e), delete_after=10)
+            await ctx.message.add_reaction('❌')
+        except exc.FavoritesNotFound:
+            await ctx.send('**You have no favorite tags**', delete_after=10)
+            await ctx.message.add_reaction('❌')
+        except exc.Timeout:
+            await ctx.send('**Request timed out**')
+            await ctx.message.add_reaction('❌')
+
+        finally:
+            if hearted:
+                await ctx.message.add_reaction('⏳')
+
+                for url in hearted:
+                    await ctx.author.send('`{} / {}`\n{}'.format(hearted.index(url) + 1, len(hearted), url))
+
+                    await asyncio.sleep(self.RATE_LIMIT)
+
+                await ctx.message.add_reaction('✅')
+
     # Searches for and returns images from e621.net given tags when not blacklisted
     @commands.group(aliases=['e6', '6'], brief='e621 | NSFW', description='e621 | NSFW\nTag-based search for e621.net\n\nYou can only search 5 tags and 6 images at once for now.\ne6 [tags...] ([# of images])')
     @checks.del_ctx()
