@@ -51,8 +51,8 @@ async def on_ready():
     await bot.get_channel(u.config['info_channel']).send('**Started** ☀️ .')
     # u.notify('C O N N E C T E D')
     if u.temp:
-        channel = bot.get_channel(u.temp['restart_ch'])
-        message = await channel.get_message(u.temp['restart_msg'])
+        channel = bot.get_channel(u.temp['startup_chan'])
+        message = await channel.get_message(u.temp['startup_msg'])
         await message.add_reaction('✅')
         u.temp.clear()
 
@@ -70,8 +70,8 @@ async def on_error(error, *args, **kwargs):
     await bot.get_user(u.config['owner_id']).send('**ERROR** ⚠\n```\n{}```'.format(error))
     await bot.get_channel(u.config['info_channel']).send('**ERROR** ⚠\n```\n{}```'.format(error))
     if u.temp:
-        channel = bot.get_channel(u.temp['restart_ch'])
-        message = await channel.get_message(u.temp['restart_msg'])
+        channel = bot.get_channel(u.temp['startup_chan'])
+        message = await channel.get_message(u.temp['startup_msg'])
         await message.add_reaction('⚠')
         u.temp.clear()
     # u.notify('E R R O R')
