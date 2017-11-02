@@ -68,7 +68,7 @@ class Bot:
     @commands.is_owner()
     @checks.del_ctx()
     async def invite(self, ctx):
-        await ctx.message.add_reaction('✉️')
+        await ctx.message.add_reaction('✉')
 
         await ctx.send('https://discordapp.com/oauth2/authorize?&client_id={}&scope=bot&permissions={}'.format(u.config['client_id'], u.config['permissions']), delete_after=10)
 
