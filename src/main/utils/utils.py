@@ -65,6 +65,7 @@ def dump(obj, filename, *, json=False):
 
 
 settings = setdefault('settings.pkl', {'del_ctx': [], 'prefixes': {}})
+info = setdefault('cogs/info.pkl', {'reports': {}})
 tasks = setdefault('cogs/tasks.pkl', {'auto_del': [], 'auto_qual': [], 'auto_rev': []})
 temp = setdefault('temp.pkl', {})
 
