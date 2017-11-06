@@ -114,11 +114,9 @@ def after(voice, error):
 @bot.command(name=',test', hidden=True)
 @commands.is_owner()
 @checks.del_ctx()
-async def test(ctx):
-    embed = d.Embed(
-        title='title', url='http://lh6.ggpht.com/d3pNZNFCcJM8snBsRSdKUhR9AVBnJMcYYrR92RRDBOzCrxZMhuTeoGOQSmSEn7DAPQ=w300')
-    embed.add_field(name='name', value='value', inline=False)
-    await ctx.send(embed=embed)
+async def test(ctx, *, test):
+    print(ctx.args)
+    print(ctx.kwargs)
     # if '<:N_:368917475531816962>' in message:
     #     await ctx.send('<:N_:368917475531816962>')
     # logs = []
