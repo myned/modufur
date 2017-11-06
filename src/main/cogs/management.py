@@ -1,6 +1,7 @@
 import asyncio
 import traceback as tb
 from contextlib import suppress
+from datetime import datetime as dt
 
 import discord as d
 from discord import errors as err
@@ -189,79 +190,4 @@ class Administration:
                 del u.settings['prefixes'][ctx.guild.id]
 
         await ctx.send(f'**Prefix set to:** `{"` or `".join(prefix if ctx.guild.id in u.settings["prefixes"] else u.config["prefix"])}`')
-        await ctx.message.add_reaction('\N{WHITE HEAVY CHECK MARK}')
-
-    # @commands.group(aliases=['rep', 'r'])
-    # async def report(self, ctx, user: d.User):
-    #     if not ctx.kwargs.get('user', None):
-    #         await ctx.send('User required', delete_after=10)
-    #         await ctx.message.add_reaction('\N{CROSS MARK}')
-
-    @commands.command(aliases=['rep'])
-    async def report(self, ctx, *, user: d.User):
-        def on_reaction(reaction, user):
-            if reaction.emoji == '\N{OCTAGONAL SIGN}' and user.id == ctx.author.id:
-                raise exc.Abort
-            elif reaction.emoji == '\N{CROSS MARK}' and user.id == ctx.author.id:
-                raise exc.Wrong
-            elif reaction.emoji == '\N{SQUARED OK}' and user.id == ctx.author.id:
-                return True
-            return False
-
-        def on_message(msg):
-            if msg.content.lower() == 'done' and msg.author.id == ctx.author.id:
-                raise exc.Abort
-            elif msg.author.id == ctx.author.id:
-                return True
-            return False
-
-        time = dt.utcnow()
-
-        try:
-            confirm = await ctx.send(f'@{user.name}#{user.discriminator} **has been found.**\nClick \N{SQUARED OK} to confirm or \N{CROSS MARK} to enter a user ID instead')
-            for emoji in ('\N{OCTAGONAL SIGN}', '\N{CROSS MARK}', '\N{SQUARED OK}'):
-                await confirm.add_reaction(emoji)
-            try:
-                await self.bot.wait_for('reaction_add', check=on_reaction, timeout=5 * 60)
-
-            except exc.Wrong:
-                await confirm.edit(content='Please enter the user ID')
-                # message = await self.bot.wait_for('message', check=lambda msg: return msg.content.isdigit() and msg.author.id == ctx.author.id)
-                user = await self.bot.get_user_info(message.content)
-                await confirm.edit(content=f'@{user.name}#{user.discriminator} **has been found.**\nClick \N{SQUARED OK} to confirm')
-                await asyncio.wait([self.bot.wait_for('reaction_add', check=on_reaction, timeout=5 * 60), self.bot.wait_for('reaction_remove', check=on_reaction, timeout=5 * 60)], asyncio.FIRST_COMPLETED)
-
-            urls = set()
-            for match in re.finditer('(https?:\/\/[^ ]*\.(?:gif|png|jpg|jpeg))', ctx.message.content):
-                urls.add(match.group(0))
-            for attachment in ctx.message.attachments:
-                urls.add(attachment.url)
-
-            temport = {time: {'reason': reason, 'proof': urls, 'aliases': set()}}
-            # temport = u.info['reports'].setdefault(user.id, {dt.utcnow(): {'report': reason, 'proof': urls}})
-            embed = d.Embed(author=user.name, color=ctx.me.color if isinstance(
-                ctx.channel, d.TextChannel) else u.color)
-
-            confirm = await ctx.send('**The following will be added to the report database.** This will be available across servers.\nClick \N{SQUARED OK} to confirm or \N{NEGATIVE SQUARED LATIN CAPITAL LETTER A} to add username aliases')
-            await ctx.send(embed=embed)
-            for emoji in ('\N{OCTAGONAL SIGN}', '\N{NEGATIVE SQUARED LATIN CAPITAL LETTER A}', '\N{SQUARED OK}'):
-                await confirm.add_reaction(emoji)
-            await asyncio.sleep(1)
-            try:
-                reaction = await self.bot.wait_for('reaction_add', check=on_reaction)
-
-            except exc.Add:
-                aliases = ctx.send('Type single usernames at a time')
-                try:
-                    while not self.bot.is_closed:
-                        message = await self.bot.wait_for('message', check=on_message)
-                        temport[time]['aliases'].add(message.content)
-                except exc.Abort:
-                    pass
-
-        except exc.Abort:
-            await confirm.edit(content='Report cancelled', delete_after=10)
-
-    @commands.command(name='remove', aliases=['rm'])
-    async def _report_remove(self, ctx, user: d.User):
-        pass
+        await ctx.message.add_reaction('✅')

@@ -5,6 +5,14 @@ async def send_error(ctx, error):
     await ctx.send('{}\n```\n{}```'.format(base, error))
 
 
+class Wrong(Exception):
+    pass
+
+
+class Add(Exception):
+    pass
+
+
 class Execute(Exception):
     pass
 
