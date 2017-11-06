@@ -21,7 +21,6 @@ class MsG:
 
     def __init__(self, bot):
         self.bot = bot
-        self.color = d.Color(0x1A1A1A)
         self.LIMIT = 100
         self.HISTORY_LIMIT = 150
         self.RATE_LIMIT = u.RATE_LIMIT
