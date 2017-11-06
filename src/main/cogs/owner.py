@@ -26,9 +26,9 @@ class Bot:
     @commands.is_owner()
     @checks.del_ctx()
     async def die(self, ctx):
-        await ctx.message.add_reaction('🌙')
+        await ctx.message.add_reaction('\N{CRESCENT MOON}')
 
-        await self.bot.get_channel(u.config['info_channel']).send('**Shutting down** 🌙 . . .')
+        await self.bot.get_channel(u.config['info_channel']).send('**Shutting down** \N{CRESCENT MOON} . . .')
 
         u.temp['startup_chan'] = ctx.channel.id
         u.temp['startup_msg'] = ctx.message.id
@@ -46,10 +46,10 @@ class Bot:
     @commands.is_owner()
     @checks.del_ctx()
     async def restart(self, ctx):
-        await ctx.message.add_reaction('💤')
+        await ctx.message.add_reaction('\N{SLEEPING SYMBOL}')
 
         print('\n^ ^ ^ ^ ^ ^ ^ ^ ^ ^\nR E S T A R T I N G\n^ ^ ^ ^ ^ ^ ^ ^ ^ ^\n')
-        await self.bot.get_channel(u.config['info_channel']).send('**Restarting** 💤 . . .')
+        await self.bot.get_channel(u.config['info_channel']).send('**Restarting** \N{SLEEPING SYMBOL} . . .')
         # u.notify('R E S T A R T I N G')
 
         u.temp['startup_chan'] = ctx.channel.id
@@ -68,7 +68,7 @@ class Bot:
     @commands.is_owner()
     @checks.del_ctx()
     async def invite(self, ctx):
-        await ctx.message.add_reaction('✉')
+        await ctx.message.add_reaction('\N{ENVELOPE}')
 
         await ctx.send('https://discordapp.com/oauth2/authorize?&client_id={}&scope=bot&permissions={}'.format(u.config['client_id'], u.config['permissions']), delete_after=10)
 
@@ -85,7 +85,7 @@ class Bot:
             u.config['playing'] = 'None'
             u.dump(u.config, 'config.json', json=True)
 
-        await ctx.message.add_reaction('✅')
+        await ctx.message.add_reaction('\N{WHITE HEAVY CHECK MARK}')
 
 
 class Tools:
@@ -132,7 +132,7 @@ class Tools:
             return False
 
         def exit(reaction, user):
-            if reaction.emoji == '↩️' and user is ctx.author and reaction.message.id == ctx.message.id:
+            if reaction.emoji == '\N{LEFTWARDS ARROW WITH HOOK}' and user is ctx.author and reaction.message.id == ctx.message.id:
                 results.cancel()
                 raise exc.Abort
             return False
@@ -141,7 +141,7 @@ class Tools:
             console = await self.generate(ctx)
             exception = await self.generate_err(ctx)
 
-            await ctx.message.add_reaction('↩️')
+            await ctx.message.add_reaction('\N{LEFTWARDS ARROW WITH HOOK}')
 
             while not self.bot.is_closed():
                 try:
@@ -187,9 +187,9 @@ class Tools:
             sys.stderr = sys.__stderr__
             print('Reset sys output.')
 
-            await ctx.message.add_reaction('✅')
+            await ctx.message.add_reaction('\N{WHITE HEAVY CHECK MARK}')
 
-    @commands.command(name='arbitrary', aliases=[',arbit', ',ar'])
+    @commands.command(name='arbitrary', aliases=[',arbit', ',ar'], hidden=True)
     @commands.is_owner()
     @checks.del_ctx()
     async def arbitrary(self, ctx, *, exe):
@@ -202,7 +202,7 @@ class Tools:
         finally:
             sys.stdout = sys.__stdout__
             print('Reset stdout.')
-            await ctx.message.add_reaction('✅')
+            await ctx.message.add_reaction('\N{WHITE HEAVY CHECK MARK}')
 
     @commands.group(aliases=[',db'], hidden=True)
     @commands.is_owner()

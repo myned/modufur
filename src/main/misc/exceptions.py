@@ -1,8 +1,16 @@
-base = '⚠️ **An internal error has occurred.** This has been reported to my master. 🐺'
+base = '\N{WARNING SIGN} **An internal error has occurred.** This has been reported to my master. \N{WOLF FACE}'
 
 
 async def send_error(ctx, error):
     await ctx.send('{}\n```\n{}```'.format(base, error))
+
+
+class Wrong(Exception):
+    pass
+
+
+class Add(Exception):
+    pass
 
 
 class Execute(Exception):

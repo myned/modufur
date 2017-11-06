@@ -7,9 +7,11 @@ from contextlib import suppress
 
 import aiohttp
 import discord as d
-from pync import Notifier
 
 from misc import exceptions as exc
+
+# from pync import Notifier
+
 
 print('\nPID : {}\n'.format(os.getpid()))
 
@@ -67,6 +69,7 @@ tasks = setdefault('cogs/tasks.pkl', {'auto_del': [], 'auto_qual': [], 'auto_rev
 temp = setdefault('temp.pkl', {})
 
 RATE_LIMIT = 2.2
+color = d.Color(0x1A1A1A)
 session = aiohttp.ClientSession()
 
 
