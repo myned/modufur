@@ -495,8 +495,10 @@ class MsG:
         return args
 
     def _get_score(self, score):
-        if score <= 0:
+        if score < 0:
             return 'https://emojipedia-us.s3.amazonaws.com/thumbs/320/mozilla/36/pile-of-poo_1f4a9.png'
+        elif score == 0:
+            return 'https://emojipedia-us.s3.amazonaws.com/thumbs/320/twitter/103/pouting-face_1f621.png'
         elif 10 > score > 0:
             return 'https://emojipedia-us.s3.amazonaws.com/thumbs/320/twitter/103/white-medium-star_2b50.png'
         elif 50 > score >= 10:
