@@ -7,9 +7,11 @@ from contextlib import suppress
 
 import aiohttp
 import discord as d
-from pync import Notifier
 
 from misc import exceptions as exc
+
+# from pync import Notifier
+
 
 print('\nPID : {}\n'.format(os.getpid()))
 
