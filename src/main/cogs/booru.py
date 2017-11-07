@@ -681,10 +681,8 @@ class MsG:
 
             while not self.bot.is_closed():
                 try:
-                    done, pending = await asyncio.wait([self.bot.wait_for('reaction_add', check=on_reaction, timeout=10 * 60),
-                                                        self.bot.wait_for('reaction_remove', check=on_reaction, timeout=10 * 60)], return_when=asyncio.FIRST_COMPLETED)
-                    for future in done:
-                        future.result()
+                    await asyncio.gather(*[self.bot.wait_for('reaction_add', check=on_reaction, timeout=10 * 60),
+                                           self.bot.wait_for('reaction_remove', check=on_reaction, timeout=10 * 60)])
 
                 except exc.Save:
                     if values[c - 1]['url'] not in hearted:
@@ -824,10 +822,8 @@ class MsG:
 
             while not self.bot.is_closed():
                 try:
-                    done, pending = await asyncio.wait([self.bot.wait_for('reaction_add', check=on_reaction, timeout=10 * 60),
-                                                        self.bot.wait_for('reaction_remove', check=on_reaction, timeout=10 * 60)], return_when=asyncio.FIRST_COMPLETED)
-                    for future in done:
-                        future.result()
+                    await asyncio.gather(*[self.bot.wait_for('reaction_add', check=on_reaction, timeout=10 * 60),
+                                           self.bot.wait_for('reaction_remove', check=on_reaction, timeout=10 * 60)])
 
                 except exc.Save:
                     if values[c - 1]['url'] not in hearted:
@@ -990,10 +986,8 @@ class MsG:
 
             while not self.bot.is_closed():
                 try:
-                    done, pending = await asyncio.wait([self.bot.wait_for('reaction_add', check=on_reaction, timeout=10 * 60),
-                                                        self.bot.wait_for('reaction_remove', check=on_reaction, timeout=10 * 60)], return_when=asyncio.FIRST_COMPLETED)
-                    for future in done:
-                        future.result()
+                    await asyncio.gather(*[self.bot.wait_for('reaction_add', check=on_reaction, timeout=10 * 60),
+                                           self.bot.wait_for('reaction_remove', check=on_reaction, timeout=10 * 60)])
 
                 except exc.Save:
                     if values[c - 1]['url'] not in hearted:

@@ -5,7 +5,7 @@ import os
 import re
 import sys
 import traceback as tb
-from contextlib import suppress
+from contextlib import redirect_stdout, suppress
 
 import discord as d
 import pyrasite as pyr
@@ -120,20 +120,19 @@ class Tools:
     @checks.del_ctx()
     async def console(self, ctx):
         def execute(msg):
-            if msg.content.startswith('exe') and msg.author is ctx.author and msg.channel is ctx.channel:
-                results.cancel()
+            if msg.content.lower().startswith('exec ') and msg.author is ctx.author and msg.channel is ctx.channel:
+                msg.content = msg.content[5:]
                 return True
             return False
 
         def evaluate(msg):
-            if msg.content.startswith('eval') and msg.author is ctx.author and msg.channel is ctx.channel:
-                results.cancel()
+            if msg.content.lower().startswith('eval ') and msg.author is ctx.author and msg.channel is ctx.channel:
+                msg.content = msg.content[5:]
                 return True
             return False
 
         def exit(reaction, user):
-            if reaction.emoji == '\N{LEFTWARDS ARROW WITH HOOK}' and user is ctx.author and reaction.message.id == ctx.message.id:
-                results.cancel()
+            if reaction.emoji == '\N{OCTAGONAL SIGN}' and user is ctx.author and reaction.message.id == ctx.message.id:
                 raise exc.Abort
             return False
 
@@ -141,43 +140,46 @@ class Tools:
             console = await self.generate(ctx)
             exception = await self.generate_err(ctx)
 
-            await ctx.message.add_reaction('\N{LEFTWARDS ARROW WITH HOOK}')
+            await ctx.message.add_reaction('\N{OCTAGONAL SIGN}')
 
             while not self.bot.is_closed():
                 try:
-                    results = await asyncio.gather([self.bot.wait_for('message', check=execute), self.bot.wait_for('message', check=evaluate), self.bot.wait_for('reaction_add', check=exit)], return_exceptions=True)
-                    print(results)
+                    done, pending = await asyncio.wait([self.bot.wait_for('message', check=execute), self.bot.wait_for('message', check=evaluate), self.bot.wait_for('reaction_add', check=exit)], return_when=asyncio.FIRST_COMPLETED)
+
+                    message = done.pop().result()
+                    print(message.content)
+
                 except exc.Execute:
                     try:
                         sys.stdout = io.StringIO()
                         sys.stderr = io.StringIO()
-                        exec(exe.content)
+                        exec(message.content)
 
                     except Exception:
                         await self.refresh_err(exception, tb.format_exc(limit=1))
 
                     finally:
-                        await self.refresh(console, exe.content, sys.stdout.getvalue() if sys.stdout.getvalue() != console.content else None)
+                        await self.refresh(console, message.content, sys.stdout.getvalue() if sys.stdout.getvalue() != console.content else None)
                         sys.stdout = sys.__stdout__
                         sys.stderr = sys.__stderr__
+                        with suppress(d.NotFound):
+                            await message.delete()
 
                 except exc.Evaluate:
                     try:
                         sys.stdout = io.StringIO()
                         sys.stderr = io.StringIO()
-                        eval(exe.content)
+                        eval(message.content)
 
                     except Exception:
                         await self.refresh_err(exception, tb.format_exc(limit=1))
 
                     finally:
-                        await self.refresh(console, exe.content, sys.stdout.getvalue() if sys.stdout.getvalue() != console.content else None)
+                        await self.refresh(console, message.content, sys.stdout.getvalue() if sys.stdout.getvalue() != console.content else None)
                         sys.stdout = sys.__stdout__
                         sys.stderr = sys.__stderr__
-
-                finally:
-                    with suppress(d.NotFound):
-                        await exe.delete()
+                        with suppress(d.NotFound):
+                            await message.delete()
 
         except exc.Abort:
             pass
@@ -189,19 +191,34 @@ class Tools:
 
             await ctx.message.add_reaction('\N{WHITE HEAVY CHECK MARK}')
 
-    @commands.command(name='arbitrary', aliases=[',arbit', ',ar'], hidden=True)
+    @commands.command(name=',execute', aliases=[',exec'], hidden=True)
     @commands.is_owner()
     @checks.del_ctx()
-    async def arbitrary(self, ctx, *, exe):
+    async def execute(self, ctx, *, exe):
         try:
-            sys.stdout = io.StringIO()
-            exec(exe)
-            await self.generate(ctx, exe, sys.stdout.getvalue())
+            with io.StringIO() as buff, redirect_stdout(buff):
+                exec(exe)
+                await self.generate(ctx, exe, buff.getvalue())
+
         except Exception:
-            await ctx.send('```\n{}```'.format(tb.format_exc(limit=1)))
+            await ctx.send('```\n{}```'.format(tb.format_exc()))
+
         finally:
-            sys.stdout = sys.__stdout__
-            print('Reset stdout.')
+            await ctx.message.add_reaction('\N{WHITE HEAVY CHECK MARK}')
+
+    @commands.command(name=',evaluate', aliases=[',eval'], hidden=True)
+    @commands.is_owner()
+    @checks.del_ctx()
+    async def evaluate(self, ctx, *, evl):
+        try:
+            with io.StringIO() as buff, redirect_stdout(buff):
+                eval(evl)
+                await self.generate(ctx, evl, buff.getvalue())
+
+        except Exception:
+            await ctx.send('```\n{}```'.format(tb.format_exc()))
+
+        finally:
             await ctx.message.add_reaction('\N{WHITE HEAVY CHECK MARK}')
 
     @commands.group(aliases=[',db'], hidden=True)
