@@ -5,7 +5,7 @@ import os
 import re
 import sys
 import traceback as tb
-from contextlib import suppress
+from contextlib import redirect_stdout, suppress
 
 import discord as d
 import pyrasite as pyr
@@ -189,19 +189,34 @@ class Tools:
 
             await ctx.message.add_reaction('\N{WHITE HEAVY CHECK MARK}')
 
-    @commands.command(name='arbitrary', aliases=[',arbit', ',ar'], hidden=True)
+    @commands.command(name=',execute', aliases=[',exec'], hidden=True)
     @commands.is_owner()
     @checks.del_ctx()
-    async def arbitrary(self, ctx, *, exe):
+    async def execute(self, ctx, *, exe):
         try:
-            sys.stdout = io.StringIO()
+            with io.StringIO() as buff, redirect_stdout(buff):
             exec(exe)
-            await self.generate(ctx, exe, sys.stdout.getvalue())
+                await self.generate(ctx, exe, buff.getvalue())
+
         except Exception:
-            await ctx.send('```\n{}```'.format(tb.format_exc(limit=1)))
+            await ctx.send('```\n{}```'.format(tb.format_exc()))
+
         finally:
-            sys.stdout = sys.__stdout__
-            print('Reset stdout.')
+            await ctx.message.add_reaction('\N{WHITE HEAVY CHECK MARK}')
+
+    @commands.command(name=',evaluate', aliases=[',eval'], hidden=True)
+    @commands.is_owner()
+    @checks.del_ctx()
+    async def evaluate(self, ctx, *, evl):
+        try:
+            with io.StringIO() as buff, redirect_stdout(buff):
+                eval(evl)
+                await self.generate(ctx, evl, buff.getvalue())
+
+        except Exception:
+            await ctx.send('```\n{}```'.format(tb.format_exc()))
+
+        finally:
             await ctx.message.add_reaction('\N{WHITE HEAVY CHECK MARK}')
 
     @commands.group(aliases=[',db'], hidden=True)
