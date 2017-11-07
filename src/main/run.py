@@ -20,14 +20,19 @@ from utils import utils as u
 # log.basicConfig(level=log.INFO)
 
 
+class HelpFormatter(commands.HelpFormatter):
+    async def format():
+        pass
+
+
 def get_prefix(bot, message):
     if isinstance(message.guild, d.Guild) and message.guild.id in u.settings['prefixes']:
         return u.settings['prefixes'][message.guild.id]
     return u.config['prefix']
 
 
-bot = commands.Bot(command_prefix=get_prefix, formatter=commands.HelpFormatter(
-    show_check_failure=True), description='Experimental miscellaneous bot')
+help_formatter = HelpFormatter(show_check_failure=True)
+bot = commands.Bot(command_prefix=get_prefix, formatter=help_formatter, description='Experimental miscellaneous bot')
 
 # Send and print ready message to #testing and console after logon
 
