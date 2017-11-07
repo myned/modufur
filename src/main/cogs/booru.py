@@ -875,17 +875,18 @@ class MsG:
                             keys = list(posts.keys())
                             values = list(posts.values())
 
-                        c += 1
-                        embed.title = values[c - 1]['artist']
-                        embed.url = 'https://e621.net/post/show/{}'.format(keys[c - 1])
-                        embed.set_footer(text='{} / {}'.format(c, len(posts)),
-                                         icon_url=self._get_score(values[c - 1]['score']))
-                        embed.set_image(url=values[c - 1]['url'])
+                        if c < len(keys):
+                            c += 1
+                            embed.title = values[c - 1]['artist']
+                            embed.url = 'https://e621.net/post/show/{}'.format(keys[c - 1])
+                            embed.set_footer(text='{} / {}'.format(c, len(posts)),
+                                             icon_url=self._get_score(values[c - 1]['score']))
+                            embed.set_image(url=values[c - 1]['url'])
 
-                        await paginator.edit(content='\N{HEAVY BLACK HEART}' if values[c - 1]['url'] in hearted else None, embed=embed)
+                            await paginator.edit(content='\N{HEAVY BLACK HEART}' if values[c - 1]['url'] in hearted else None, embed=embed)
+                        else:
+                            await paginator.edit(content='**No more images found**')
 
-                    except IndexError:
-                        await paginator.edit(content='**No more images found**')
                     except exc.NotFound:
                         await paginator.edit(content='**No more images found**')
 
@@ -1040,17 +1041,18 @@ class MsG:
                             keys = list(posts.keys())
                             values = list(posts.values())
 
-                        c += 1
-                        embed.title = values[c - 1]['artist']
-                        embed.url = 'https://e926.net/post/show/{}'.format(keys[c - 1])
-                        embed.set_footer(text='{} / {}'.format(c, len(posts)),
-                                         icon_url=self._get_score(values[c - 1]['score']))
-                        embed.set_image(url=values[c - 1]['url'])
+                        if c < len(keys):
+                            c += 1
+                            embed.title = values[c - 1]['artist']
+                            embed.url = 'https://e926.net/post/show/{}'.format(keys[c - 1])
+                            embed.set_footer(text='{} / {}'.format(c, len(posts)),
+                                             icon_url=self._get_score(values[c - 1]['score']))
+                            embed.set_image(url=values[c - 1]['url'])
 
-                        await paginator.edit(content='\N{HEAVY BLACK HEART}' if values[c - 1]['url'] in hearted else None, embed=embed)
+                            await paginator.edit(content='\N{HEAVY BLACK HEART}' if values[c - 1]['url'] in hearted else None, embed=embed)
+                        else:
+                            await paginator.edit(content='**No more images found**')
 
-                    except IndexError:
-                        await paginator.edit(content='**No more images found**')
                     except exc.NotFound:
                         await paginator.edit(content='**No more images found**')
 
