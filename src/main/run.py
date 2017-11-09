@@ -73,7 +73,7 @@ async def on_message(message):
 async def on_error(error, *args, **kwargs):
     print('\n! ! ! ! !\nE R R O R : {}\n! ! ! ! !\n'.format(error), file=sys.stderr)
     tb.print_exc()
-    await bot.get_user(u.config['owner_id']).send('**ERROR** \N{WARNING SIGN}\n```\n{}```'.format(error))
+    await bot.get_user(u.config['owner_id']).send('**ERROR** \N{WARNING SIGN}\n```\n{}```'.format(''.join(tb.format_exception(type(error), error, error.__traceback__))))
     await bot.get_channel(u.config['info_channel']).send('**ERROR** \N{WARNING SIGN}\n```\n{}```'.format(error))
     if u.temp:
         channel = bot.get_channel(u.temp['startup_chan'])
@@ -99,8 +99,8 @@ async def on_command_error(ctx, error):
         print('\n! ! ! ! ! ! !  ! ! ! ! !\nC O M M A N D  E R R O R : {}\n! ! ! ! ! ! !  ! ! ! ! !\n'.format(
             error), file=sys.stderr)
         tb.print_exception(type(error), error, error.__traceback__, file=sys.stderr)
-        await bot.get_user(u.config['owner_id']).send('**COMMAND ERROR** \N{WARNING SIGN} `{}` from *@{}* in {}\n```\n{}```'.format(ctx.message.content, ctx.author.name, ctx.guild.name, error))
-        await bot.get_channel(u.config['info_channel']).send('**COMMAND ERROR** \N{WARNING SIGN} `{}` from *@{}* in {}\n```\n{}```'.format(ctx.message.content, ctx.author.name, ctx.guild.name, error))
+        await bot.get_user(u.config['owner_id']).send('**COMMAND ERROR** \N{WARNING SIGN} `{}` from {} in {}\n```\n{}```'.format(ctx.message.content, ctx.author.mention, ctx.channel.mention, ''.join(tb.format_exception(type(error), error, error.__traceback__))))
+        await bot.get_channel(u.config['info_channel']).send('**COMMAND ERROR** \N{WARNING SIGN} `{}` from {} in {}\n```\n{}```'.format(ctx.message.content, ctx.author.mention, ctx.channel.mention, error))
         await exc.send_error(ctx, error)
         await ctx.message.add_reaction('\N{WARNING SIGN}')
         # u.notify('C O M M A N D  E R R O R')
