@@ -88,7 +88,7 @@ class MsG:
         await ctx.message.add_reaction('\N{WHITE HEAVY CHECK MARK}')
 
     # Tag aliases
-    @commands.command(name='aliases', aliases=['alias'], brief='e621 Tag aliases', description='e621 | NSFW\nSearch aliases for given tag')
+    @commands.command(name='aliases', aliases=['alias', 'als'], brief='e621 Tag aliases', description='e621 | NSFW\nSearch aliases for given tag')
     @checks.del_ctx()
     async def tag_aliases(self, ctx, *args):
         kwargs = u.get_kwargs(ctx, args)
@@ -568,12 +568,9 @@ class MsG:
 
         blacklist = set()
         # Creates temp blacklist based on context
-        for tag in self.blacklists['global_blacklist']:
-            blacklist.update(list(self.aliases[tag]) + [tag])
-        for tag in self.blacklists['guild_blacklist'].get(guild.id, {}).get(ctx.channel.id, set()):
-            blacklist.update(list(self.aliases[tag]) + [tag])
-        for tag in self.blacklists['user_blacklist'].get(ctx.author.id, set()):
-            blacklist.update(list(self.aliases[tag]) + [tag])
+        for bl in (self.blacklists['global_blacklist'], self.blacklists['guild_blacklist'].get(guild.id, {}).get(ctx.channel.id, set()), self.blacklists['user_blacklist'].get(ctx.author.id, set())):
+            for tag in bl:
+                blacklist.update([tag] + list(self.aliases[tag]))
         # Checks for, assigns, and removes first order in tags if possible
         order = [tag for tag in tags if 'order:' in tag]
         if order:
@@ -630,7 +627,7 @@ class MsG:
         if posts:
             return posts, order
         else:
-            raise exc.NotFound
+            raise exc.NotFound(formatter.tostring(tags))
 
     # Creates reaction-based paginator for linked pools
     @commands.command(name='poolpage', aliases=['poolp', 'pp', 'e621pp', 'e6pp', '6pp'], brief='e621 pool paginator', description='e621 | NSFW\nShow pools in a page format')
@@ -681,8 +678,8 @@ class MsG:
 
             while not self.bot.is_closed():
                 try:
-                    await asyncio.gather(*[self.bot.wait_for('reaction_add', check=on_reaction, timeout=10 * 60),
-                                           self.bot.wait_for('reaction_remove', check=on_reaction, timeout=10 * 60)])
+                    await asyncio.gather(*[self.bot.wait_for('reaction_add', check=on_reaction, timeout=7 * 60),
+                                           self.bot.wait_for('reaction_remove', check=on_reaction, timeout=7 * 60)])
 
                 except exc.Save:
                     if values[c - 1]['url'] not in hearted:
@@ -709,7 +706,7 @@ class MsG:
 
                 except exc.GoTo:
                     await paginator.edit(content='**Enter image number...**')
-                    number = await self.bot.wait_for('message', check=on_message, timeout=10 * 60)
+                    number = await self.bot.wait_for('message', check=on_message, timeout=7 * 60)
 
                     c = int(number.content)
                     await number.delete()
@@ -822,8 +819,8 @@ class MsG:
 
             while not self.bot.is_closed():
                 try:
-                    await asyncio.gather(*[self.bot.wait_for('reaction_add', check=on_reaction, timeout=10 * 60),
-                                           self.bot.wait_for('reaction_remove', check=on_reaction, timeout=10 * 60)])
+                    await asyncio.gather(*[self.bot.wait_for('reaction_add', check=on_reaction, timeout=7 * 60),
+                                           self.bot.wait_for('reaction_remove', check=on_reaction, timeout=7 * 60)])
 
                 except exc.Save:
                     if values[c - 1]['url'] not in hearted:
@@ -850,7 +847,7 @@ class MsG:
 
                 except exc.GoTo:
                     await paginator.edit(content='**Enter image number...**')
-                    number = await self.bot.wait_for('message', check=on_message, timeout=10 * 60)
+                    number = await self.bot.wait_for('message', check=on_message, timeout=7 * 60)
 
                     c = int(number.content)
                     await number.delete()
@@ -987,8 +984,8 @@ class MsG:
 
             while not self.bot.is_closed():
                 try:
-                    await asyncio.gather(*[self.bot.wait_for('reaction_add', check=on_reaction, timeout=10 * 60),
-                                           self.bot.wait_for('reaction_remove', check=on_reaction, timeout=10 * 60)])
+                    await asyncio.gather(*[self.bot.wait_for('reaction_add', check=on_reaction, timeout=7 * 60),
+                                           self.bot.wait_for('reaction_remove', check=on_reaction, timeout=7 * 60)])
 
                 except exc.Save:
                     if values[c - 1]['url'] not in hearted:
@@ -1015,7 +1012,7 @@ class MsG:
 
                 except exc.GoTo:
                     await paginator.edit(content='**Enter image number...**')
-                    number = await self.bot.wait_for('message', check=on_message, timeout=10 * 60)
+                    number = await self.bot.wait_for('message', check=on_message, timeout=7 * 60)
 
                     c = int(number.content)
                     await number.delete()
