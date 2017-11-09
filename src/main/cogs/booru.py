@@ -866,7 +866,8 @@ class MsG:
                     try:
                         if c % limit == 0:
                             await dest.trigger_typing()
-                            posts.update(await self._get_posts(ctx, booru='e621', tags=tags, limit=limit, previous=posts))
+                            temposts, order = await self._get_posts(ctx, booru='e621', tags=tags, limit=limit, previous=posts)
+                            posts.update(temposts)
 
                             keys = list(posts.keys())
                             values = list(posts.values())
@@ -1030,7 +1031,8 @@ class MsG:
                     try:
                         if c % limit == 0:
                             await dest.trigger_typing()
-                            posts.update(await self._get_posts(ctx, booru='e926', tags=tags, limit=limit, previous=posts))
+                            temposts, order = await self._get_posts(ctx, booru='e926', tags=tags, limit=limit, previous=posts)
+                            posts.update(temposts)
 
                             keys = list(posts.keys())
                             values = list(posts.values())
