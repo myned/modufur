@@ -1,3 +1,5 @@
+from discord.ext.commands import errors as errext
+
 base = '\N{WARNING SIGN} **An internal error has occurred.** This has been reported to my master. \N{WOLF FACE}'
 
 
@@ -41,79 +43,79 @@ class GoTo(Exception):
     pass
 
 
-class Exists(Exception):
+class Exists(errext.CommandError):
     pass
 
 
-class MissingArgument(Exception):
+class MissingArgument(errext.CommandError):
     pass
 
 
-class FavoritesNotFound(Exception):
+class FavoritesNotFound(errext.CommandError):
     pass
 
 
-class PostError(Exception):
+class PostError(errext.CommandError):
     pass
 
 
-class ImageError(Exception):
+class ImageError(errext.CommandError):
     pass
 
 
-class MatchError(Exception):
+class MatchError(errext.CommandError):
     pass
 
 
-class TagBlacklisted(Exception):
+class TagBlacklisted(errext.CommandError):
     pass
 
 
-class BoundsError(Exception):
+class BoundsError(errext.CommandError):
     pass
 
 
-class TagBoundsError(Exception):
+class TagBoundsError(errext.CommandError):
     pass
 
 
-class TagExists(Exception):
+class TagExists(errext.CommandError):
     pass
 
 
-class TagError(Exception):
+class TagError(errext.CommandError):
     pass
 
 
-class FlagError(Exception):
+class FlagError(errext.CommandError):
     pass
 
 
-class BlacklistError(Exception):
+class BlacklistError(errext.CommandError):
     pass
 
 
-class NotFound(Exception):
+class NotFound(errext.CommandError):
     pass
 
 
-class Timeout(Exception):
+class Timeout(errext.CommandError):
     pass
 
 
-class InvalidVideoFile(Exception):
+class InvalidVideoFile(errext.CommandError):
     pass
 
 
-class MissingAttachment(Exception):
+class MissingAttachment(errext.CommandError):
     pass
 
 
-class TooManyAttachments(Exception):
+class TooManyAttachments(errext.CommandError):
     pass
 
 
-class CheckFail(Exception):
+class CheckFail(errext.CommandError):
     pass
 
 
