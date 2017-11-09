@@ -9,6 +9,7 @@ from contextlib import suppress
 from pprint import pprint
 
 import discord as d
+from discord import errors as err
 from discord import utils
 from discord.ext import commands
 from discord.ext.commands import errors as errext
@@ -86,8 +87,10 @@ async def on_error(error, *args, **kwargs):
 
 @bot.event
 async def on_command_error(ctx, error):
-    if isinstance(error, errext.CheckFailure):
-        await ctx.send('\N{NO ENTRY} **Insufficient permissions**', delete_after=10)
+    if isinstance(error, err.NotFound):
+        pass
+    elif isinstance(error, errext.CheckFailure):
+        await ctx.send('**Insufficient permissions**', delete_after=10)
         await ctx.message.add_reaction('\N{NO ENTRY}')
     elif isinstance(error, errext.CommandNotFound):
         print('INVALID COMMAND : {}'.format(error), file=sys.stderr)
