@@ -568,12 +568,9 @@ class MsG:
 
         blacklist = set()
         # Creates temp blacklist based on context
-        for tag in self.blacklists['global_blacklist']:
-            blacklist.update(list(self.aliases[tag]) + [tag])
-        for tag in self.blacklists['guild_blacklist'].get(guild.id, {}).get(ctx.channel.id, set()):
-            blacklist.update(list(self.aliases[tag]) + [tag])
-        for tag in self.blacklists['user_blacklist'].get(ctx.author.id, set()):
-            blacklist.update(list(self.aliases[tag]) + [tag])
+        for bl in (self.blacklists['global_blacklist'], self.blacklists['guild_blacklist'].get(guild.id, {}).get(ctx.channel.id, set()), self.blacklists['user_blacklist'].get(ctx.author.id, set())):
+            for tag in bl:
+                blacklist.update([tag] + list(self.aliases[tag]))
         # Checks for, assigns, and removes first order in tags if possible
         order = [tag for tag in tags if 'order:' in tag]
         if order:
