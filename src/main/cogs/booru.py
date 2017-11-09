@@ -627,7 +627,7 @@ class MsG:
         if posts:
             return posts, order
         else:
-            raise exc.NotFound
+            raise exc.NotFound(formatter.tostring(tags))
 
     # Creates reaction-based paginator for linked pools
     @commands.command(name='poolpage', aliases=['poolp', 'pp', 'e621pp', 'e6pp', '6pp'], brief='e621 pool paginator', description='e621 | NSFW\nShow pools in a page format')
