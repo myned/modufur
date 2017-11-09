@@ -678,8 +678,8 @@ class MsG:
 
             while not self.bot.is_closed():
                 try:
-                    await asyncio.gather(*[self.bot.wait_for('reaction_add', check=on_reaction, timeout=10 * 60),
-                                           self.bot.wait_for('reaction_remove', check=on_reaction, timeout=10 * 60)])
+                    await asyncio.gather(*[self.bot.wait_for('reaction_add', check=on_reaction, timeout=7 * 60),
+                                           self.bot.wait_for('reaction_remove', check=on_reaction, timeout=7 * 60)])
 
                 except exc.Save:
                     if values[c - 1]['url'] not in hearted:
@@ -706,7 +706,7 @@ class MsG:
 
                 except exc.GoTo:
                     await paginator.edit(content='**Enter image number...**')
-                    number = await self.bot.wait_for('message', check=on_message, timeout=10 * 60)
+                    number = await self.bot.wait_for('message', check=on_message, timeout=7 * 60)
 
                     c = int(number.content)
                     await number.delete()
@@ -819,8 +819,8 @@ class MsG:
 
             while not self.bot.is_closed():
                 try:
-                    await asyncio.gather(*[self.bot.wait_for('reaction_add', check=on_reaction, timeout=10 * 60),
-                                           self.bot.wait_for('reaction_remove', check=on_reaction, timeout=10 * 60)])
+                    await asyncio.gather(*[self.bot.wait_for('reaction_add', check=on_reaction, timeout=7 * 60),
+                                           self.bot.wait_for('reaction_remove', check=on_reaction, timeout=7 * 60)])
 
                 except exc.Save:
                     if values[c - 1]['url'] not in hearted:
@@ -847,7 +847,7 @@ class MsG:
 
                 except exc.GoTo:
                     await paginator.edit(content='**Enter image number...**')
-                    number = await self.bot.wait_for('message', check=on_message, timeout=10 * 60)
+                    number = await self.bot.wait_for('message', check=on_message, timeout=7 * 60)
 
                     c = int(number.content)
                     await number.delete()
@@ -984,8 +984,8 @@ class MsG:
 
             while not self.bot.is_closed():
                 try:
-                    await asyncio.gather(*[self.bot.wait_for('reaction_add', check=on_reaction, timeout=10 * 60),
-                                           self.bot.wait_for('reaction_remove', check=on_reaction, timeout=10 * 60)])
+                    await asyncio.gather(*[self.bot.wait_for('reaction_add', check=on_reaction, timeout=7 * 60),
+                                           self.bot.wait_for('reaction_remove', check=on_reaction, timeout=7 * 60)])
 
                 except exc.Save:
                     if values[c - 1]['url'] not in hearted:
@@ -1012,7 +1012,7 @@ class MsG:
 
                 except exc.GoTo:
                     await paginator.edit(content='**Enter image number...**')
-                    number = await self.bot.wait_for('message', check=on_message, timeout=10 * 60)
+                    number = await self.bot.wait_for('message', check=on_message, timeout=7 * 60)
 
                     c = int(number.content)
                     await number.delete()
