@@ -930,11 +930,11 @@ class MsG:
 
                 await ctx.message.add_reaction('\N{WHITE HEAVY CHECK MARK}')
 
-    @e621_paginator.error
-    async def e621_paginator_error(self, ctx, error):
-        if isinstance(error, errext.CheckFailure):
-            await ctx.send('\N{NO ENTRY} {} **is not an NSFW channel**'.format(ctx.channel.mention), delete_after=10)
-            return await ctx.message.add_reaction('\N{NO ENTRY}')
+    # @e621_paginator.error
+    # async def e621_paginator_error(self, ctx, error):
+    #     if isinstance(error, exc.NSFW):
+    #         await ctx.send('\N{NO ENTRY} {} **is not an NSFW channel**'.format(ctx.channel.mention), delete_after=10)
+    #         await ctx.message.add_reaction('\N{NO ENTRY}')
 
     @commands.command(name='e926page', aliases=['e926p', 'e9p', '9p'])
     @checks.del_ctx()
@@ -1144,11 +1144,11 @@ class MsG:
         # tools.command_dict.setdefault(str(ctx.author.id), {}).update(
         #     {'command': ctx.command, 'args': ctx.args})
 
-    @e621.error
-    async def e621_error(self, ctx, error):
-        if isinstance(error, errext.CheckFailure):
-            await ctx.send('\N{NO ENTRY} {} **is not an NSFW channel**'.format(ctx.channel.mention), delete_after=10)
-            return await ctx.message.add_reaction('\N{NO ENTRY}')
+    # @e621.error
+    # async def e621_error(self, ctx, error):
+    #     if isinstance(error, exc.NSFW):
+    #         await ctx.send('\N{NO ENTRY} {} **is not an NSFW channel**'.format(ctx.channel.mention), delete_after=10)
+    #         await ctx.message.add_reaction('\N{NO ENTRY}')
 
     # Searches for and returns images from e926.net given tags when not blacklisted
     @commands.command(aliases=['e9', '9'], brief='e926 | SFW', description='e926 | SFW\nTag-based search for e926.net\n\nYou can only search 5 tags and 6 images at once for now.\ne9 [tags...] ([# of images])')
