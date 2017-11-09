@@ -637,7 +637,7 @@ class MsG:
     @checks.del_ctx()
     async def pool_paginator(self, ctx, *args):
         def on_reaction(reaction, user):
-            if reaction.emoji == '\N{OCTAGONAL SIGN}' and reaction.message.id == ctx.message.id and user is ctx.author:
+            if reaction.emoji == '\N{OCTAGONAL SIGN}' and reaction.message.id == ctx.message.id and (user is ctx.author or user.permissions_in(reaction.message.channel).manage_messages):
                 raise exc.Abort
             elif reaction.emoji == '\N{HEAVY BLACK HEART}' and reaction.message.id == paginator.id and user is ctx.author:
                 raise exc.Save
@@ -775,7 +775,7 @@ class MsG:
     @checks.is_nsfw()
     async def e621_paginator(self, ctx, *args):
         def on_reaction(reaction, user):
-            if reaction.emoji == '\N{OCTAGONAL SIGN}' and reaction.message.id == ctx.message.id and user is ctx.author:
+            if reaction.emoji == '\N{OCTAGONAL SIGN}' and reaction.message.id == ctx.message.id and (user is ctx.author or user.permissions_in(reaction.message.channel).manage_messages):
                 raise exc.Abort
             elif reaction.emoji == '\N{HEAVY BLACK HEART}' and reaction.message.id == paginator.id and user is ctx.author:
                 raise exc.Save
@@ -939,7 +939,7 @@ class MsG:
     @checks.del_ctx()
     async def e926_paginator(self, ctx, *args):
         def on_reaction(reaction, user):
-            if reaction.emoji == '\N{OCTAGONAL SIGN}' and reaction.message.id == ctx.message.id and user is ctx.author:
+            if reaction.emoji == '\N{OCTAGONAL SIGN}' and reaction.message.id == ctx.message.id and (user is ctx.author or user.permissions_in(reaction.message.channel).manage_messages):
                 raise exc.Abort
             elif reaction.emoji == '\N{HEAVY BLACK HEART}' and reaction.message.id == paginator.id and user is ctx.author:
                 raise exc.Save
