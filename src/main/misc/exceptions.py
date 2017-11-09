@@ -5,6 +5,10 @@ async def send_error(ctx, error):
     await ctx.send('{}\n```\n{}```'.format(base, error))
 
 
+# class NSFW(errext.CheckFailure):
+#     pass
+
+
 class Wrong(Exception):
     pass
 
