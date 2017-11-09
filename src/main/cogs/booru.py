@@ -88,7 +88,7 @@ class MsG:
         await ctx.message.add_reaction('\N{WHITE HEAVY CHECK MARK}')
 
     # Tag aliases
-    @commands.command(name='aliases', aliases=['alias'], brief='e621 Tag aliases', description='e621 | NSFW\nSearch aliases for given tag')
+    @commands.command(name='aliases', aliases=['alias', 'als'], brief='e621 Tag aliases', description='e621 | NSFW\nSearch aliases for given tag')
     @checks.del_ctx()
     async def tag_aliases(self, ctx, *args):
         kwargs = u.get_kwargs(ctx, args)
