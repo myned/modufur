@@ -57,7 +57,6 @@ class Utils:
     @checks.del_ctx()
     async def prefix(self, ctx):
         await ctx.send('**Prefix:** `{}`'.format('` or `'.join(u.settings['prefixes'][ctx.guild.id] if ctx.guild.id in u.settings['prefixes'] else u.config['prefix'])))
-        await ctx.message.add_reaction('\N{WHITE HEAVY CHECK MARK}')
 
     @commands.group(name=',send', aliases=[',s'], hidden=True)
     @commands.is_owner()
@@ -73,7 +72,6 @@ class Utils:
 
             try:
                 await tempchannel.send(message)
-                await ctx.message.add_reaction('\N{WHITE HEAVY CHECK MARK}')
 
             except AttributeError:
                 await ctx.send('**Invalid channel**', delete_after=10)
@@ -86,7 +84,6 @@ class Utils:
     @send.command(name='user', aliases=['u', 'member', 'm'])
     async def send_user(self, ctx, user, *, message):
         await d.utils.get(self.bot.get_all_members(), id=int(user)).send(message)
-        await ctx.message.add_reaction('\N{WHITE HEAVY CHECK MARK}')
 
     @commands.command(aliases=['authenticateupload', 'authupload', 'authup', 'auth'])
     async def authenticate_upload(self, ctx):

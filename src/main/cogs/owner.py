@@ -85,8 +85,6 @@ class Bot:
             u.config['playing'] = 'None'
             u.dump(u.config, 'config.json', json=True)
 
-        await ctx.message.add_reaction('\N{WHITE HEAVY CHECK MARK}')
-
 
 class Tools:
 
@@ -189,8 +187,6 @@ class Tools:
             sys.stderr = sys.__stderr__
             print('Reset sys output.')
 
-            await ctx.message.add_reaction('\N{WHITE HEAVY CHECK MARK}')
-
     @commands.command(name=',execute', aliases=[',exec'], hidden=True)
     @commands.is_owner()
     @checks.del_ctx()
@@ -203,9 +199,6 @@ class Tools:
         except Exception:
             await ctx.send('```\n{}```'.format(tb.format_exc()))
 
-        finally:
-            await ctx.message.add_reaction('\N{WHITE HEAVY CHECK MARK}')
-
     @commands.command(name=',evaluate', aliases=[',eval'], hidden=True)
     @commands.is_owner()
     @checks.del_ctx()
@@ -217,9 +210,6 @@ class Tools:
 
         except Exception:
             await ctx.send('```\n{}```'.format(tb.format_exc()))
-
-        finally:
-            await ctx.message.add_reaction('\N{WHITE HEAVY CHECK MARK}')
 
     @commands.group(aliases=[',db'], hidden=True)
     @commands.is_owner()

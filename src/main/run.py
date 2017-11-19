@@ -107,6 +107,7 @@ async def on_command_error(ctx, error):
 
 @bot.event
 async def on_command_completion(ctx):
+    await ctx.message.add_reaction('\N{WHITE HEAVY CHECK MARK}')
 
     if ctx.command.name != 'lastcommand':
         u.last_commands[ctx.author.id] = ctx
