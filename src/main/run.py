@@ -105,6 +105,12 @@ async def on_command_error(ctx, error):
         await ctx.message.add_reaction('\N{WARNING SIGN}')
         # u.notify('C O M M A N D  E R R O R')
 
+@bot.event
+async def on_command_completion(ctx):
+
+    if ctx.command.name != 'lastcommand':
+        u.last_commands[ctx.author.id] = ctx
+
 # d.opus.load_opus('opus')
 
 

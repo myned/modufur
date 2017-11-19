@@ -71,6 +71,7 @@ temp = setdefault('temp.pkl', {})
 RATE_LIMIT = 2.2
 color = d.Color(0x1A1A1A)
 session = aiohttp.ClientSession()
+last_commands = {}
 
 
 # async def clear(obj, interval=10 * 60, replace=None):
