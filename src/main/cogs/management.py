@@ -101,11 +101,11 @@ class Administration:
             await ctx.send('\N{WASTEBASKET} `{}` **of** <@{}>**\'s messages left in** {}****'.format(len(history) - c, user, ctx.guild.name))
 
         except exc.CheckFail:
-            await ctx.send('**Deletion aborted**', delete_after=10)
+            await ctx.send('**Deletion aborted**', delete_after=7)
             await ctx.message.add_reaction('\N{CROSS MARK}')
 
         except TimeoutError:
-            await ctx.send('**Deletion timed out**', delete_after=10)
+            await ctx.send('**Deletion timed out**', delete_after=7)
             await ctx.message.add_reaction('\N{CROSS MARK}')
 
     async def delete(self):
@@ -163,7 +163,7 @@ class Administration:
                 raise exc.Exists
 
         except exc.Exists:
-            await ctx.send('**Already auto-deleting in {}.** Type `stop` to stop.'.format(ctx.channel.mention), delete_after=10)
+            await ctx.send('**Already auto-deleting in {}.** Type `stop` to stop.'.format(ctx.channel.mention), delete_after=7)
             await ctx.message.add_reaction('\N{CROSS MARK}')
 
     @commands.command(name='deletecommands', aliases=['delcmds'])

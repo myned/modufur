@@ -60,7 +60,7 @@ class MsG:
     #             raise exc.Exists
     #
     #     except exc.Exists:
-    #         await ctx.send('**Already auto-posting in {}.** Type `stop` to stop.'.format(ctx.channel.mention), delete_after=10)
+    #         await ctx.send('**Already auto-posting in {}.** Type `stop` to stop.'.format(ctx.channel.mention), delete_after=7)
     #         await ctx.message.add_reaction('\N{CROSS MARK}')
 
     # Tag search
@@ -81,6 +81,7 @@ class MsG:
                     await dest.send('`{}` **related tags:**\n```\n{}```'.format(tag, formatter.tostring(related)))
 
             await asyncio.sleep(self.RATE_LIMIT)
+                    await ctx.send(f'**No related tags found for:** `{tag}`', delete_after=7)
 
                 related.clear()
 
@@ -101,13 +102,18 @@ class MsG:
                     aliases.append(dic['name'])
 
                     await dest.send('`{}` **aliases:**\n```\n{}```'.format(tag, formatter.tostring(aliases)))
+                    await ctx.send(f'**No aliases found for:** `{tag}`', delete_after=7)
 
                 await asyncio.sleep(self.RATE_LIMIT)
 
             aliases.clear()
+            await ctx.send('**Use a flag to get items.**\n*Type* `{}help get` *for more info.*'.format(ctx.prefix), delete_after=7)
 
 
     @commands.command(name='getpool', aliases=['pool', 'getp', 'gp'], brief='e621 Search for pools', description='e621 | NSFW\nReturn pool for query', usage='[related|rel]')
+            await ctx.send('**Invalid url**', delete_after=7)
+                    # await ctx.send(f'**No aliases found for:** `{tag}`', delete_after=7)
+            await ctx.send('**Invalid url or file**', delete_after=7)
     @checks.del_ctx()
     async def get_pool(self, ctx, *args):
         def on_reaction(reaction, user):
@@ -149,7 +155,6 @@ class MsG:
             await ctx.send(f'**{tempool["name"]}**\nhttps://e621.net/pool/show/{tempool["id"]}')
 
         except exc.Abort as e:
-            await e.message.edit(content='**Search aborted**', delete_after=10)
 
     @commands.command(name='getimage', aliases=['geti', 'gi'])
     @checks.del_ctx()
@@ -172,8 +177,8 @@ class MsG:
 
 
         except exc.MissingArgument:
-            await ctx.send('**Invalid url or file**', delete_after=10)
             await ctx.message.add_reaction('\N{CROSS MARK}')
+            await e.message.edit(content='**Search aborted**', delete_after=7)
 
     # Reverse image searches a linked image using the public iqdb
     @commands.command(name='reverse', aliases=['rev', 'ris'], brief='e621 Reverse image search', description='e621 | NSFW\nReverse-search an image with given URL')
@@ -197,7 +202,6 @@ class MsG:
                     await asyncio.sleep(self.RATE_LIMIT)
 
                 except exc.MatchError as e:
-                    await ctx.send('**No probable match for:** `{}`'.format(e), delete_after=10)
 
             for attachment in ctx.message.attachments:
                 try:
@@ -213,7 +217,6 @@ class MsG:
 
 
         except exc.MissingArgument:
-            await ctx.send('**Invalid url or file** Be sure the link directs to an image file', delete_after=10)
             await ctx.message.add_reaction('\N{CROSS MARK}')
 
     @commands.command(name='quality', aliases=['qual', 'qrev', 'qis'])
@@ -239,7 +242,7 @@ class MsG:
                     await asyncio.sleep(self.RATE_LIMIT)
 
                 except exc.MatchError as e:
-                    await ctx.send('**No probable match for:** `{}`'.format(e), delete_after=10)
+                    await ctx.send('**No probable match for:** `{}`'.format(e), delete_after=7)
 
             for attachment in ctx.message.attachments:
                 try:
@@ -253,12 +256,11 @@ class MsG:
                     await asyncio.sleep(self.RATE_LIMIT)
 
                 except exc.MatchError as e:
-                    await ctx.send('**No probable match for:** `{}`'.format(e), delete_after=10)
 
                 await ctx.message.add_reaction('\N{CROSS MARK}')
 
         except exc.MissingArgument:
-            await ctx.send('**Invalid url or file** Be sure the link directs to an image file', delete_after=10)
+            await ctx.send('**Invalid url or file** Be sure the link directs to an image file', delete_after=7)
             await ctx.message.add_reaction('\N{CROSS MARK}')
 
     @commands.command(name='reversify', aliases=['revify', 'risify', 'rify'])
@@ -308,7 +310,7 @@ class MsG:
                                 await message.delete()
 
                     except exc.MatchError as e:
-                        await ctx.send('`{} / {}` **No probable match for:** `{}`'.format(n, len(links), e), delete_after=10)
+                        await ctx.send('`{} / {}` **No probable match for:** `{}`'.format(n, len(links), e), delete_after=7)
                         await message.add_reaction('\N{CROSS MARK}')
                         c -= 1
 
@@ -317,10 +319,8 @@ class MsG:
 
 
         except exc.NotFound:
-            await ctx.send('**No matches found**', delete_after=10)
             await ctx.message.add_reaction('\N{CROSS MARK}')
         except exc.BoundsError as e:
-            await ctx.send('`{}` **invalid limit.** Query limited to 30'.format(e), delete_after=10)
             await ctx.message.add_reaction('\N{CROSS MARK}')
 
     @commands.command(name='qualitify', aliases=['qualify', 'qrevify', 'qrisify', 'qify'])
@@ -372,7 +372,6 @@ class MsG:
                                 await message.delete()
 
                     except exc.MatchError as e:
-                        await ctx.send('`{} / {}` **No probable match for:** `{}`'.format(n, len(links), e), delete_after=10)
                         await message.add_reaction('\N{CROSS MARK}')
                         c -= 1
 
@@ -382,10 +381,10 @@ class MsG:
                 await ctx.message.add_reaction('\N{CROSS MARK}')
 
         except exc.NotFound:
-            await ctx.send('**No matches found**', delete_after=10)
+            await ctx.send('**No matches found**', delete_after=7)
             await ctx.message.add_reaction('\N{CROSS MARK}')
         except exc.BoundsError as e:
-            await ctx.send('`{}` **invalid limit.** Query limited to 30'.format(e), delete_after=10)
+            await ctx.send('`{}` **invalid limit.** Query limited to 30'.format(e), delete_after=7)
             await ctx.message.add_reaction('\N{CROSS MARK}')
 
     async def _qualitify(self):
@@ -417,7 +416,7 @@ class MsG:
                         await message.delete()
 
                 except exc.MatchError as e:
-                    await message.channel.send('**No probable match for:** `{}`'.format(e), delete_after=10)
+                    await message.channel.send('**No probable match for:** `{}`'.format(e), delete_after=7)
                     await message.add_reaction('\N{CROSS MARK}')
 
         print('STOPPED : qualitifying')
@@ -462,7 +461,7 @@ class MsG:
                 raise exc.Exists
 
         except exc.Exists:
-            await ctx.send('**Already auto-qualitifying in {}.** Type `stop` to stop.'.format(ctx.channel.mention), delete_after=10)
+            await ctx.send('**Already auto-reversifying in {}.** Type `stop` to stop.'.format(ctx.channel.mention), delete_after=7)
             await ctx.message.add_reaction('\N{CROSS MARK}')
 
     def _get_favorites(self, ctx, args):
@@ -722,7 +721,7 @@ class MsG:
             except UnboundLocalError:
                 await dest.send('**Paginator timed out**')
         except exc.NotFound:
-            await ctx.send('**Pool not found**', delete_after=10)
+            await ctx.send('**Pool not found**', delete_after=7)
             await ctx.message.add_reaction('\N{CROSS MARK}')
         except exc.Timeout:
             await ctx.send('**Request timed out**')
@@ -868,16 +867,16 @@ class MsG:
             except UnboundLocalError:
                 await dest.send('**Paginator timed out**')
         except exc.NotFound as e:
-            await ctx.send('`{}` **not found**'.format(e), delete_after=10)
+            await ctx.send('`{}` **not found**'.format(e), delete_after=7)
             await ctx.message.add_reaction('\N{CROSS MARK}')
         except exc.TagBlacklisted as e:
-            await ctx.send('\N{NO ENTRY SIGN} `{}` **blacklisted**'.format(e), delete_after=10)
+            await ctx.send('\N{NO ENTRY SIGN} `{}` **blacklisted**'.format(e), delete_after=7)
             await ctx.message.add_reaction('\N{NO ENTRY SIGN}')
         except exc.TagBoundsError as e:
-            await ctx.send('`{}` **out of bounds.** Tags limited to 5.'.format(e), delete_after=10)
+            await ctx.send('`{}` **out of bounds.** Tags limited to 5.'.format(e), delete_after=7)
             await ctx.message.add_reaction('\N{CROSS MARK}')
         except exc.FavoritesNotFound:
-            await ctx.send('**You have no favorite tags**', delete_after=10)
+            await ctx.send('**You have no favorite tags**', delete_after=7)
             await ctx.message.add_reaction('\N{CROSS MARK}')
         except exc.Timeout:
             await ctx.send('**Request timed out**')
@@ -896,7 +895,7 @@ class MsG:
     # @e621_paginator.error
     # async def e621_paginator_error(self, ctx, error):
     #     if isinstance(error, exc.NSFW):
-    #         await ctx.send('\N{NO ENTRY} {} **is not an NSFW channel**'.format(ctx.channel.mention), delete_after=10)
+    #         await ctx.send('\N{NO ENTRY} {} **is not an NSFW channel**'.format(ctx.channel.mention), delete_after=7)
     #         await ctx.message.add_reaction('\N{NO ENTRY}')
 
     @commands.command(name='e926page', aliases=['e926p', 'e9p', '9p'])
@@ -1026,16 +1025,16 @@ class MsG:
             except UnboundLocalError:
                 await dest.send('**Paginator timed out**')
         except exc.NotFound as e:
-            await ctx.send('`{}` **not found**'.format(e), delete_after=10)
+            await ctx.send('`{}` **not found**'.format(e), delete_after=7)
             await ctx.message.add_reaction('\N{CROSS MARK}')
         except exc.TagBlacklisted as e:
-            await ctx.send('\N{NO ENTRY SIGN} `{}` **blacklisted**'.format(e), delete_after=10)
+            await ctx.send('\N{NO ENTRY SIGN} `{}` **blacklisted**'.format(e), delete_after=7)
             await ctx.message.add_reaction('\N{NO ENTRY SIGN}')
         except exc.TagBoundsError as e:
-            await ctx.send('`{}` **out of bounds.** Tags limited to 5.'.format(e), delete_after=10)
+            await ctx.send('`{}` **out of bounds.** Tags limited to 5.'.format(e), delete_after=7)
             await ctx.message.add_reaction('\N{CROSS MARK}')
         except exc.FavoritesNotFound:
-            await ctx.send('**You have no favorite tags**', delete_after=10)
+            await ctx.send('**You have no favorite tags**', delete_after=7)
             await ctx.message.add_reaction('\N{CROSS MARK}')
         except exc.Timeout:
             await ctx.send('**Request timed out**')
@@ -1077,19 +1076,19 @@ class MsG:
                 await dest.send(embed=embed)
 
         except exc.TagBlacklisted as e:
-            await ctx.send('`{}` **blacklisted**'.format(e), delete_after=10)
+            await ctx.send('`{}` **blacklisted**'.format(e), delete_after=7)
             await ctx.message.add_reaction('\N{CROSS MARK}')
         except exc.BoundsError as e:
-            await ctx.send('`{}` **out of bounds.** Images limited to 3.'.format(e), delete_after=10)
+            await ctx.send('`{}` **out of bounds.** Images limited to 3.'.format(e), delete_after=7)
             await ctx.message.add_reaction('\N{CROSS MARK}')
         except exc.TagBoundsError as e:
-            await ctx.send('`{}` **out of bounds.** Tags limited to 5.'.format(e), delete_after=10)
+            await ctx.send('`{}` **out of bounds.** Tags limited to 5.'.format(e), delete_after=7)
             await ctx.message.add_reaction('\N{CROSS MARK}')
         except exc.NotFound as e:
-            await ctx.send('`{}` **not found**'.format(e), delete_after=10)
+            await ctx.send('`{}` **not found**'.format(e), delete_after=7)
             await ctx.message.add_reaction('\N{CROSS MARK}')
         except exc.FavoritesNotFound:
-            await ctx.send('**You have no favorite tags**', delete_after=10)
+            await ctx.send('**You have no favorite tags**', delete_after=7)
             await ctx.message.add_reaction('\N{CROSS MARK}')
         except exc.Timeout:
             await ctx.send('**Request timed out**')
@@ -1101,7 +1100,7 @@ class MsG:
     # @e621.error
     # async def e621_error(self, ctx, error):
     #     if isinstance(error, exc.NSFW):
-    #         await ctx.send('\N{NO ENTRY} {} **is not an NSFW channel**'.format(ctx.channel.mention), delete_after=10)
+    #         await ctx.send('\N{NO ENTRY} {} **is not an NSFW channel**'.format(ctx.channel.mention), delete_after=7)
     #         await ctx.message.add_reaction('\N{NO ENTRY}')
 
     # Searches for and returns images from e926.net given tags when not blacklisted
@@ -1129,19 +1128,19 @@ class MsG:
                 await dest.send(embed=embed)
 
         except exc.TagBlacklisted as e:
-            await ctx.send('`{}` **blacklisted**'.format(e), delete_after=10)
+            await ctx.send('`{}` **blacklisted**'.format(e), delete_after=7)
             await ctx.message.add_reaction('\N{CROSS MARK}')
         except exc.BoundsError as e:
-            await ctx.send('`{}` **out of bounds.** Images limited to 3.'.format(e), delete_after=10)
+            await ctx.send('`{}` **out of bounds.** Images limited to 3.'.format(e), delete_after=7)
             await ctx.message.add_reaction('\N{CROSS MARK}')
         except exc.TagBoundsError as e:
-            await ctx.send('`{}` **out of bounds.** Tags limited to 5.'.format(e), delete_after=10)
+            await ctx.send('`{}` **out of bounds.** Tags limited to 5.'.format(e), delete_after=7)
             await ctx.message.add_reaction('\N{CROSS MARK}')
         except exc.NotFound as e:
-            await ctx.send('`{}` **not found**'.format(e), delete_after=10)
+            await ctx.send('`{}` **not found**'.format(e), delete_after=7)
             await ctx.message.add_reaction('\N{CROSS MARK}')
         except exc.FavoritesNotFound:
-            await ctx.send('**You have no favorite tags**', delete_after=10)
+            await ctx.send('**You have no favorite tags**', delete_after=7)
             await ctx.message.add_reaction('\N{CROSS MARK}')
         except exc.Timeout:
             await ctx.send('**Request timed out**')
@@ -1150,8 +1149,8 @@ class MsG:
     @commands.group(aliases=['fave', 'fav', 'f'])
     @checks.del_ctx()
     async def favorite(self, ctx):
-        if ctx.invoked_subcommand is None:
-            await ctx.send('**Use a flag to manage favorites.**\n*Type* `{}help fav` *for more info.*'.format(ctx.prefix), delete_after=10)
+        if not ctx.invoked_subcommand:
+            await ctx.send('**Use a flag to manage favorites.**\n*Type* `{}help fav` *for more info.*'.format(ctx.prefix), delete_after=7)
             await ctx.message.add_reaction('\N{CROSS MARK}')
 
     @favorite.error
@@ -1166,7 +1165,7 @@ class MsG:
     async def __get_favorite_tags(self, ctx, *args):
         dest = u.get_kwargs(ctx, args)['destination']
 
-        await dest.send('\N{WHITE MEDIUM STAR} {}**\'s favorite tags:**\n```\n{}```'.format(ctx.author.mention, formatter.tostring(self.favorites.get(ctx.author.id, {}).get('tags', set()))), delete_after=10)
+        await dest.send('\N{WHITE MEDIUM STAR} {}**\'s favorite tags:**\n```\n{}```'.format(ctx.author.mention, formatter.tostring(self.favorites.get(ctx.author.id, {}).get('tags', set()))), delete_after=7)
 
     @_get_favorite.command(name='posts', aliases=['p'])
     async def __get_favorite_posts(self, ctx):
@@ -1194,10 +1193,10 @@ class MsG:
             await dest.send('{} **added to their favorites:**\n```\n{}```'.format(ctx.author.mention, formatter.tostring(tags)), delete_after=5)
 
         except exc.BoundsError:
-            await ctx.send('**Favorites list currently limited to:** `5`', delete_after=10)
+            await ctx.send('**Favorites list currently limited to:** `5`', delete_after=7)
             await ctx.message.add_reaction('\N{CROSS MARK}')
         except exc.TagBlacklisted as e:
-            await ctx.send('\N{NO ENTRY SIGN} `{}` **blacklisted**', delete_after=10)
+            await ctx.send('\N{NO ENTRY SIGN} `{}` **blacklisted**', delete_after=7)
             await ctx.message.add_reaction('\N{NO ENTRY SIGN}')
 
     @_add_favorite.command(name='posts', aliases=['p'])
@@ -1225,8 +1224,9 @@ class MsG:
 
             await dest.send('{} **removed from their favorites:**\n```\n{}```'.format(ctx.author.mention, formatter.tostring(tags)), delete_after=5)
 
+            await ctx.send('**You do not have any favorites**', delete_after=7)
         except exc.TagError as e:
-            await ctx.send('`{}` **not in favorites**'.format(e), delete_after=10)
+            await ctx.send('`{}` **not in favorites**'.format(e), delete_after=7)
             await ctx.message.add_reaction('\N{CROSS MARK}')
 
     @_remove_favorite.command(name='posts', aliases=['p'])
@@ -1255,19 +1255,19 @@ class MsG:
     @commands.group(aliases=['bl', 'b'], brief='Manage blacklists', description='Blacklist base command for managing blacklists\n\n`bl get [blacklist]` to show a blacklist\n`bl set [blacklist] [tags]` to replace a blacklist\n`bl clear [blacklist]` to clear a blacklist\n`bl add [blacklist] [tags]` to add tags to a blacklist\n`bl remove [blacklist] [tags]` to remove tags from a blacklist', usage='[flag] [blacklist] ([tags])')
     @checks.del_ctx()
     async def blacklist(self, ctx):
-        if ctx.invoked_subcommand is None:
-            await ctx.send('**Use a flag to manage blacklists.**\n*Type* `{}help bl` *for more info.*'.format(ctx.prefix), delete_after=10)
+        if not ctx.invoked_subcommand:
+            await ctx.send('**Use a flag to manage blacklists.**\n*Type* `{}help bl` *for more info.*'.format(ctx.prefix), delete_after=7)
             await ctx.message.add_reaction('\N{CROSS MARK}')
 
     # @blacklist.error
     # async def blacklist_error(self, ctx, error):
         # if isinstance(error, KeyError):
-        #     return await ctx.send('**Blacklist does not exist**', delete_after=10)
+        #     return await ctx.send('**Blacklist does not exist**', delete_after=7)
 
     @blacklist.group(name='get', aliases=['g'])
     async def _get_blacklist(self, ctx):
-        if ctx.invoked_subcommand is None:
-            await ctx.send('**Invalid blacklist**', delete_after=10)
+        if not ctx.invoked_subcommand:
+            await ctx.send('**Invalid blacklist**', delete_after=7)
             await ctx.message.add_reaction('\N{CROSS MARK}')
 
     @_get_blacklist.command(name='global', aliases=['gl', 'g'])
@@ -1289,7 +1289,7 @@ class MsG:
     async def __get_user_blacklist(self, ctx, *args):
         dest = u.get_kwargs(ctx, args)['destination']
 
-        await dest.send('\N{NO ENTRY SIGN} {}**\'s blacklist:**\n```\n{}```'.format(ctx.author.mention, formatter.tostring(self.blacklists['user_blacklist'].get(ctx.author.id, set()))), delete_after=10)
+        await dest.send('\N{NO ENTRY SIGN} {}**\'s blacklist:**\n```\n{}```'.format(ctx.author.mention, formatter.tostring(self.blacklists['user_blacklist'].get(ctx.author.id, set()))), delete_after=7)
 
     @_get_blacklist.command(name='here', aliases=['h'])
     async def __get_here_blacklists(self, ctx, *args):
@@ -1325,8 +1325,8 @@ class MsG:
 
     @blacklist.group(name='add', aliases=['a'])
     async def _add_tags(self, ctx):
-        if ctx.invoked_subcommand is None:
-            await ctx.send('**Invalid blacklist**', delete_after=10)
+        if not ctx.invoked_subcommand:
+            await ctx.send('**Invalid blacklist**', delete_after=7)
             await ctx.message.add_reaction('\N{CROSS MARK}')
 
     @_add_tags.command(name='global', aliases=['gl', 'g'])
@@ -1397,8 +1397,8 @@ class MsG:
 
     @blacklist.group(name='remove', aliases=['rm', 'r'])
     async def _remove_tags(self, ctx):
-        if ctx.invoked_subcommand is None:
-            await ctx.send('**Invalid blacklist**', delete_after=10)
+        if not ctx.invoked_subcommand:
+            await ctx.send('**Invalid blacklist**', delete_after=7)
             await ctx.message.add_reaction('\N{CROSS MARK}')
 
     @_remove_tags.command(name='global', aliases=['gl', 'g'])
@@ -1420,7 +1420,7 @@ class MsG:
             await dest.send('**Removed from global blacklist:**\n```\n{}```'.format(formatter.tostring(tags)), delete_after=5)
 
         except exc.TagError as e:
-            await ctx.send('`{}` **not in blacklist**'.format(e), delete_after=10)
+            await ctx.send('`{}` **not in blacklist**'.format(e), delete_after=7)
             await ctx.message.add_reaction('\N{CROSS MARK}')
 
     @_remove_tags.command(name='channel', aliases=['ch', 'c'])
@@ -1445,7 +1445,7 @@ class MsG:
             await dest.send('**Removed from** {} **blacklist:**\n```\n{}```'.format(ctx.channel.mention, formatter.tostring(tags), delete_after=5))
 
         except exc.TagError as e:
-            await ctx.send('`{}` **not in blacklist**'.format(e), delete_after=10)
+            await ctx.send('`{}` **not in blacklist**'.format(e), delete_after=7)
             await ctx.message.add_reaction('\N{CROSS MARK}')
 
     @_remove_tags.command(name='me', aliases=['m'])
@@ -1466,13 +1466,13 @@ class MsG:
             await dest.send('{} **removed from their blacklist:**\n```\n{}```'.format(ctx.author.mention, formatter.tostring(tags)), delete_after=5)
 
         except exc.TagError as e:
-            await ctx.send('`{}` **not in blacklist**'.format(e), delete_after=10)
+            await ctx.send('`{}` **not in blacklist**'.format(e), delete_after=7)
             await ctx.message.add_reaction('\N{CROSS MARK}')
 
     @blacklist.group(name='clear', aliases=['cl', 'c'])
     async def _clear_blacklist(self, ctx):
-        if ctx.invoked_subcommand is None:
-            await ctx.send('**Invalid blacklist**', delete_after=10)
+        if not ctx.invoked_subcommand:
+            await ctx.send('**Invalid blacklist**', delete_after=7)
             await ctx.message.add_reaction('\N{CROSS MARK}')
 
     @_clear_blacklist.command(name='global', aliases=['gl', 'g'])

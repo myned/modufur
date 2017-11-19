@@ -74,11 +74,11 @@ class Utils:
                 await tempchannel.send(message)
 
             except AttributeError:
-                await ctx.send('**Invalid channel**', delete_after=10)
+                await ctx.send('**Invalid channel**', delete_after=7)
                 await ctx.message.add_reaction('\N{CROSS MARK}')
 
         except AttributeError:
-            await ctx.send('**Invalid guild**', delete_after=10)
+            await ctx.send('**Invalid guild**', delete_after=7)
             await ctx.message.add_reaction('\N{CROSS MARK}')
 
     @send.command(name='user', aliases=['u', 'member', 'm'])
@@ -115,11 +115,11 @@ class Utils:
             print('https://www.youtube.com/watch?v=' + youtube.videos().insert(part='snippet',
                                                                                body={'categoryId': '24', 'title': 'Test'}, media_body=http.MediaFileUpload(temp.name, chunksize=-1)))
         except exc.InvalidVideoFile as e:
-            await ctx.send('`' + str(e) + '` **invalid video type**', delete_after=10)
+            await ctx.send('`' + str(e) + '` **invalid video type**', delete_after=7)
         except exc.TooManyAttachments as e:
-            await ctx.send('`' + str(e) + '` **too many attachments.** Only one attachment is permitted to upload.', delete_after=10)
+            await ctx.send('`' + str(e) + '` **too many attachments.** Only one attachment is permitted to upload.', delete_after=7)
         except exc.MissingAttachment:
-            await ctx.send('**Missing attachment**', delete_after=10)
+            await ctx.send('**Missing attachment**', delete_after=7)
 
     @upload.error
     async def upload_error(self, ctx, error):
