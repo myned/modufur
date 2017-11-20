@@ -25,8 +25,8 @@ class Administration:
                 temp = self.bot.get_channel(channel)
                 self.bot.loop.create_task(self.queue_for_deletion(temp))
                 print('AUTO-DELETING : #{}'.format(temp.id))
-            self.bot.loop.create_task(self.delete())
             self.deleting = True
+            self.bot.loop.create_task(self.delete())
 
     @commands.command(name=',prunefromguild', aliases=[',pfg', ',prunefromserver', ',pfs'], brief='Prune a user\'s messages from the guild', description='about flag centers on message 50 of 101 messages\n\npfg \{user id\} [before|after|about] [\{message id\}]\n\nExample:\npfg \{user id\} before \{message id\}')
     @commands.is_owner()
