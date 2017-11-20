@@ -600,7 +600,7 @@ class MsG:
                 posts_request = await u.fetch('https://{}.net/pool/show.json'.format(booru), params={'id': tempool['id'], 'page': page}, json=True)
                 for post in posts_request['posts']:
                     posts[post['id']] = {'artist': ', '.join(
-                        post['artist']), 'url': post['file_url']}
+                        post['artist']), 'file_url': post['file_url']}
                 page += 1
 
             return pool, posts
@@ -659,7 +659,7 @@ class MsG:
                     continue
                 if post['id'] not in posts.keys() and post['id'] not in previous.keys():
                     posts[post['id']] = {'artist': ', '.join(
-                        post['artist']), 'url': post['file_url'], 'score': post['score']}
+                        post['artist']), 'file_url': post['file_url'], 'score': post['score']}
                 if len(posts) == limit:
                     break
 
@@ -710,7 +710,7 @@ class MsG:
 
             embed = d.Embed(
                 title=values[c - 1]['artist'], url='https://e621.net/post/show/{}'.format(keys[c - 1]), color=dest.me.color if isinstance(dest.channel, d.TextChannel) else u.color)
-            embed.set_image(url=values[c - 1]['url'])
+            embed.set_image(url=values[c - 1]['file_url'])
             embed.set_author(name=pool['name'],
                              url='https://e621.net/pool/show?id={}'.format(pool['id']), icon_url=ctx.author.avatar_url)
             embed.set_footer(text='{} / {}'.format(c, len(posts)),
@@ -746,7 +746,7 @@ class MsG:
                             keys[c - 1])
                         embed.set_footer(text='{} / {}'.format(c, len(posts)),
                                          icon_url=self._get_score(values[c - 1]['score']))
-                        embed.set_image(url=values[c - 1]['url'])
+                        embed.set_image(url=values[c - 1]['file_url'])
 
                         await paginator.edit(content='\N{HEAVY BLACK HEART}' if keys[c - 1] in hearted.keys() else None, embed=embed)
                     else:
@@ -763,7 +763,7 @@ class MsG:
                         keys[c - 1])
                     embed.set_footer(text='{} / {}'.format(c, len(posts)),
                                      icon_url=self._get_score(values[c - 1]['score']))
-                    embed.set_image(url=values[c - 1]['url'])
+                    embed.set_image(url=values[c - 1]['file_url'])
 
                     await paginator.edit(content='\N{HEAVY BLACK HEART}' if keys[c - 1] in hearted.keys() else None, embed=embed)
 
@@ -775,7 +775,7 @@ class MsG:
                             keys[c - 1])
                         embed.set_footer(text='{} / {}'.format(c, len(posts)),
                                          icon_url=self._get_score(values[c - 1]['score']))
-                        embed.set_image(url=values[c - 1]['url'])
+                        embed.set_image(url=values[c - 1]['file_url'])
 
                         await paginator.edit(content='\N{HEAVY BLACK HEART}' if keys[c - 1] in hearted.keys() else None, embed=embed)
                     else:
@@ -849,7 +849,7 @@ class MsG:
 
             embed = d.Embed(
                 title=values[c - 1]['artist'], url='https://e621.net/post/show/{}'.format(keys[c - 1]), color=ctx.me.color if isinstance(ctx.channel, d.TextChannel) else u.color)
-            embed.set_image(url=values[c - 1]['url'])
+            embed.set_image(url=values[c - 1]['file_url'])
             embed.set_author(name=formatter.tostring(tags, order=order),
                              url='https://e621.net/post?tags={}'.format(','.join(tags)), icon_url=ctx.author.avatar_url)
             embed.set_footer(text='{} / {}'.format(c, len(posts)),
@@ -885,7 +885,7 @@ class MsG:
                             keys[c - 1])
                         embed.set_footer(text='{} / {}'.format(c, len(posts)),
                                          icon_url=self._get_score(values[c - 1]['score']))
-                        embed.set_image(url=values[c - 1]['url'])
+                        embed.set_image(url=values[c - 1]['file_url'])
 
                         await paginator.edit(content='\N{HEAVY BLACK HEART}' if keys[c - 1] in hearted.keys() else None, embed=embed)
                     else:
@@ -902,7 +902,7 @@ class MsG:
                         keys[c - 1])
                     embed.set_footer(text='{} / {}'.format(c, len(posts)),
                                      icon_url=self._get_score(values[c - 1]['score']))
-                    embed.set_image(url=values[c - 1]['url'])
+                    embed.set_image(url=values[c - 1]['file_url'])
 
                     await paginator.edit(content='\N{HEAVY BLACK HEART}' if keys[c - 1] in hearted.keys() else None, embed=embed)
 
@@ -923,7 +923,7 @@ class MsG:
                                 keys[c - 1])
                             embed.set_footer(text='{} / {}'.format(c, len(posts)),
                                              icon_url=self._get_score(values[c - 1]['score']))
-                            embed.set_image(url=values[c - 1]['url'])
+                            embed.set_image(url=values[c - 1]['file_url'])
 
                             await paginator.edit(content='\N{HEAVY BLACK HEART}' if keys[c - 1] in hearted.keys() else None, embed=embed)
                         else:
@@ -1012,7 +1012,7 @@ class MsG:
 
             embed = d.Embed(
                 title=values[c - 1]['artist'], url='https://e926.net/post/show/{}'.format(keys[c - 1]), color=ctx.me.color if isinstance(ctx.channel, d.TextChannel) else u.color)
-            embed.set_image(url=values[c - 1]['url'])
+            embed.set_image(url=values[c - 1]['file_url'])
             embed.set_author(name=formatter.tostring(tags, order=order),
                              url='https://e926.net/post?tags={}'.format(','.join(tags)), icon_url=ctx.author.avatar_url)
             embed.set_footer(text='{} / {}'.format(c, len(posts)),
@@ -1048,7 +1048,7 @@ class MsG:
                             keys[c - 1])
                         embed.set_footer(text='{} / {}'.format(c, len(posts)),
                                          icon_url=self._get_score(values[c - 1]['score']))
-                        embed.set_image(url=values[c - 1]['url'])
+                        embed.set_image(url=values[c - 1]['file_url'])
 
                         await paginator.edit(content='\N{HEAVY BLACK HEART}' if keys[c - 1] in hearted.keys() else None, embed=embed)
                     else:
@@ -1065,7 +1065,7 @@ class MsG:
                         keys[c - 1])
                     embed.set_footer(text='{} / {}'.format(c, len(posts)),
                                      icon_url=self._get_score(values[c - 1]['score']))
-                    embed.set_image(url=values[c - 1]['url'])
+                    embed.set_image(url=values[c - 1]['file_url'])
 
                     await paginator.edit(content='\N{HEAVY BLACK HEART}' if keys[c - 1] in hearted.keys() else None, embed=embed)
 
@@ -1086,7 +1086,7 @@ class MsG:
                                 keys[c - 1])
                             embed.set_footer(text='{} / {}'.format(c, len(posts)),
                                              icon_url=self._get_score(values[c - 1]['score']))
-                            embed.set_image(url=values[c - 1]['url'])
+                            embed.set_image(url=values[c - 1]['file_url'])
 
                             await paginator.edit(content='\N{HEAVY BLACK HEART}' if keys[c - 1] in hearted.keys() else None, embed=embed)
                         else:
@@ -1150,7 +1150,8 @@ class MsG:
 
             for ident, post in posts.items():
                 embed = d.Embed(title=post['artist'], url='https://e621.net/post/show/{}'.format(ident),
-                                color=ctx.me.color if isinstance(ctx.channel, d.TextChannel) else u.color).set_image(url=post['url'])
+                                color=ctx.me.color if isinstance(ctx.channel, d.TextChannel) else u.color)
+                embed.set_image(url=post['file_url'])
                 embed.set_author(name=formatter.tostring(tags, order=order),
                                  url='https://e621.net/post?tags={}'.format(','.join(tags)), icon_url=ctx.author.avatar_url)
                 embed.set_footer(
@@ -1200,7 +1201,8 @@ class MsG:
 
             for ident, post in posts.items():
                 embed = d.Embed(title=post['artist'], url='https://e926.net/post/show/{}'.format(ident),
-                                color=ctx.me.color if isinstance(ctx.channel, d.TextChannel) else u.color).set_image(url=post['url'])
+                                color=ctx.me.color if isinstance(ctx.channel, d.TextChannel) else u.color)
+                embed.set_image(url=post['file_url'])
                 embed.set_author(name=formatter.tostring(tags, order=order),
                                  url='https://e621.net/post?tags={}'.format(','.join(tags)), icon_url=ctx.author.avatar_url)
                 embed.set_footer(
