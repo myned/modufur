@@ -158,8 +158,11 @@ async def on_command_completion(ctx):
 
         await ctx.message.add_reaction('\N{WHITE HEAVY CHECK MARK}')
 
-    if ctx.command.name != 'lastcommand':
-        u.last_commands[ctx.author.id] = ctx
+    for command in ('lastcommand', ',restart', ',die'):
+        if ctx.command.name == command:
+            return
+        
+    u.last_commands[ctx.author.id] = ctx
 
 @bot.event
 async def on_guild_remove(guild):
