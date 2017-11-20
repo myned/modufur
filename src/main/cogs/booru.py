@@ -133,50 +133,72 @@ class MsG:
     #         await ctx.send('**Already auto-posting in {}.** Type `stop` to stop.'.format(ctx.channel.mention), delete_after=7)
     #         await ctx.message.add_reaction('\N{CROSS MARK}')
 
+    @commands.group(aliases=['tag', 't'], brief='e621 - Get info on tags', description='e621 | NSFW\nGroup command for obtaining info on tags', usage='[tags|tag|t]')
+    async def tags(self, ctx):
+        pass
+
     # Tag search
-    @commands.command(aliases=['rel'], brief='e621 Search for related tags', description='e621 | NSFW\nReturn related tags for a number of given tags', usage='[related|rel]')
+    @tags.command(name='related', aliases=['relate', 'rel'], brief='e621 - Search for related tags', description='Return related tags for given tag(s)', usage='[related|relate|rel]')
     @checks.del_ctx()
-    async def related(self, ctx, *args):
+    async def _tags_related(self, ctx, *args):
         kwargs = u.get_kwargs(ctx, args)
         dest, tags = kwargs['destination'], kwargs['remaining']
         related = []
+        c = 0
 
         await dest.trigger_typing()
 
         for tag in tags:
-            tag_request = await u.fetch('https://e621.net/tag/related.json', params={'tags': tag, 'type': 'general'}, json=True)
+            try:
+                tag_request = await u.fetch('https://e621.net/tag/related.json', params={'tags': tag}, json=True)
                 for rel in tag_request.get(tag, []):
                     related.append(rel[0])
 
+                if related:
                     await dest.send('`{}` **related tags:**\n```\n{}```'.format(tag, formatter.tostring(related)))
-
-            await asyncio.sleep(self.RATE_LIMIT)
+                else:
                     await ctx.send(f'**No related tags found for:** `{tag}`', delete_after=7)
 
                 related.clear()
+                c += 1
 
+            finally:
+                await asyncio.sleep(self.RATE_LIMIT)
+
+        if not c:
+            await ctx.message.add_reaction('\N{CROSS MARK}')
 
     # Tag aliases
-    @commands.command(name='aliases', aliases=['alias', 'als'], brief='e621 Tag aliases', description='e621 | NSFW\nSearch aliases for given tag')
+    @tags.command(name='aliases', aliases=['alias', 'als'], brief='e621 - Search for tag aliases', description='Return aliases for given tag(s)', usage='[aliases|alias|als]')
     @checks.del_ctx()
-    async def tag_aliases(self, ctx, *args):
+    async def _tags_aliases(self, ctx, *args):
         kwargs = u.get_kwargs(ctx, args)
         dest, tags = kwargs['destination'], kwargs['remaining']
         aliases = []
+        c = 0
 
         await dest.trigger_typing()
 
         for tag in tags:
+            try:
                 alias_request = await u.fetch('https://e621.net/tag_alias/index.json', params={'aliased_to': tag, 'approved': 'true'}, json=True)
                 for dic in alias_request:
                     aliases.append(dic['name'])
 
+                if aliases:
                     await dest.send('`{}` **aliases:**\n```\n{}```'.format(tag, formatter.tostring(aliases)))
+                else:
                     await ctx.send(f'**No aliases found for:** `{tag}`', delete_after=7)
 
+                aliases.clear()
+                c += 1
+
+            finally:
                 await asyncio.sleep(self.RATE_LIMIT)
 
-            aliases.clear()
+        if not c:
+            await ctx.message.add_reaction('\N{CROSS MARK}')
+
             await ctx.send('**Use a flag to get items.**\n*Type* `{}help get` *for more info.*'.format(ctx.prefix), delete_after=7)
 
 
