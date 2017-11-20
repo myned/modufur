@@ -159,6 +159,13 @@ def get_kwargs(ctx, args, *, limit=False):
                     raise exc.BoundsError(arg)
 
     return {'destination': destination, 'remaining': remaining, 'remove': rm, 'limit': lim}
+
+
+def get_aspectratio(a, b):
+    divisor = gcd(a, b)
+    return f'{int(a / divisor)}:{int(b / divisor)}'
+
+
 def ci(pos, n):
     z = 1.96
     phat = float(pos) / n
