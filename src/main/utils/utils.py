@@ -107,9 +107,11 @@ def close(loop):
     print('Finished cancelling tasks.')
 
 
-async def fetch(url, *, params={}, json=False):
+async def fetch(url, *, params={}, json=False, response=False):
     async with session.get(url, params=params, headers={'User-Agent': 'Myned/Modumind/dev'}) as r:
-        if json:
+        if response:
+            return r
+        elif json:
             return await r.json()
         return await r.read()
 
