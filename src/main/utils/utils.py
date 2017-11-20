@@ -4,6 +4,8 @@ import os
 import pickle as pkl
 import subprocess
 from contextlib import suppress
+from fractions import gcd
+import math
 
 import aiohttp
 import discord as d
@@ -157,3 +159,8 @@ def get_kwargs(ctx, args, *, limit=False):
                     raise exc.BoundsError(arg)
 
     return {'destination': destination, 'remaining': remaining, 'remove': rm, 'limit': lim}
+def ci(pos, n):
+    z = 1.96
+    phat = float(pos) / n
+
+    return (phat + z*z/(2*n) - z * math.sqrt((phat*(1-phat)+z*z/(4*n))/n))/(1+z*z/n)
