@@ -3,6 +3,10 @@ import json
 import re
 import traceback as tb
 from contextlib import suppress
+from fractions import gcd
+from datetime import datetime as dt
+from datetime import timedelta as td
+import sys
 
 import discord as d
 from discord import errors as err
@@ -27,6 +31,12 @@ class MsG:
         self.favorites = u.setdefault('cogs/favorites.pkl', {'tags': set(), 'posts': set()})
         self.reviqueue = asyncio.Queue()
         self.reversifying = False
+        self.updating = False
+
+        time = (dt.utcnow() - td(days=29)).strftime('%d/%m/%Y/%H:%M:%S')
+        self.suggested = u.setdefault('cogs/suggested.pkl', 7)
+        # self.suggested = u.setdefault('cogs/suggested.pkl', {'last_update': 'test', 'tags': {}, 'total': 1})
+        print(self.suggested)
         self.blacklists = u.setdefault(
             'cogs/blacklists.pkl', {'global_blacklist': set(), 'guild_blacklist': {}, 'user_blacklist': {}})
         self.aliases = u.setdefault('cogs/aliases.pkl', {})
@@ -38,10 +48,49 @@ class MsG:
                 print('AUTO-QUALITIFYING : #{}'.format(temp.name))
             self.reversifying = True
             self.bot.loop.create_task(self._reversify())
+        # if not self.updating:
+        #     self.updating = True
+        #     self.bot.loop.create_task(self._update_suggested())
 
     # async def get_post(self, channel):
     #     post_request = await u.fetch('https://e621.net/post/index.json', json=True)
     #
+    async def _update_suggested(self):
+        while self.updating:
+            print('Checking for tag updates...')
+            print(self.suggested)
+
+            time = dt.utcnow()
+            last_update = dt.strptime(self.suggested['last_update'], '%d/%m/%Y/%H:%M:%S')
+            delta = time - last_update
+            print(delta.days)
+
+            if delta.days < 30:
+                print('Up to date.')
+            else:
+                page = 1
+                pages = len(list(self.suggested['tags'].keys()))
+
+                print(f'Last updated: {self.suggested["last_update"]}')
+                print('Updating tags...')
+
+                content = await u.fetch('https://e621.net/tag/index.json', params={'order': 'count', 'limit': 500, 'page': page}, json=True)
+                while content:
+                    for tag in content:
+                        self.suggested['tags'][tag['name']] = tag['count']
+                        self.suggested['total'] += tag['count']
+                    print(f'    UPDATED : PAGE {page} / {pages}', end='\r')
+
+                    page += 1
+                    content = await u.fetch('https://e621.net/tag/index.json', params={'order': 'count', 'limit': 500, 'page': page}, json=True)
+
+                u.dump(self.suggested, 'cogs/suggested.pkl')
+                self.suggested['last_update'] = time.strftime('%d/%m/%Y/%H:%M:%S')
+
+                print('\nFinished updating tags.')
+
+            await asyncio.sleep(24 * 60 * 60)
+
     # @commands.command()
     # async def auto_post(self, ctx):
     #     try:
