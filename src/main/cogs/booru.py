@@ -1404,7 +1404,8 @@ class MsG:
 
         await dest.trigger_typing()
 
-        self.blacklists['user_blacklist'].setdefault(ctx.author.id, set()).update(tags)
+        self.blacklists['user_blacklist'].setdefault(
+            ctx.author.id, set()).update(tags)
         for tag in tags:
             alias_request = await u.fetch('https://e621.net/tag_alias/index.json', params={'aliased_to': tag, 'approved': 'true'}, json=True)
             if alias_request:
@@ -1457,7 +1458,8 @@ class MsG:
 
             for tag in tags:
                 try:
-                    self.blacklists['guild_blacklist'][guild.id][ctx.channel.id].remove(tag)
+                    self.blacklists['guild_blacklist'][guild.id][ctx.channel.id].remove(
+                        tag)
 
                 except KeyError:
                     raise exc.TagError(tag)
@@ -1478,7 +1480,8 @@ class MsG:
 
             for tag in tags:
                 try:
-                    self.blacklists['user_blacklist'][ctx.author.id].remove(tag)
+                    self.blacklists['user_blacklist'][ctx.author.id].remove(
+                        tag)
 
                 except KeyError:
                     raise exc.TagError(tag)
