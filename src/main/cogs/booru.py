@@ -139,7 +139,6 @@ class MsG:
 
     # Tag search
     @tags.command(name='related', aliases=['relate', 'rel'], brief='e621 - Search for related tags', description='Return related tags for given tag(s)', usage='[related|relate|rel]')
-    @checks.del_ctx()
     async def _tags_related(self, ctx, *args):
         kwargs = u.get_kwargs(ctx, args)
         dest, tags = kwargs['destination'], kwargs['remaining']
@@ -170,7 +169,6 @@ class MsG:
 
     # Tag aliases
     @tags.command(name='aliases', aliases=['alias', 'als'], brief='e621 - Search for tag aliases', description='Return aliases for given tag(s)', usage='[aliases|alias|als]')
-    @checks.del_ctx()
     async def _tags_aliases(self, ctx, *args):
         kwargs = u.get_kwargs(ctx, args)
         dest, tags = kwargs['destination'], kwargs['remaining']
@@ -206,7 +204,6 @@ class MsG:
             await ctx.message.add_reaction('\N{CROSS MARK}')
 
     @get.command(name='info', aliases=['i'], brief='e621 - Get info from post', description='Return info for given post', usage='[info|i]')
-    @checks.del_ctx()
     async def _get_info(self, ctx, *args):
         try:
             kwargs = u.get_kwargs(ctx, args)
@@ -241,7 +238,6 @@ class MsG:
             await ctx.message.add_reaction('\N{CROSS MARK}')
 
     @get.command(name='image', aliases=['img'], brief='e621 - Get image link', description='Return image for given post', usage='[image|img]')
-    @checks.del_ctx()
     async def _get_image(self, ctx, *args):
         try:
             kwargs = u.get_kwargs(ctx, args)
@@ -273,7 +269,6 @@ class MsG:
             await ctx.message.add_reaction('\N{CROSS MARK}')
 
     @get.command(name='pool', aliases=['p'], brief='e621 - Get pool link', description='Return pool info for given query', usage='[pool|p]')
-    @checks.del_ctx()
     async def _get_pool(self, ctx, *args):
         def on_reaction(reaction, user):
             if reaction.emoji == '\N{OCTAGONAL SIGN}' and reaction.message.id == ctx.message.id and user is ctx.author:
@@ -319,7 +314,6 @@ class MsG:
 
     # Reverse image searches a linked image using the public iqdb
     @commands.command(name='reverse', aliases=['rev', 'ris'], brief='e621 Reverse image search', description='e621 | NSFW\nReverse-search an image with given URL')
-    @checks.del_ctx()
     async def reverse(self, ctx, *args):
         try:
             kwargs = u.get_kwargs(ctx, args)
@@ -364,7 +358,6 @@ class MsG:
             await ctx.message.add_reaction('\N{CROSS MARK}')
 
     @commands.command(name='reversify', aliases=['revify', 'risify', 'rify'])
-    @checks.del_ctx()
     async def reversify(self, ctx, *args):
         try:
             kwargs = u.get_kwargs(ctx, args, limit=self.HISTORY_LIMIT / 5)
@@ -649,7 +642,6 @@ class MsG:
 
     # Creates reaction-based paginator for linked pools
     @commands.command(name='poolpage', aliases=['poolp', 'pp', 'e621pp', 'e6pp', '6pp'], brief='e621 pool paginator', description='e621 | NSFW\nShow pools in a page format')
-    @checks.del_ctx()
     async def pool_paginator(self, ctx, *args):
         def on_reaction(reaction, user):
             if reaction.emoji == '\N{OCTAGONAL SIGN}' and reaction.message.id == ctx.message.id and (user is ctx.author or user.permissions_in(reaction.message.channel).manage_messages):
@@ -781,7 +773,6 @@ class MsG:
                     await ctx.author.send('`{} / {}`'.format(hearted.index(embed) + 1, len(hearted)), embed=embed)
 
     @commands.command(name='e621page', aliases=['e621p', 'e6p', '6p'])
-    @checks.del_ctx()
     @checks.is_nsfw()
     async def e621_paginator(self, ctx, *args):
         def on_reaction(reaction, user):
@@ -942,7 +933,6 @@ class MsG:
     #         await ctx.message.add_reaction('\N{NO ENTRY}')
 
     @commands.command(name='e926page', aliases=['e926p', 'e9p', '9p'])
-    @checks.del_ctx()
     async def e926_paginator(self, ctx, *args):
         def on_reaction(reaction, user):
             if reaction.emoji == '\N{OCTAGONAL SIGN}' and reaction.message.id == ctx.message.id and (user is ctx.author or user.permissions_in(reaction.message.channel).manage_messages):
@@ -1097,7 +1087,6 @@ class MsG:
 
     # Searches for and returns images from e621.net given tags when not blacklisted
     @commands.group(aliases=['e6', '6'], brief='e621 | NSFW', description='e621 | NSFW\nTag-based search for e621.net\n\nYou can only search 5 tags and 6 images at once for now.\ne6 [tags...] ([# of images])')
-    @checks.del_ctx()
     @checks.is_nsfw()
     async def e621(self, ctx, *args):
         try:
@@ -1147,7 +1136,6 @@ class MsG:
 
     # Searches for and returns images from e926.net given tags when not blacklisted
     @commands.command(aliases=['e9', '9'], brief='e926 | SFW', description='e926 | SFW\nTag-based search for e926.net\n\nYou can only search 5 tags and 6 images at once for now.\ne9 [tags...] ([# of images])')
-    @checks.del_ctx()
     async def e926(self, ctx, *args):
         try:
             kwargs = u.get_kwargs(ctx, args, limit=3)
@@ -1189,7 +1177,6 @@ class MsG:
             await ctx.message.add_reaction('\N{CROSS MARK}')
 
     @commands.group(aliases=['fave', 'fav', 'f'])
-    @checks.del_ctx()
     async def favorite(self, ctx):
         if not ctx.invoked_subcommand:
             await ctx.send('**Use a flag to manage favorites.**\n*Type* `{}help fav` *for more info.*'.format(ctx.prefix), delete_after=7)
@@ -1300,7 +1287,6 @@ class MsG:
 
     # Umbrella command structure to manage global, channel, and user blacklists
     @commands.group(aliases=['bl', 'b'], brief='Manage blacklists', description='Blacklist base command for managing blacklists\n\n`bl get [blacklist]` to show a blacklist\n`bl set [blacklist] [tags]` to replace a blacklist\n`bl clear [blacklist]` to clear a blacklist\n`bl add [blacklist] [tags]` to add tags to a blacklist\n`bl remove [blacklist] [tags]` to remove tags from a blacklist', usage='[flag] [blacklist] ([tags])')
-    @checks.del_ctx()
     async def blacklist(self, ctx):
         if not ctx.invoked_subcommand:
             await ctx.send('**Use a flag to manage blacklists.**\n*Type* `{}help bl` *for more info.*'.format(ctx.prefix), delete_after=7)

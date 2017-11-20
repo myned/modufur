@@ -134,7 +134,12 @@ async def on_command_error(ctx, error):
 
 @bot.event
 async def on_command_completion(ctx):
-    await ctx.message.add_reaction('\N{WHITE HEAVY CHECK MARK}')
+    with suppress(err.NotFound):
+        with suppress(AttributeError):
+            if ctx.guild.id in u.settings['del_ctx'] and ctx.me.permissions_in(ctx.channel).manage_messages and isinstance(ctx.message.channel, d.TextChannel):
+                await ctx.message.delete()
+
+        await ctx.message.add_reaction('\N{WHITE HEAVY CHECK MARK}')
 
     if ctx.command.name != 'lastcommand':
         u.last_commands[ctx.author.id] = ctx
@@ -166,7 +171,6 @@ def after(voice, error):
 # suggested = u.setdefault('cogs/suggested.pkl', {'last_update': 'None', 'tags': {}, 'total': 0})
 @bot.command(name=',test', hidden=True)
 @commands.is_owner()
-@checks.del_ctx()
 async def test(ctx):
     post = await u.fetch('https://e621.net/post/show.json?id=1145042', json=True)
 

@@ -30,7 +30,6 @@ class Administration:
 
     @commands.command(name=',prunefromguild', aliases=[',pfg', ',prunefromserver', ',pfs'], brief='Prune a user\'s messages from the guild', description='about flag centers on message 50 of 101 messages\n\npfg \{user id\} [before|after|about] [\{message id\}]\n\nExample:\npfg \{user id\} before \{message id\}')
     @commands.is_owner()
-    @checks.del_ctx()
     async def prune_all_user(self, ctx, user, when=None, reference=None):
         def yes(msg):
             if msg.content.lower() == 'y' and msg.channel is ctx.channel and msg.author is ctx.author:
@@ -147,7 +146,6 @@ class Administration:
 
     @commands.command(name='autodelete', aliases=['autodel'])
     @commands.has_permissions(administrator=True)
-    @checks.del_ctx()
     async def auto_delete(self, ctx):
         try:
             if ctx.channel.id not in u.tasks['auto_del']:
