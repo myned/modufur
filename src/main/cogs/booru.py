@@ -400,7 +400,17 @@ class MsG:
                     try:
                         await dest.trigger_typing()
 
-                        await dest.send('`{} / {}` **Probable match from** {}\n{}'.format(n, len(links), message.author.display_name, await scraper.get_post(url)))
+                        post = await scraper.get_post(url)
+
+                        embed = d.Embed(
+                            title=', '.join(post['artist']), url=f'https://e621.net/post/show/{post["id"]}', color=ctx.me.color if isinstance(ctx.channel, d.TextChannel) else u.color)
+                        embed.set_image(url=post['file_url'])
+                        embed.set_author(name=f'{u.get_aspectratio(post["width"], post["height"])} \N{ZERO WIDTH SPACE} {post["width"]} x {post["height"]}',
+                                         url=f'https://e621.net/post?tags=ratio:{post["width"]/post["height"]:.2f}', icon_url=ctx.author.avatar_url)
+                        embed.set_footer(
+                            text=post['score'], icon_url=self._get_score(post['score']))
+
+                        await dest.send(f'**Probable match from** {message.author.display_name}', embed=embed)
                         await message.add_reaction('\N{WHITE HEAVY CHECK MARK}')
 
                         if remove:
@@ -448,12 +458,17 @@ class MsG:
 
                     post = await scraper.get_post(url)
 
-                    await message.channel.send('**Probable match from** {}\n{}'.format(message.author.display_name, await scraper.get_image(post)))
-                    with suppress(err.NotFound):
-                        await message.add_reaction('\N{WHITE HEAVY CHECK MARK}')
+                    embed = d.Embed(
+                        title=', '.join(post['artist']), url=f'https://e621.net/post/show/{post["id"]}', color=message.channel.guild.me.color if isinstance(message.channel, d.TextChannel) else u.color)
+                    embed.set_image(url=post['file_url'])
+                    embed.set_author(name=f'{u.get_aspectratio(post["width"], post["height"])} \N{ZERO WIDTH SPACE} {post["width"]} x {post["height"]}',
+                                     url=f'https://e621.net/post?tags=ratio:{post["width"]/post["height"]:.2f}', icon_url=message.author.avatar_url)
+                    embed.set_footer(text=post['score'],
+                                     icon_url=self._get_score(post['score']['score']))
 
-                    with suppress(err.NotFound):
-                        await message.delete()
+                    await message.channel.send('**Probable match from** {}'.format(message.author.display_name), embed=embed)
+
+                    await message.add_reaction('\N{WHITE HEAVY CHECK MARK}')
 
                 except exc.MatchError as e:
                     await message.channel.send('**No probable match for:** `{}`'.format(e), delete_after=7)
@@ -464,6 +479,9 @@ class MsG:
 
                 finally:
                     await asyncio.sleep(self.RATE_LIMIT)
+
+                    with suppress(err.NotFound):
+                        await message.delete()
 
         print('STOPPED : reversifying')
 
