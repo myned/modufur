@@ -29,8 +29,10 @@ class MsG:
         self.HISTORY_LIMIT = 150
         self.RATE_LIMIT = u.RATE_LIMIT
         self.reversiqueue = asyncio.Queue()
+        self.heartqueue = asyncio.Queue()
         self.reversifying = False
         self.updating = False
+        self.hearting = False
 
         time = (dt.utcnow() - td(days=29)).strftime('%d/%m/%Y/%H:%M:%S')
         self.suggested = u.setdefault('cogs/suggested.pkl', 7)
@@ -41,6 +43,10 @@ class MsG:
             'cogs/blacklists.pkl', {'global_blacklist': set(), 'guild_blacklist': {}, 'user_blacklist': {}})
         self.aliases = u.setdefault('cogs/aliases.pkl', {})
 
+        if not self.hearting:
+            self.hearting = True
+            self.bot.loop.create_task(self._send_hearts())
+            print('STARTED : hearting')
         if u.tasks['auto_rev']:
             for channel in u.tasks['auto_rev']:
                 temp = self.bot.get_channel(channel)
@@ -112,6 +118,37 @@ class MsG:
         elif score >= 100:
             return 'https://emojipedia-us.s3.amazonaws.com/thumbs/320/twitter/103/sparkles_2728.png'
         return None
+
+    async def _send_hearts(self):
+        while self.hearting:
+            temp = await self.heartqueue.get()
+
+            await temp[0].send(embed=temp[1])
+
+            await asyncio.sleep(self.RATE_LIMIT)
+
+        print('STOPPED : hearting')
+
+    async def queue_for_hearts(self, *, message, send):
+        def on_reaction(reaction, user):
+            if reaction.emoji == '\N{HEAVY BLACK HEART}' and reaction.message.id == message.id:
+                raise exc.Save(user)
+            return False
+
+        try:
+            await message.add_reaction('\N{HEAVY BLACK HEART}')
+            await asyncio.sleep(1)
+
+            while self.hearting:
+                try:
+                    await asyncio.gather(*[self.bot.wait_for('reaction_add', check=on_reaction, timeout=7 * 60),
+                                   self.bot.wait_for('reaction_remove', check=on_reaction, timeout=7 * 60)])
+
+                except exc.Save as e:
+                    await self.heartqueue.put((e.user, send))
+
+        except asyncio.TimeoutError:
+            await message.edit(content='\N{HOURGLASS}')
 
     # @cmds.command()
     # async def auto_post(self, ctx):
@@ -1119,7 +1156,9 @@ class MsG:
                 embed.set_footer(
                     text=post['score'], icon_url=self._get_score(post['score']))
 
-                await dest.send(embed=embed)
+                message = await dest.send(embed=embed)
+
+                self.bot.loop.create_task(self.queue_for_hearts(message=message, send=embed))
 
         except exc.TagBlacklisted as e:
             await ctx.send('`{}` **blacklisted**'.format(e), delete_after=7)
@@ -1167,7 +1206,9 @@ class MsG:
                 embed.set_footer(
                     text=post['score'], icon_url=self._get_score(post['score']))
 
-                await dest.send(embed=embed)
+                message = await dest.send(embed=embed)
+
+                self.bot.loop.create_task(self.queue_for_hearts(message=message, send=embed))
 
         except exc.TagBlacklisted as e:
             await ctx.send('`{}` **blacklisted**'.format(e), delete_after=7)
