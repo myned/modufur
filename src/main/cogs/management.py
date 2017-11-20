@@ -24,7 +24,7 @@ class Administration:
             for channel in u.tasks['auto_del']:
                 temp = self.bot.get_channel(channel)
                 self.bot.loop.create_task(self.queue_for_deletion(temp))
-                print('AUTO-DELETING : #{}'.format(temp.name))
+                print('STARTED : auto-deleting in #{}'.format(temp.name))
             self.deleting = True
             self.bot.loop.create_task(self.delete())
 
@@ -164,7 +164,7 @@ class Administration:
                 if not self.deleting:
                     self.bot.loop.create_task(self.delete())
                     self.deleting = True
-                print('AUTO-DELETING : #{}'.format(ctx.channel.name))
+                print('STARTED : auto-deleting in #{}'.format(ctx.channel.name))
                 await ctx.send('**Auto-deleting all messages in {}**'.format(ctx.channel.mention), delete_after=5)
             else:
                 raise exc.Exists

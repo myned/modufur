@@ -28,7 +28,7 @@ class MsG:
         self.LIMIT = 100
         self.HISTORY_LIMIT = 150
         self.RATE_LIMIT = u.RATE_LIMIT
-        self.reviqueue = asyncio.Queue()
+        self.reversiqueue = asyncio.Queue()
         self.reversifying = False
         self.updating = False
 
@@ -45,7 +45,7 @@ class MsG:
             for channel in u.tasks['auto_rev']:
                 temp = self.bot.get_channel(channel)
                 self.bot.loop.create_task(self.queue_for_reversification(temp))
-                print('AUTO-REVERSIFYING : #{}'.format(temp.name))
+                print('STARTED : auto-reversifying in #{}'.format(temp.name))
             self.reversifying = True
             self.bot.loop.create_task(self._reversify())
         # if not self.updating:
@@ -124,7 +124,7 @@ class MsG:
     #                 self.bot.loop.create_task(self._post())
     #                 self.posting = True
     #
-    #             print('AUTO-POSTING : #{}'.format(ctx.channel.name))
+    #             print('STARTED : auto-posting in #{}'.format(ctx.channel.name))
     #             await ctx.send('**Auto-posting all images in {}**'.format(ctx.channel.mention), delete_after=5)
     #         else:
     #             raise exc.Exists
@@ -434,7 +434,7 @@ class MsG:
 
     async def _reversify(self):
         while self.reversifying:
-            message = await self.reviqueue.get()
+            message = await self.reversiqueue.get()
             urls = []
 
             for match in re.finditer('(https?:\/\/[^ ]*\.(?:gif|png|jpg|jpeg))', message.content):
@@ -487,9 +487,9 @@ class MsG:
             return False
 
         try:
-            while not self.bot.is_closed():
+            while self.reversifying:
                 message = await self.bot.wait_for('message', check=check)
-                await self.reviqueue.put(message)
+                await self.reversiqueue.put(message)
                 await message.add_reaction('\N{HOURGLASS WITH FLOWING SAND}')
 
         except exc.Abort:
@@ -512,7 +512,7 @@ class MsG:
                 self.bot.loop.create_task(self._reversify())
                 self.reversifying = True
 
-            print('AUTO-REVERSIFYING : #{}'.format(ctx.channel.name))
+            print('STARTED : auto-reversifying in #{}'.format(ctx.channel.name))
             await ctx.send('**Auto-reversifying all images in** {}'.format(ctx.channel.mention), delete_after=5)
         else:
             await ctx.send('**Already auto-reversifying in {}.** Type `stop` to stop.'.format(ctx.channel.mention), delete_after=7)
