@@ -1,5 +1,5 @@
 import asyncio
-import datetime as dt
+from datetime import datetime as dt
 import mimetypes
 import os
 import tempfile
@@ -25,39 +25,37 @@ youtube = None
 
 tempfile.tempdir = os.getcwd()
 
-command_dict = {}
-
 
 class Utils:
 
     def __init__(self, bot):
         self.bot = bot
 
-    @commands.command(name='last', aliases=['l', ','], brief='Reinvokes last command', description='Reinvokes previous command executed', hidden=True)
-    async def last_command(self, ctx):
-        global command_dict
+    @commands.command(name='lastcommand', aliases=['last', 'l', ','], brief='Reinvokes last successful command', description='Executes last successfully executed command')
+    async def last_command(self, ctx, arg='None'):
+        try:
+            context = u.last_commands[ctx.author.id]
 
-        if command_dict.get(str(ctx.author.id), {}).get('args', None) is not None:
-            args = command_dict.get(str(ctx.author.id), {})['args']
-        print(command_dict)
-        await ctx.invoke(command_dict.get(str(ctx.author.id), {}).get('command', None), args)
+            if arg == 'show' or arg == 'sh' or arg == 's':
+                await ctx.send(f'`{context.prefix}{context.invoked_with} {" ".join(context.args[2:])}`', delete_after=7)
+            else:
+                await ctx.invoke(context.command, *context.args[2:], **context.kwargs)
+
+        except KeyError:
+            await ctx.send('**No last command**', delete_after=7)
+            await ctx.message.add_reaction('\N{CROSS MARK}')
 
     # Displays latency
     @commands.command(aliases=['p'], brief='Pong!', description='Returns latency from bot to Discord servers, not to user')
     @checks.del_ctx()
     async def ping(self, ctx):
-        global command_dict
-
         await ctx.message.add_reaction('\N{TABLE TENNIS PADDLE AND BALL}')
-
         await ctx.send(ctx.author.mention + '  \N{TABLE TENNIS PADDLE AND BALL}  `' + str(round(self.bot.latency * 1000)) + 'ms`', delete_after=5)
-        command_dict.setdefault(str(ctx.author.id), {}).update({'command': ctx.command})
 
     @commands.command(aliases=['pre'], brief='List bot prefixes', description='Shows all used prefixes')
     @checks.del_ctx()
     async def prefix(self, ctx):
         await ctx.send('**Prefix:** `{}`'.format('` or `'.join(u.settings['prefixes'][ctx.guild.id] if ctx.guild.id in u.settings['prefixes'] else u.config['prefix'])))
-        await ctx.message.add_reaction('\N{WHITE HEAVY CHECK MARK}')
 
     @commands.group(name=',send', aliases=[',s'], hidden=True)
     @commands.is_owner()
@@ -73,20 +71,18 @@ class Utils:
 
             try:
                 await tempchannel.send(message)
-                await ctx.message.add_reaction('\N{WHITE HEAVY CHECK MARK}')
 
             except AttributeError:
-                await ctx.send('**Invalid channel**', delete_after=10)
+                await ctx.send('**Invalid channel**', delete_after=7)
                 await ctx.message.add_reaction('\N{CROSS MARK}')
 
         except AttributeError:
-            await ctx.send('**Invalid guild**', delete_after=10)
+            await ctx.send('**Invalid guild**', delete_after=7)
             await ctx.message.add_reaction('\N{CROSS MARK}')
 
     @send.command(name='user', aliases=['u', 'member', 'm'])
     async def send_user(self, ctx, user, *, message):
         await d.utils.get(self.bot.get_all_members(), id=int(user)).send(message)
-        await ctx.message.add_reaction('\N{WHITE HEAVY CHECK MARK}')
 
     @commands.command(aliases=['authenticateupload', 'authupload', 'authup', 'auth'])
     async def authenticate_upload(self, ctx):
@@ -118,11 +114,11 @@ class Utils:
             print('https://www.youtube.com/watch?v=' + youtube.videos().insert(part='snippet',
                                                                                body={'categoryId': '24', 'title': 'Test'}, media_body=http.MediaFileUpload(temp.name, chunksize=-1)))
         except exc.InvalidVideoFile as e:
-            await ctx.send('`' + str(e) + '` **invalid video type**', delete_after=10)
+            await ctx.send('`' + str(e) + '` **invalid video type**', delete_after=7)
         except exc.TooManyAttachments as e:
-            await ctx.send('`' + str(e) + '` **too many attachments.** Only one attachment is permitted to upload.', delete_after=10)
+            await ctx.send('`' + str(e) + '` **too many attachments.** Only one attachment is permitted to upload.', delete_after=7)
         except exc.MissingAttachment:
-            await ctx.send('**Missing attachment**', delete_after=10)
+            await ctx.send('**Missing attachment**', delete_after=7)
 
     @upload.error
     async def upload_error(self, ctx, error):

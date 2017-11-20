@@ -70,7 +70,7 @@ class Bot:
     async def invite(self, ctx):
         await ctx.message.add_reaction('\N{ENVELOPE}')
 
-        await ctx.send('https://discordapp.com/oauth2/authorize?&client_id={}&scope=bot&permissions={}'.format(u.config['client_id'], u.config['permissions']), delete_after=10)
+        await ctx.send('https://discordapp.com/oauth2/authorize?&client_id={}&scope=bot&permissions={}'.format(u.config['client_id'], u.config['permissions']), delete_after=5)
 
     @commands.command(name=',status', aliases=[',presence', ',game'], hidden=True)
     @commands.is_owner()
@@ -84,8 +84,6 @@ class Bot:
             await self.bot.change_presence(game=None)
             u.config['playing'] = 'None'
             u.dump(u.config, 'config.json', json=True)
-
-        await ctx.message.add_reaction('\N{WHITE HEAVY CHECK MARK}')
 
 
 class Tools:
@@ -189,8 +187,6 @@ class Tools:
             sys.stderr = sys.__stderr__
             print('Reset sys output.')
 
-            await ctx.message.add_reaction('\N{WHITE HEAVY CHECK MARK}')
-
     @commands.command(name=',execute', aliases=[',exec'], hidden=True)
     @commands.is_owner()
     @checks.del_ctx()
@@ -198,13 +194,10 @@ class Tools:
         try:
             with io.StringIO() as buff, redirect_stdout(buff):
                 exec(exe)
-                await self.generate(ctx, exe, buff.getvalue())
+                await self.generate(ctx, exe, f'\n{buff.getvalue()}')
 
         except Exception:
-            await ctx.send('```\n{}```'.format(tb.format_exc()))
-
-        finally:
-            await ctx.message.add_reaction('\N{WHITE HEAVY CHECK MARK}')
+            await self.generate(ctx, exe, f'\n{tb.format_exc()}')
 
     @commands.command(name=',evaluate', aliases=[',eval'], hidden=True)
     @commands.is_owner()
@@ -213,13 +206,10 @@ class Tools:
         try:
             with io.StringIO() as buff, redirect_stdout(buff):
                 eval(evl)
-                await self.generate(ctx, evl, buff.getvalue())
+                await self.generate(ctx, evl, f'\n{buff.getvalue()}')
 
         except Exception:
-            await ctx.send('```\n{}```'.format(tb.format_exc()))
-
-        finally:
-            await ctx.message.add_reaction('\N{WHITE HEAVY CHECK MARK}')
+            await self.generate(ctx, evl, f'\n{tb.format_exc()}')
 
     @commands.group(aliases=[',db'], hidden=True)
     @commands.is_owner()

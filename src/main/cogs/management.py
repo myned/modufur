@@ -25,8 +25,8 @@ class Administration:
                 temp = self.bot.get_channel(channel)
                 self.bot.loop.create_task(self.queue_for_deletion(temp))
                 print('AUTO-DELETING : #{}'.format(temp.id))
-            self.bot.loop.create_task(self.delete())
             self.deleting = True
+            self.bot.loop.create_task(self.delete())
 
     @commands.command(name=',prunefromguild', aliases=[',pfg', ',prunefromserver', ',pfs'], brief='Prune a user\'s messages from the guild', description='about flag centers on message 50 of 101 messages\n\npfg \{user id\} [before|after|about] [\{message id\}]\n\nExample:\npfg \{user id\} before \{message id\}')
     @commands.is_owner()
@@ -99,14 +99,13 @@ class Administration:
             await del_sent.unpin()
 
             await ctx.send('\N{WASTEBASKET} `{}` **of** <@{}>**\'s messages left in** {}****'.format(len(history) - c, user, ctx.guild.name))
-            await ctx.message.add_reaction('\N{WHITE HEAVY CHECK MARK}')
 
         except exc.CheckFail:
-            await ctx.send('**Deletion aborted**', delete_after=10)
+            await ctx.send('**Deletion aborted**', delete_after=7)
             await ctx.message.add_reaction('\N{CROSS MARK}')
 
         except TimeoutError:
-            await ctx.send('**Deletion timed out**', delete_after=10)
+            await ctx.send('**Deletion timed out**', delete_after=7)
             await ctx.message.add_reaction('\N{CROSS MARK}')
 
     async def delete(self):
@@ -160,12 +159,11 @@ class Administration:
                     self.deleting = True
                 print('AUTO-DELETING : #{}'.format(ctx.channel.id))
                 await ctx.send('**Auto-deleting all messages in {}**'.format(ctx.channel.mention), delete_after=5)
-                await ctx.message.add_reaction('\N{WHITE HEAVY CHECK MARK}')
             else:
                 raise exc.Exists
 
         except exc.Exists:
-            await ctx.send('**Already auto-deleting in {}.** Type `stop` to stop.'.format(ctx.channel.mention), delete_after=10)
+            await ctx.send('**Already auto-deleting in {}.** Type `stop` to stop.'.format(ctx.channel.mention), delete_after=7)
             await ctx.message.add_reaction('\N{CROSS MARK}')
 
     @commands.command(name='deletecommands', aliases=['delcmds'])
@@ -178,7 +176,6 @@ class Administration:
         u.dump(u.settings, 'settings.pkl')
 
         await ctx.send('**Delete command invocations:** `{}`'.format(ctx.guild.id in u.settings['del_ctx']))
-        await ctx.message.add_reaction('\N{WHITE HEAVY CHECK MARK}')
 
     @commands.command(name='setprefix', aliases=['setpre', 'spre'])
     @commands.has_permissions(administrator=True)
@@ -190,4 +187,3 @@ class Administration:
                 del u.settings['prefixes'][ctx.guild.id]
 
         await ctx.send(f'**Prefix set to:** `{"` or `".join(prefix if ctx.guild.id in u.settings["prefixes"] else u.config["prefix"])}`')
-        await ctx.message.add_reaction('✅')
