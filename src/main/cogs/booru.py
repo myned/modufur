@@ -347,7 +347,7 @@ class MsG:
             await ctx.send(f'**{tempool["name"]}**\nhttps://e621.net/pool/show/{tempool["id"]}')
 
         except exc.Abort as e:
-            await e.message.edit(content='**Search aborted**', delete_after=7)
+            await e.message.edit(content='\N{NO ENTRY SIGN}', delete_after=7)
 
     # Reverse image searches a linked image using the public iqdb
     @cmds.command(name='reverse', aliases=['rev', 'ris'], brief='e621 Reverse image search', description='e621 | NSFW\nReverse-search an image with given URL')
@@ -606,7 +606,7 @@ class MsG:
             return pool, posts
 
         except exc.Abort as e:
-            await e.message.edit(content='**Search aborted**')
+            await e.message.edit(content='\N{NO ENTRY SIGN}')
             raise exc.Continue
 
     # Messy code that checks image limit and tags in blacklists
@@ -750,10 +750,10 @@ class MsG:
 
                         await paginator.edit(content='\N{HEAVY BLACK HEART}' if keys[c - 1] in hearted.keys() else None, embed=embed)
                     else:
-                        await paginator.edit(content='**First image**')
+                        await paginator.edit(content='\N{BLACK RIGHTWARDS ARROW}')
 
                 except exc.GoTo:
-                    await paginator.edit(content='**Enter image number...**')
+                    await paginator.edit(content='\N{INPUT SYMBOL FOR NUMBERS}')
                     number = await self.bot.wait_for('message', check=on_message, timeout=7 * 60)
 
                     c = int(number.content)
@@ -779,18 +779,18 @@ class MsG:
 
                         await paginator.edit(content='\N{HEAVY BLACK HEART}' if keys[c - 1] in hearted.keys() else None, embed=embed)
                     else:
-                        await paginator.edit(content='**Last image**')
+                        await paginator.edit(content='\N{LEFTWARDS BLACK ARROW}')
 
         except exc.Abort:
             try:
-                await paginator.edit(content='**Exited paginator**')
+                await paginator.edit(content='\N{WHITE HEAVY CHECK MARK}')
             except UnboundLocalError:
-                await dest.send('**Exited paginator**')
+                await dest.send('\N{WHITE HEAVY CHECK MARK}')
         except asyncio.TimeoutError:
             try:
-                await paginator.edit(content='**Paginator timed out**')
+                await paginator.edit(content='\N{HOURGLASS}')
             except UnboundLocalError:
-                await dest.send('**Paginator timed out**')
+                await dest.send('\N{HOURGLASS}')
         except exc.NotFound:
             await ctx.send('**Pool not found**', delete_after=7)
             await ctx.message.add_reaction('\N{CROSS MARK}')
@@ -889,10 +889,10 @@ class MsG:
 
                         await paginator.edit(content='\N{HEAVY BLACK HEART}' if keys[c - 1] in hearted.keys() else None, embed=embed)
                     else:
-                        await paginator.edit(content='**First image**')
+                        await paginator.edit(content='\N{BLACK RIGHTWARDS ARROW}')
 
                 except exc.GoTo:
-                    await paginator.edit(content='**Enter image number...**')
+                    await paginator.edit(content='\N{INPUT SYMBOL FOR NUMBERS}')
                     number = await self.bot.wait_for('message', check=on_message, timeout=7 * 60)
 
                     c = int(number.content)
@@ -927,21 +927,21 @@ class MsG:
 
                             await paginator.edit(content='\N{HEAVY BLACK HEART}' if keys[c - 1] in hearted.keys() else None, embed=embed)
                         else:
-                            await paginator.edit(content='**No more images found**')
+                            await paginator.edit(content='\N{LEFTWARDS BLACK ARROW}')
 
                     except exc.NotFound:
-                        await paginator.edit(content='**No more images found**')
+                        await paginator.edit(content='\N{LEFTWARDS BLACK ARROW}')
 
         except exc.Abort:
             try:
-                await paginator.edit(content='**Exited paginator**')
+                await paginator.edit(content='\N{WHITE HEAVY CHECK MARK}')
             except UnboundLocalError:
-                await dest.send('**Exited paginator**')
+                await dest.send('\N{HOURGLASS}')
         except asyncio.TimeoutError:
             try:
-                await paginator.edit(content='**Paginator timed out**')
+                await paginator.edit(content='\N{HOURGLASS}')
             except UnboundLocalError:
-                await dest.send('**Paginator timed out**')
+                await dest.send('\N{HOURGLASS}')
         except exc.NotFound as e:
             await ctx.send('`{}` **not found**'.format(e), delete_after=7)
             await ctx.message.add_reaction('\N{CROSS MARK}')
@@ -1052,10 +1052,10 @@ class MsG:
 
                         await paginator.edit(content='\N{HEAVY BLACK HEART}' if keys[c - 1] in hearted.keys() else None, embed=embed)
                     else:
-                        await paginator.edit(content='**First image**')
+                        await paginator.edit(content='\N{BLACK RIGHTWARDS ARROW}')
 
                 except exc.GoTo:
-                    await paginator.edit(content='**Enter image number...**')
+                    await paginator.edit(content='\N{INPUT SYMBOL FOR NUMBERS}')
                     number = await self.bot.wait_for('message', check=on_message, timeout=7 * 60)
 
                     c = int(number.content)
@@ -1090,21 +1090,21 @@ class MsG:
 
                             await paginator.edit(content='\N{HEAVY BLACK HEART}' if keys[c - 1] in hearted.keys() else None, embed=embed)
                         else:
-                            await paginator.edit(content='**No more images found**')
+                            await paginator.edit(content='\N{LEFTWARDS BLACK ARROW}')
 
                     except exc.NotFound:
-                        await paginator.edit(content='**No more images found**')
+                        await paginator.edit(content='\N{LEFTWARDS BLACK ARROW}')
 
         except exc.Abort:
             try:
-                await paginator.edit(content='**Exited paginator**')
+                await paginator.edit(content='\N{WHITE HEAVY CHECK MARK}')
             except UnboundLocalError:
-                await dest.send('**Exited paginator**')
+                await dest.send('\N{WHITE HEAVY CHECK MARK}')
         except asyncio.TimeoutError:
             try:
-                await paginator.edit(content='**Paginator timed out**')
+                await paginator.edit(content='\N{HOURGLASS}')
             except UnboundLocalError:
-                await dest.send('**Paginator timed out**')
+                await dest.send('\N{HOURGLASS}')
         except exc.NotFound as e:
             await ctx.send('`{}` **not found**'.format(e), delete_after=7)
             await ctx.message.add_reaction('\N{CROSS MARK}')
