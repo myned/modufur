@@ -188,10 +188,12 @@ class Administration:
 
         await ctx.send('**Delete command invocations:** `{}`'.format(ctx.guild.id in u.settings['del_ctx']))
 
-        if prefix is not None:
-            u.settings['prefixes'][ctx.guild.id] = prefix
+    @settings.command(name='prefix', aliases=['pre', 'p'])
+    async def _settings_prefix(self, ctx, *prefixes):
+        if prefixes:
+            u.settings['prefixes'][ctx.guild.id] = prefixes
         else:
             with suppress(KeyError):
                 del u.settings['prefixes'][ctx.guild.id]
 
-        await ctx.send(f'**Prefix set to:** `{"` or `".join(prefix if ctx.guild.id in u.settings["prefixes"] else u.config["prefix"])}`')
+        await ctx.send(f'**Prefix set to:** `{"` or `".join(prefixes if ctx.guild.id in u.settings["prefixes"] else u.config["prefix"])}`')
