@@ -357,7 +357,10 @@ class MsG:
                 await ctx.message.add_reaction('\N{CROSS MARK}')
 
         except exc.MissingArgument:
-            await ctx.send('**Invalid url or file** Be sure the link directs to an image file', delete_after=7)
+            await ctx.send('**Invalid url or file.** Be sure the link directs to an image file', delete_after=7)
+            await ctx.message.add_reaction('\N{CROSS MARK}')
+        except exc.SizeError as e:
+            await ctx.send(f'`{e}` **too large.** Maximum is 8 MB', delete_after=7)
             await ctx.message.add_reaction('\N{CROSS MARK}')
 
     @commands.command(name='reversify', aliases=['revify', 'risify', 'rify'])
@@ -408,6 +411,10 @@ class MsG:
                         await ctx.send('`{} / {}` **No probable match for:** `{}`'.format(n, len(links), e), delete_after=7)
                         await message.add_reaction('\N{CROSS MARK}')
                         c -= 1
+                    except exc.SizeError as e:
+                        await ctx.send(f'`{e}` **too large.** Maximum is 8 MB', delete_after=7)
+                        await message.add_reaction('\N{CROSS MARK}')
+                        c -= 1
 
                     finally:
                         n += 1
@@ -450,6 +457,9 @@ class MsG:
 
                 except exc.MatchError as e:
                     await message.channel.send('**No probable match for:** `{}`'.format(e), delete_after=7)
+                    await message.add_reaction('\N{CROSS MARK}')
+                except exc.SizeError as e:
+                    await message.channel.send(f'`{e}` **too large.** Maximum is 8 MB', delete_after=7)
                     await message.add_reaction('\N{CROSS MARK}')
 
                 finally:
