@@ -54,7 +54,9 @@ log.basicConfig(level=log.WARNING)
 
 
 def get_prefix(bot, message):
-    return u.settings['prefixes'].get(message.guild.id, u.config['prefix'])
+    with suppress(AttributeError):
+        return u.settings['prefixes'].get(message.guild.id, u.config['prefix'])
+    return u.config['prefix']
 
 bot = cmds.Bot(command_prefix=get_prefix, formatter=cmds.HelpFormatter(show_check_failure=True), description='Modumind - A booru bot with a side of management\n\nS for single command\nG for group command', help_attrs={'aliases': ['h']}, pm_help=None)
 
@@ -84,10 +86,17 @@ async def on_ready():
     await bot.get_channel(u.config['info_channel']).send('**Started** \N{BLACK SUN WITH RAYS} .')
     # u.notify('C O N N E C T E D')
     if u.temp:
-        channel = bot.get_channel(u.temp['startup_chan'])
-        message = await channel.get_message(u.temp['startup_msg'])
-        await message.add_reaction('\N{WHITE HEAVY CHECK MARK}')
-        u.temp.clear()
+        with suppress(err.NotFound):
+            if u.temp['startup'][0] == 'guild':
+                dest = bot.get_channel(u.temp['startup'][1])
+            else:
+                dest = bot.get_user(u.temp['startup'][1])
+            message = await dest.get_message(u.temp['startup'][2])
+
+            await message.add_reaction('\N{WHITE HEAVY CHECK MARK}')
+
+        u.temp['startup'] = ()
+        u.dump(u.temp, 'temp/temp.pkl')
 
 
 @bot.event
@@ -102,11 +111,20 @@ async def on_error(error, *args, **kwargs):
     tb.print_exc()
     await bot.get_user(u.config['owner_id']).send('**ERROR** \N{WARNING SIGN}\n```\n{}```'.format(error))
     await bot.get_channel(u.config['info_channel']).send('**ERROR** \N{WARNING SIGN}\n```\n{}```'.format(error))
+
     if u.temp:
-        channel = bot.get_channel(u.temp['startup_chan'])
-        message = await channel.get_message(u.temp['startup_msg'])
-        await message.add_reaction('\N{WARNING SIGN}')
+        with suppress(err.NotFound):
+            print(u.temp['startup'])
+            if u.temp['startup'][0] == 'guild':
+                dest = bot.get_channel(u.temp['startup'][1])
+            else:
+                dest = bot.get_user(u.temp['startup'][1])
+            message = await dest.get_message(u.temp['startup'][2])
+
+            await message.add_reaction('\N{WARNING SIGN}')
+
         u.temp.clear()
+        u.dump(u.temp, 'temp/temp.pkl')
     # u.notify('E R R O R')
     await bot.logout()
     u.close(bot.loop)

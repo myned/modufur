@@ -29,9 +29,9 @@ class Bot:
 
         await self.bot.get_channel(u.config['info_channel']).send('**Shutting down** \N{CRESCENT MOON} . . .')
 
-        u.temp['startup_chan'] = ctx.channel.id
-        u.temp['startup_msg'] = ctx.message.id
-        u.dump(u.temp, 'temp.pkl')
+        chantype = 'guild' if isinstance(ctx.channel, d.TextChannel) else 'private'
+        u.temp['startup'] = (chantype, ctx.channel.id if chantype == 'guild' else ctx.author.id, ctx.message.id)
+        u.dump(u.temp, 'temp/temp.pkl')
 
         # loop = self.bot.loop.all_tasks()
         # for task in loop:
@@ -50,9 +50,9 @@ class Bot:
         await self.bot.get_channel(u.config['info_channel']).send('**Restarting** \N{SLEEPING SYMBOL} . . .')
         # u.notify('R E S T A R T I N G')
 
-        u.temp['startup_chan'] = ctx.channel.id
-        u.temp['startup_msg'] = ctx.message.id
-        u.dump(u.temp, 'temp.pkl')
+        chantype = 'guild' if isinstance(ctx.channel, d.TextChannel) else 'private'
+        u.temp['startup'] = (chantype, ctx.channel.id if chantype == 'guild' else ctx.author.id, ctx.message.id)
+        u.dump(u.temp, 'temp/temp.pkl')
 
         # loop = self.bot.loop.all_tasks()
         # for task in loop:

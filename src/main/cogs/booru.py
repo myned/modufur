@@ -662,7 +662,7 @@ class MsG:
         try:
             kwargs = u.get_kwargs(ctx, args)
             dest, query = kwargs['destination'], kwargs['remaining']
-            hearted = []
+            hearted = {}
             c = 1
 
             await dest.trigger_typing()
@@ -711,7 +711,7 @@ class MsG:
                                          icon_url=self._get_score(values[c - 1]['score']))
                         embed.set_image(url=values[c - 1]['url'])
 
-                        await paginator.edit(content='\N{HEAVY BLACK HEART}' if values[c - 1]['url'] in hearted else None, embed=embed)
+                        await paginator.edit(content='\N{HEAVY BLACK HEART}' if keys[c - 1] in hearted.keys() else None, embed=embed)
                     else:
                         await paginator.edit(content='**First image**')
 
@@ -728,7 +728,7 @@ class MsG:
                                      icon_url=self._get_score(values[c - 1]['score']))
                     embed.set_image(url=values[c - 1]['url'])
 
-                    await paginator.edit(content='\N{HEAVY BLACK HEART}' if values[c - 1]['url'] in hearted else None, embed=embed)
+                    await paginator.edit(content='\N{HEAVY BLACK HEART}' if keys[c - 1] in hearted.keys() else None, embed=embed)
 
                 except exc.Right:
                     if c < len(keys):
@@ -740,7 +740,7 @@ class MsG:
                                          icon_url=self._get_score(values[c - 1]['score']))
                         embed.set_image(url=values[c - 1]['url'])
 
-                        await paginator.edit(content='\N{HEAVY BLACK HEART}' if values[c - 1]['url'] in hearted else None, embed=embed)
+                        await paginator.edit(content='\N{HEAVY BLACK HEART}' if keys[c - 1] in hearted.keys() else None, embed=embed)
                     else:
                         await paginator.edit(content='**Last image**')
 
@@ -767,10 +767,14 @@ class MsG:
             if hearted:
                 await ctx.message.add_reaction('\N{HOURGLASS WITH FLOWING SAND}')
 
-                for embed in hearted:
+                n = 1
+                for embed in hearted.values():
                     await asyncio.sleep(self.RATE_LIMIT)
 
-                    await ctx.author.send('`{} / {}`'.format(hearted.index(embed) + 1, len(hearted)), embed=embed)
+                    embed.footer.text = f'{n} / {len(hearted)}'
+
+                    await ctx.author.send(embed=embed)
+                    n += 1
 
     @cmds.command(name='e621page', aliases=['e621p', 'e6p', '6p'])
     @checks.is_nsfw()
@@ -795,7 +799,7 @@ class MsG:
             kwargs = u.get_kwargs(ctx, args)
             dest, tags = kwargs['destination'], kwargs['remaining']
             limit = self.LIMIT / 5
-            hearted = []
+            hearted = {}
             c = 1
 
             tags = self._get_favorites(ctx, tags)
@@ -827,12 +831,12 @@ class MsG:
                                            self.bot.wait_for('reaction_remove', check=on_reaction, timeout=7 * 60)])
 
                 except exc.Save:
-                    if embed not in hearted:
-                        hearted.append(embed)
+                    if keys[c - 1] not in hearted:
+                        hearted[keys[c - 1]] = embed
 
                         await paginator.edit(content='\N{HEAVY BLACK HEART}')
                     else:
-                        hearted.remove(embed)
+                        del hearted[keys[c - 1]]
 
                         await paginator.edit(content='\N{BROKEN HEART}')
 
@@ -846,7 +850,7 @@ class MsG:
                                          icon_url=self._get_score(values[c - 1]['score']))
                         embed.set_image(url=values[c - 1]['url'])
 
-                        await paginator.edit(content='\N{HEAVY BLACK HEART}' if values[c - 1]['url'] in hearted else None, embed=embed)
+                        await paginator.edit(content='\N{HEAVY BLACK HEART}' if keys[c - 1] in hearted.keys() else None, embed=embed)
                     else:
                         await paginator.edit(content='**First image**')
 
@@ -863,7 +867,7 @@ class MsG:
                                      icon_url=self._get_score(values[c - 1]['score']))
                     embed.set_image(url=values[c - 1]['url'])
 
-                    await paginator.edit(content='\N{HEAVY BLACK HEART}' if values[c - 1]['url'] in hearted else None, embed=embed)
+                    await paginator.edit(content='\N{HEAVY BLACK HEART}' if keys[c - 1] in hearted.keys() else None, embed=embed)
 
                 except exc.Right:
                     try:
@@ -884,7 +888,7 @@ class MsG:
                                              icon_url=self._get_score(values[c - 1]['score']))
                             embed.set_image(url=values[c - 1]['url'])
 
-                            await paginator.edit(content='\N{HEAVY BLACK HEART}' if values[c - 1]['url'] in hearted else None, embed=embed)
+                            await paginator.edit(content='\N{HEAVY BLACK HEART}' if keys[c - 1] in hearted.keys() else None, embed=embed)
                         else:
                             await paginator.edit(content='**No more images found**')
 
@@ -921,10 +925,14 @@ class MsG:
             if hearted:
                 await ctx.message.add_reaction('\N{HOURGLASS WITH FLOWING SAND}')
 
-                for embed in hearted:
+                n = 1
+                for embed in hearted.values():
                     await asyncio.sleep(self.RATE_LIMIT)
 
-                    await ctx.author.send('`{} / {}`'.format(hearted.index(embed) + 1, len(hearted)), embed=embed)
+                    embed.footer.text = f'{n} / {len(hearted)}'
+
+                    await ctx.author.send(embed=embed)
+                    n += 1
 
     # @e621_paginator.error
     # async def e621_paginator_error(self, ctx, error):
@@ -954,7 +962,7 @@ class MsG:
             kwargs = u.get_kwargs(ctx, args)
             dest, tags = kwargs['destination'], kwargs['remaining']
             limit = self.LIMIT / 5
-            hearted = []
+            hearted = {}
             c = 1
 
             tags = self._get_favorites(ctx, tags)
@@ -1005,7 +1013,7 @@ class MsG:
                                          icon_url=self._get_score(values[c - 1]['score']))
                         embed.set_image(url=values[c - 1]['url'])
 
-                        await paginator.edit(content='\N{HEAVY BLACK HEART}' if values[c - 1]['url'] in hearted else None, embed=embed)
+                        await paginator.edit(content='\N{HEAVY BLACK HEART}' if keys[c - 1] in hearted.keys() else None, embed=embed)
                     else:
                         await paginator.edit(content='**First image**')
 
@@ -1022,7 +1030,7 @@ class MsG:
                                      icon_url=self._get_score(values[c - 1]['score']))
                     embed.set_image(url=values[c - 1]['url'])
 
-                    await paginator.edit(content='\N{HEAVY BLACK HEART}' if values[c - 1]['url'] in hearted else None, embed=embed)
+                    await paginator.edit(content='\N{HEAVY BLACK HEART}' if keys[c - 1] in hearted.keys() else None, embed=embed)
 
                 except exc.Right:
                     try:
@@ -1043,7 +1051,7 @@ class MsG:
                                              icon_url=self._get_score(values[c - 1]['score']))
                             embed.set_image(url=values[c - 1]['url'])
 
-                            await paginator.edit(content='\N{HEAVY BLACK HEART}' if values[c - 1]['url'] in hearted else None, embed=embed)
+                            await paginator.edit(content='\N{HEAVY BLACK HEART}' if keys[c - 1] in hearted.keys() else None, embed=embed)
                         else:
                             await paginator.edit(content='**No more images found**')
 
@@ -1080,10 +1088,14 @@ class MsG:
             if hearted:
                 await ctx.message.add_reaction('\N{HOURGLASS WITH FLOWING SAND}')
 
-                for embed in hearted:
+                n = 1
+                for embed in hearted.values():
                     await asyncio.sleep(self.RATE_LIMIT)
 
-                    await ctx.author.send('`{} / {}`'.format(hearted.index(embed) + 1, len(hearted)), embed=embed)
+                    embed.footer.text = f'{n} / {len(hearted)}'
+
+                    await ctx.author.send(embed=embed)
+                    n += 1
 
     # Searches for and returns images from e621.net given tags when not blacklisted
     @cmds.group(aliases=['e6', '6'], brief='e621 | NSFW', description='e621 | NSFW\nTag-based search for e621.net\n\nYou can only search 5 tags and 6 images at once for now.\ne6 [tags...] ([# of images])')
