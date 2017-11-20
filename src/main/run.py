@@ -1,7 +1,7 @@
 import asyncio
 import datetime as dt
 import json
-# import logging as log
+import logging as log
 import subprocess
 import sys
 import traceback as tb
@@ -18,7 +18,7 @@ from misc import exceptions as exc
 from misc import checks
 from utils import utils as u
 
-# log.basicConfig(level=log.INFO)
+log.basicConfig(level=log.WARNING)
 
 
 class HelpFormatter(commands.HelpFormatter):
