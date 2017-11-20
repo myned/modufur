@@ -23,9 +23,34 @@ from utils import utils as u
 log.basicConfig(level=log.WARNING)
 
 
-class HelpFormatter(commands.HelpFormatter):
-    async def format():
-        pass
+# class HelpFormatter(commands.HelpFormatter):
+#
+#     async def format(self):
+#         self._paginator = commands.Paginator()
+#
+#         # we need a padding of ~80 or so
+#
+#         description = self.command.description if not self.is_cog() else inspect.getdoc(self.command)
+#
+#         if description:
+#             # <description> portion
+#             self._paginator.add_line(description, empty=True)
+#
+#         if isinstance(self.command, commands.Command):
+#             # <signature portion>
+#             signature = self.get_command_signature()
+#             self._paginator.add_line(signature, empty=True)
+#
+#             # <long doc> section
+#             if self.command.help:
+#                 self._paginator.add_line(self.command.help, empty=True)
+#
+#             # end it here if it's just a regular command
+#             if not self.has_subcommands():
+#                 self._paginator.close_page()
+#                 return self._paginator.pages
+#
+#         max_width = self.max_name_size
 
 
 def get_prefix(bot, message):
