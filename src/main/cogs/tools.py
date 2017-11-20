@@ -25,33 +25,32 @@ youtube = None
 
 tempfile.tempdir = os.getcwd()
 
-command_dict = {}
-
 
 class Utils:
 
     def __init__(self, bot):
         self.bot = bot
 
-    @commands.command(name='last', aliases=['l', ','], brief='Reinvokes last command', description='Reinvokes previous command executed', hidden=True)
-    async def last_command(self, ctx):
-        global command_dict
+    @commands.command(name='lastcommand', aliases=['last', 'l', ','], brief='Reinvokes last successful command', description='Executes last successfully executed command')
+    async def last_command(self, ctx, arg='None'):
+        try:
+            context = u.last_commands[ctx.author.id]
 
-        if command_dict.get(str(ctx.author.id), {}).get('args', None) is not None:
-            args = command_dict.get(str(ctx.author.id), {})['args']
-        print(command_dict)
-        await ctx.invoke(command_dict.get(str(ctx.author.id), {}).get('command', None), args)
+            if arg == 'show' or arg == 'sh' or arg == 's':
+                await ctx.send(f'`{context.prefix}{context.invoked_with} {" ".join(context.args[2:])}`', delete_after=7)
+            else:
+                await ctx.invoke(context.command, *context.args[2:], **context.kwargs)
+
+        except KeyError:
+            await ctx.send('**No last command**', delete_after=7)
+            await ctx.message.add_reaction('\N{CROSS MARK}')
 
     # Displays latency
     @commands.command(aliases=['p'], brief='Pong!', description='Returns latency from bot to Discord servers, not to user')
     @checks.del_ctx()
     async def ping(self, ctx):
-        global command_dict
-
         await ctx.message.add_reaction('\N{TABLE TENNIS PADDLE AND BALL}')
-
         await ctx.send(ctx.author.mention + '  \N{TABLE TENNIS PADDLE AND BALL}  `' + str(round(self.bot.latency * 1000)) + 'ms`', delete_after=5)
-        command_dict.setdefault(str(ctx.author.id), {}).update({'command': ctx.command})
 
     @commands.command(aliases=['pre'], brief='List bot prefixes', description='Shows all used prefixes')
     @checks.del_ctx()

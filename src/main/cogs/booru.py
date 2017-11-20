@@ -1094,9 +1094,6 @@ class MsG:
             await ctx.send('**Request timed out**')
             await ctx.message.add_reaction('\N{CROSS MARK}')
 
-        # tools.command_dict.setdefault(str(ctx.author.id), {}).update(
-        #     {'command': ctx.command, 'args': ctx.args})
-
     # @e621.error
     # async def e621_error(self, ctx, error):
     #     if isinstance(error, exc.NSFW):
