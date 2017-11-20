@@ -150,7 +150,7 @@ class Administration:
             u.dump(u.tasks, 'cogs/tasks.pkl')
             if not u.tasks['auto_del']:
                 self.deleting = False
-            print('STOPPED : deleting #{}'.format(channel.id))
+            print('STOPPED : deleting #{}'.format(channel.name))
             await channel.send('**Stopped queueing messages for deletion in** {}'.format(channel.mention), delete_after=5)
 
     @cmds.command(name='autodelete', aliases=['autodel'])
@@ -164,7 +164,7 @@ class Administration:
                 if not self.deleting:
                     self.bot.loop.create_task(self.delete())
                     self.deleting = True
-                print('AUTO-DELETING : #{}'.format(ctx.channel.id))
+                print('AUTO-DELETING : #{}'.format(ctx.channel.name))
                 await ctx.send('**Auto-deleting all messages in {}**'.format(ctx.channel.mention), delete_after=5)
             else:
                 raise exc.Exists
