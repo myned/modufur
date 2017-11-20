@@ -28,9 +28,11 @@ class MsG:
         self.LIMIT = 100
         self.HISTORY_LIMIT = 150
         self.RATE_LIMIT = u.RATE_LIMIT
-        self.reviqueue = asyncio.Queue()
+        self.reversiqueue = asyncio.Queue()
+        self.heartqueue = asyncio.Queue()
         self.reversifying = False
         self.updating = False
+        self.hearting = False
 
         time = (dt.utcnow() - td(days=29)).strftime('%d/%m/%Y/%H:%M:%S')
         self.suggested = u.setdefault('cogs/suggested.pkl', 7)
@@ -41,11 +43,15 @@ class MsG:
             'cogs/blacklists.pkl', {'global_blacklist': set(), 'guild_blacklist': {}, 'user_blacklist': {}})
         self.aliases = u.setdefault('cogs/aliases.pkl', {})
 
+        if not self.hearting:
+            self.hearting = True
+            self.bot.loop.create_task(self._send_hearts())
+            print('STARTED : hearting')
         if u.tasks['auto_rev']:
             for channel in u.tasks['auto_rev']:
                 temp = self.bot.get_channel(channel)
                 self.bot.loop.create_task(self.queue_for_reversification(temp))
-                print('AUTO-REVERSIFYING : #{}'.format(temp.name))
+                print('STARTED : auto-reversifying in #{}'.format(temp.name))
             self.reversifying = True
             self.bot.loop.create_task(self._reversify())
         # if not self.updating:
@@ -113,6 +119,37 @@ class MsG:
             return 'https://emojipedia-us.s3.amazonaws.com/thumbs/320/twitter/103/sparkles_2728.png'
         return None
 
+    async def _send_hearts(self):
+        while self.hearting:
+            temp = await self.heartqueue.get()
+
+            await temp[0].send(embed=temp[1])
+
+            await asyncio.sleep(self.RATE_LIMIT)
+
+        print('STOPPED : hearting')
+
+    async def queue_for_hearts(self, *, message, send):
+        def on_reaction(reaction, user):
+            if reaction.emoji == '\N{HEAVY BLACK HEART}' and reaction.message.id == message.id:
+                raise exc.Save(user)
+            return False
+
+        try:
+            await message.add_reaction('\N{HEAVY BLACK HEART}')
+            await asyncio.sleep(1)
+
+            while self.hearting:
+                try:
+                    await asyncio.gather(*[self.bot.wait_for('reaction_add', check=on_reaction, timeout=7 * 60),
+                                   self.bot.wait_for('reaction_remove', check=on_reaction, timeout=7 * 60)])
+
+                except exc.Save as e:
+                    await self.heartqueue.put((e.user, send))
+
+        except asyncio.TimeoutError:
+            await message.edit(content='\N{HOURGLASS}')
+
     # @cmds.command()
     # async def auto_post(self, ctx):
     #     try:
@@ -124,7 +161,7 @@ class MsG:
     #                 self.bot.loop.create_task(self._post())
     #                 self.posting = True
     #
-    #             print('AUTO-POSTING : #{}'.format(ctx.channel.name))
+    #             print('STARTED : auto-posting in #{}'.format(ctx.channel.name))
     #             await ctx.send('**Auto-posting all images in {}**'.format(ctx.channel.mention), delete_after=5)
     #         else:
     #             raise exc.Exists
@@ -310,7 +347,7 @@ class MsG:
             await ctx.send(f'**{tempool["name"]}**\nhttps://e621.net/pool/show/{tempool["id"]}')
 
         except exc.Abort as e:
-            await e.message.edit(content='**Search aborted**', delete_after=7)
+            await e.message.edit(content='\N{NO ENTRY SIGN}', delete_after=7)
 
     # Reverse image searches a linked image using the public iqdb
     @cmds.command(name='reverse', aliases=['rev', 'ris'], brief='e621 Reverse image search', description='e621 | NSFW\nReverse-search an image with given URL')
@@ -434,7 +471,7 @@ class MsG:
 
     async def _reversify(self):
         while self.reversifying:
-            message = await self.reviqueue.get()
+            message = await self.reversiqueue.get()
             urls = []
 
             for match in re.finditer('(https?:\/\/[^ ]*\.(?:gif|png|jpg|jpeg))', message.content):
@@ -487,9 +524,9 @@ class MsG:
             return False
 
         try:
-            while not self.bot.is_closed():
+            while self.reversifying:
                 message = await self.bot.wait_for('message', check=check)
-                await self.reviqueue.put(message)
+                await self.reversiqueue.put(message)
                 await message.add_reaction('\N{HOURGLASS WITH FLOWING SAND}')
 
         except exc.Abort:
@@ -512,7 +549,7 @@ class MsG:
                 self.bot.loop.create_task(self._reversify())
                 self.reversifying = True
 
-            print('AUTO-REVERSIFYING : #{}'.format(ctx.channel.name))
+            print('STARTED : auto-reversifying in #{}'.format(ctx.channel.name))
             await ctx.send('**Auto-reversifying all images in** {}'.format(ctx.channel.mention), delete_after=5)
         else:
             await ctx.send('**Already auto-reversifying in {}.** Type `stop` to stop.'.format(ctx.channel.mention), delete_after=7)
@@ -563,13 +600,13 @@ class MsG:
                 posts_request = await u.fetch('https://{}.net/pool/show.json'.format(booru), params={'id': tempool['id'], 'page': page}, json=True)
                 for post in posts_request['posts']:
                     posts[post['id']] = {'artist': ', '.join(
-                        post['artist']), 'url': post['file_url']}
+                        post['artist']), 'file_url': post['file_url']}
                 page += 1
 
             return pool, posts
 
         except exc.Abort as e:
-            await e.message.edit(content='**Search aborted**')
+            await e.message.edit(content='\N{NO ENTRY SIGN}')
             raise exc.Continue
 
     # Messy code that checks image limit and tags in blacklists
@@ -622,7 +659,7 @@ class MsG:
                     continue
                 if post['id'] not in posts.keys() and post['id'] not in previous.keys():
                     posts[post['id']] = {'artist': ', '.join(
-                        post['artist']), 'url': post['file_url'], 'score': post['score']}
+                        post['artist']), 'file_url': post['file_url'], 'score': post['score']}
                 if len(posts) == limit:
                     break
 
@@ -673,7 +710,7 @@ class MsG:
 
             embed = d.Embed(
                 title=values[c - 1]['artist'], url='https://e621.net/post/show/{}'.format(keys[c - 1]), color=dest.me.color if isinstance(dest.channel, d.TextChannel) else u.color)
-            embed.set_image(url=values[c - 1]['url'])
+            embed.set_image(url=values[c - 1]['file_url'])
             embed.set_author(name=pool['name'],
                              url='https://e621.net/pool/show?id={}'.format(pool['id']), icon_url=ctx.author.avatar_url)
             embed.set_footer(text='{} / {}'.format(c, len(posts)),
@@ -709,14 +746,14 @@ class MsG:
                             keys[c - 1])
                         embed.set_footer(text='{} / {}'.format(c, len(posts)),
                                          icon_url=self._get_score(values[c - 1]['score']))
-                        embed.set_image(url=values[c - 1]['url'])
+                        embed.set_image(url=values[c - 1]['file_url'])
 
                         await paginator.edit(content='\N{HEAVY BLACK HEART}' if keys[c - 1] in hearted.keys() else None, embed=embed)
                     else:
-                        await paginator.edit(content='**First image**')
+                        await paginator.edit(content='\N{BLACK RIGHTWARDS ARROW}')
 
                 except exc.GoTo:
-                    await paginator.edit(content='**Enter image number...**')
+                    await paginator.edit(content='\N{INPUT SYMBOL FOR NUMBERS}')
                     number = await self.bot.wait_for('message', check=on_message, timeout=7 * 60)
 
                     c = int(number.content)
@@ -726,7 +763,7 @@ class MsG:
                         keys[c - 1])
                     embed.set_footer(text='{} / {}'.format(c, len(posts)),
                                      icon_url=self._get_score(values[c - 1]['score']))
-                    embed.set_image(url=values[c - 1]['url'])
+                    embed.set_image(url=values[c - 1]['file_url'])
 
                     await paginator.edit(content='\N{HEAVY BLACK HEART}' if keys[c - 1] in hearted.keys() else None, embed=embed)
 
@@ -738,22 +775,22 @@ class MsG:
                             keys[c - 1])
                         embed.set_footer(text='{} / {}'.format(c, len(posts)),
                                          icon_url=self._get_score(values[c - 1]['score']))
-                        embed.set_image(url=values[c - 1]['url'])
+                        embed.set_image(url=values[c - 1]['file_url'])
 
                         await paginator.edit(content='\N{HEAVY BLACK HEART}' if keys[c - 1] in hearted.keys() else None, embed=embed)
                     else:
-                        await paginator.edit(content='**Last image**')
+                        await paginator.edit(content='\N{LEFTWARDS BLACK ARROW}')
 
         except exc.Abort:
             try:
-                await paginator.edit(content='**Exited paginator**')
+                await paginator.edit(content='\N{WHITE HEAVY CHECK MARK}')
             except UnboundLocalError:
-                await dest.send('**Exited paginator**')
+                await dest.send('\N{WHITE HEAVY CHECK MARK}')
         except asyncio.TimeoutError:
             try:
-                await paginator.edit(content='**Paginator timed out**')
+                await paginator.edit(content='\N{HOURGLASS}')
             except UnboundLocalError:
-                await dest.send('**Paginator timed out**')
+                await dest.send('\N{HOURGLASS}')
         except exc.NotFound:
             await ctx.send('**Pool not found**', delete_after=7)
             await ctx.message.add_reaction('\N{CROSS MARK}')
@@ -812,7 +849,7 @@ class MsG:
 
             embed = d.Embed(
                 title=values[c - 1]['artist'], url='https://e621.net/post/show/{}'.format(keys[c - 1]), color=ctx.me.color if isinstance(ctx.channel, d.TextChannel) else u.color)
-            embed.set_image(url=values[c - 1]['url'])
+            embed.set_image(url=values[c - 1]['file_url'])
             embed.set_author(name=formatter.tostring(tags, order=order),
                              url='https://e621.net/post?tags={}'.format(','.join(tags)), icon_url=ctx.author.avatar_url)
             embed.set_footer(text='{} / {}'.format(c, len(posts)),
@@ -848,14 +885,14 @@ class MsG:
                             keys[c - 1])
                         embed.set_footer(text='{} / {}'.format(c, len(posts)),
                                          icon_url=self._get_score(values[c - 1]['score']))
-                        embed.set_image(url=values[c - 1]['url'])
+                        embed.set_image(url=values[c - 1]['file_url'])
 
                         await paginator.edit(content='\N{HEAVY BLACK HEART}' if keys[c - 1] in hearted.keys() else None, embed=embed)
                     else:
-                        await paginator.edit(content='**First image**')
+                        await paginator.edit(content='\N{BLACK RIGHTWARDS ARROW}')
 
                 except exc.GoTo:
-                    await paginator.edit(content='**Enter image number...**')
+                    await paginator.edit(content='\N{INPUT SYMBOL FOR NUMBERS}')
                     number = await self.bot.wait_for('message', check=on_message, timeout=7 * 60)
 
                     c = int(number.content)
@@ -865,7 +902,7 @@ class MsG:
                         keys[c - 1])
                     embed.set_footer(text='{} / {}'.format(c, len(posts)),
                                      icon_url=self._get_score(values[c - 1]['score']))
-                    embed.set_image(url=values[c - 1]['url'])
+                    embed.set_image(url=values[c - 1]['file_url'])
 
                     await paginator.edit(content='\N{HEAVY BLACK HEART}' if keys[c - 1] in hearted.keys() else None, embed=embed)
 
@@ -886,25 +923,25 @@ class MsG:
                                 keys[c - 1])
                             embed.set_footer(text='{} / {}'.format(c, len(posts)),
                                              icon_url=self._get_score(values[c - 1]['score']))
-                            embed.set_image(url=values[c - 1]['url'])
+                            embed.set_image(url=values[c - 1]['file_url'])
 
                             await paginator.edit(content='\N{HEAVY BLACK HEART}' if keys[c - 1] in hearted.keys() else None, embed=embed)
                         else:
-                            await paginator.edit(content='**No more images found**')
+                            await paginator.edit(content='\N{LEFTWARDS BLACK ARROW}')
 
                     except exc.NotFound:
-                        await paginator.edit(content='**No more images found**')
+                        await paginator.edit(content='\N{LEFTWARDS BLACK ARROW}')
 
         except exc.Abort:
             try:
-                await paginator.edit(content='**Exited paginator**')
+                await paginator.edit(content='\N{WHITE HEAVY CHECK MARK}')
             except UnboundLocalError:
-                await dest.send('**Exited paginator**')
+                await dest.send('\N{HOURGLASS}')
         except asyncio.TimeoutError:
             try:
-                await paginator.edit(content='**Paginator timed out**')
+                await paginator.edit(content='\N{HOURGLASS}')
             except UnboundLocalError:
-                await dest.send('**Paginator timed out**')
+                await dest.send('\N{HOURGLASS}')
         except exc.NotFound as e:
             await ctx.send('`{}` **not found**'.format(e), delete_after=7)
             await ctx.message.add_reaction('\N{CROSS MARK}')
@@ -975,7 +1012,7 @@ class MsG:
 
             embed = d.Embed(
                 title=values[c - 1]['artist'], url='https://e926.net/post/show/{}'.format(keys[c - 1]), color=ctx.me.color if isinstance(ctx.channel, d.TextChannel) else u.color)
-            embed.set_image(url=values[c - 1]['url'])
+            embed.set_image(url=values[c - 1]['file_url'])
             embed.set_author(name=formatter.tostring(tags, order=order),
                              url='https://e926.net/post?tags={}'.format(','.join(tags)), icon_url=ctx.author.avatar_url)
             embed.set_footer(text='{} / {}'.format(c, len(posts)),
@@ -1011,14 +1048,14 @@ class MsG:
                             keys[c - 1])
                         embed.set_footer(text='{} / {}'.format(c, len(posts)),
                                          icon_url=self._get_score(values[c - 1]['score']))
-                        embed.set_image(url=values[c - 1]['url'])
+                        embed.set_image(url=values[c - 1]['file_url'])
 
                         await paginator.edit(content='\N{HEAVY BLACK HEART}' if keys[c - 1] in hearted.keys() else None, embed=embed)
                     else:
-                        await paginator.edit(content='**First image**')
+                        await paginator.edit(content='\N{BLACK RIGHTWARDS ARROW}')
 
                 except exc.GoTo:
-                    await paginator.edit(content='**Enter image number...**')
+                    await paginator.edit(content='\N{INPUT SYMBOL FOR NUMBERS}')
                     number = await self.bot.wait_for('message', check=on_message, timeout=7 * 60)
 
                     c = int(number.content)
@@ -1028,7 +1065,7 @@ class MsG:
                         keys[c - 1])
                     embed.set_footer(text='{} / {}'.format(c, len(posts)),
                                      icon_url=self._get_score(values[c - 1]['score']))
-                    embed.set_image(url=values[c - 1]['url'])
+                    embed.set_image(url=values[c - 1]['file_url'])
 
                     await paginator.edit(content='\N{HEAVY BLACK HEART}' if keys[c - 1] in hearted.keys() else None, embed=embed)
 
@@ -1049,25 +1086,25 @@ class MsG:
                                 keys[c - 1])
                             embed.set_footer(text='{} / {}'.format(c, len(posts)),
                                              icon_url=self._get_score(values[c - 1]['score']))
-                            embed.set_image(url=values[c - 1]['url'])
+                            embed.set_image(url=values[c - 1]['file_url'])
 
                             await paginator.edit(content='\N{HEAVY BLACK HEART}' if keys[c - 1] in hearted.keys() else None, embed=embed)
                         else:
-                            await paginator.edit(content='**No more images found**')
+                            await paginator.edit(content='\N{LEFTWARDS BLACK ARROW}')
 
                     except exc.NotFound:
-                        await paginator.edit(content='**No more images found**')
+                        await paginator.edit(content='\N{LEFTWARDS BLACK ARROW}')
 
         except exc.Abort:
             try:
-                await paginator.edit(content='**Exited paginator**')
+                await paginator.edit(content='\N{WHITE HEAVY CHECK MARK}')
             except UnboundLocalError:
-                await dest.send('**Exited paginator**')
+                await dest.send('\N{WHITE HEAVY CHECK MARK}')
         except asyncio.TimeoutError:
             try:
-                await paginator.edit(content='**Paginator timed out**')
+                await paginator.edit(content='\N{HOURGLASS}')
             except UnboundLocalError:
-                await dest.send('**Paginator timed out**')
+                await dest.send('\N{HOURGLASS}')
         except exc.NotFound as e:
             await ctx.send('`{}` **not found**'.format(e), delete_after=7)
             await ctx.message.add_reaction('\N{CROSS MARK}')
@@ -1113,13 +1150,16 @@ class MsG:
 
             for ident, post in posts.items():
                 embed = d.Embed(title=post['artist'], url='https://e621.net/post/show/{}'.format(ident),
-                                color=ctx.me.color if isinstance(ctx.channel, d.TextChannel) else u.color).set_image(url=post['url'])
+                                color=ctx.me.color if isinstance(ctx.channel, d.TextChannel) else u.color)
+                embed.set_image(url=post['file_url'])
                 embed.set_author(name=formatter.tostring(tags, order=order),
                                  url='https://e621.net/post?tags={}'.format(','.join(tags)), icon_url=ctx.author.avatar_url)
                 embed.set_footer(
                     text=post['score'], icon_url=self._get_score(post['score']))
 
-                await dest.send(embed=embed)
+                message = await dest.send(embed=embed)
+
+                self.bot.loop.create_task(self.queue_for_hearts(message=message, send=embed))
 
         except exc.TagBlacklisted as e:
             await ctx.send('`{}` **blacklisted**'.format(e), delete_after=7)
@@ -1161,13 +1201,16 @@ class MsG:
 
             for ident, post in posts.items():
                 embed = d.Embed(title=post['artist'], url='https://e926.net/post/show/{}'.format(ident),
-                                color=ctx.me.color if isinstance(ctx.channel, d.TextChannel) else u.color).set_image(url=post['url'])
+                                color=ctx.me.color if isinstance(ctx.channel, d.TextChannel) else u.color)
+                embed.set_image(url=post['file_url'])
                 embed.set_author(name=formatter.tostring(tags, order=order),
                                  url='https://e621.net/post?tags={}'.format(','.join(tags)), icon_url=ctx.author.avatar_url)
                 embed.set_footer(
                     text=post['score'], icon_url=self._get_score(post['score']))
 
-                await dest.send(embed=embed)
+                message = await dest.send(embed=embed)
+
+                self.bot.loop.create_task(self.queue_for_hearts(message=message, send=embed))
 
         except exc.TagBlacklisted as e:
             await ctx.send('`{}` **blacklisted**'.format(e), delete_after=7)
