@@ -512,7 +512,7 @@ class MsG:
                 self.bot.loop.create_task(self._reversify())
                 self.reversifying = True
 
-            print('AUTO-QUALITIFYING : #{}'.format(ctx.channel.name))
+            print('AUTO-REVERSIFYING : #{}'.format(ctx.channel.name))
             await ctx.send('**Auto-reversifying all images in** {}'.format(ctx.channel.mention), delete_after=5)
         else:
             await ctx.send('**Already auto-reversifying in {}.** Type `stop` to stop.'.format(ctx.channel.mention), delete_after=7)
