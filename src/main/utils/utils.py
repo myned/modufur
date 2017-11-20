@@ -112,8 +112,21 @@ async def fetch(url, *, params={}, json=False):
         return await r.read()
 
 
-# def geneate_embed(**kwargs):
-#     embed = d.Embed(title=kwargs['title'], )
+def generate_embed(ctx, *, title=d.Embed.Empty, type='rich', description=d.Embed.Empty, url=d.Embed.Empty, timestamp=d.Embed.Empty, colour=color, footer={}, image=d.Embed.Empty, thumbnail=d.Embed.Empty, author={}, fields=[]):
+    embed = d.Embed(title=title, type=type, description=description, url=url, timestamp=timestamp, colour=colour if isinstance(ctx.channel, d.TextChannel) else color)
+
+    if footer:
+        embed.set_footer(text=footer.get('text', d.Embed.Empty), icon_url=footer.get('icon_url', d.Embed.Empty))
+    if image:
+        embed.set_image(url=image)
+    if thumbnail:
+        embed.set_thumbnail(url=thumbnail)
+    if author:
+        embed.set_author(name=author.get('name', d.Embed.Empty), url=author.get('url', d.Embed.Empty), icon_url=author.get('icon_url', d.Embed.Empty))
+    for field in fields:
+        embed.add_field(name=field.get('name', d.Embed.Empty), value=field.get('value', d.Embed.Empty), inline=field.get('inline', True))
+
+    return embed
 
 def get_kwargs(ctx, args, *, limit=False):
     destination = ctx
