@@ -41,11 +41,11 @@ class MsG:
             'cogs/blacklists.pkl', {'global_blacklist': set(), 'guild_blacklist': {}, 'user_blacklist': {}})
         self.aliases = u.setdefault('cogs/aliases.pkl', {})
 
-        if u.tasks['auto_qual']:
-            for channel in u.tasks['auto_qual']:
+        if u.tasks['auto_rev']:
+            for channel in u.tasks['auto_rev']:
                 temp = self.bot.get_channel(channel)
                 self.bot.loop.create_task(self.queue_for_reversification(temp))
-                print('AUTO-QUALITIFYING : #{}'.format(temp.name))
+                print('AUTO-REVERSIFYING : #{}'.format(temp.name))
             self.reversifying = True
             self.bot.loop.create_task(self._reversify())
         # if not self.updating:
@@ -476,18 +476,18 @@ class MsG:
                 await message.add_reaction('\N{HOURGLASS WITH FLOWING SAND}')
 
         except exc.Abort:
-            u.tasks['auto_qual'].remove(channel.id)
+            u.tasks['auto_rev'].remove(channel.id)
             u.dump(u.tasks, 'cogs/tasks.pkl')
-            if not u.tasks['auto_qual']:
+            if not u.tasks['auto_rev']:
                 self.reversifying = False
             print('STOPPED : reversifying #{}'.format(channel.name))
             await channel.send('**Stopped queueing messages for reversification in** {}'.format(channel.mention), delete_after=5)
 
-    @commands.command(name='autoreversify', aliases=['autoqual'])
+    @commands.command(name='autoreversify', aliases=['autorev'])
     @commands.has_permissions(manage_channels=True)
     async def auto_reversify(self, ctx):
-        if ctx.channel.id not in u.tasks['auto_qual']:
-            u.tasks['auto_qual'].append(ctx.channel.id)
+        if ctx.channel.id not in u.tasks['auto_rev']:
+            u.tasks['auto_rev'].append(ctx.channel.id)
             u.dump(u.tasks, 'cogs/tasks.pkl')
             self.bot.loop.create_task(
                 self.queue_for_reversification(ctx.channel))
