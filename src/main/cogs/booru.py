@@ -353,9 +353,6 @@ class MsG:
                 except exc.MatchError as e:
                     await ctx.send('**No probable match for:** `{}`'.format(e), delete_after=7)
 
-                finally:
-                    await asyncio.sleep(self.RATE_LIMIT)
-
             if not c:
                 await ctx.message.add_reaction('\N{CROSS MARK}')
 
@@ -414,7 +411,6 @@ class MsG:
 
                     finally:
                         n += 1
-                        await asyncio.sleep(self.RATE_LIMIT)
 
             if c <= 0:
                 await ctx.message.add_reaction('\N{CROSS MARK}')
