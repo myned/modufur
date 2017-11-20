@@ -199,15 +199,81 @@ class MsG:
         if not c:
             await ctx.message.add_reaction('\N{CROSS MARK}')
 
+    @commands.group(aliases=['g'])
+    async def get(self, ctx):
+        if not ctx.invoked_subcommand:
             await ctx.send('**Use a flag to get items.**\n*Type* `{}help get` *for more info.*'.format(ctx.prefix), delete_after=7)
+            await ctx.message.add_reaction('\N{CROSS MARK}')
 
-
-    @commands.command(name='getpool', aliases=['pool', 'getp', 'gp'], brief='e621 Search for pools', description='e621 | NSFW\nReturn pool for query', usage='[related|rel]')
-            await ctx.send('**Invalid url**', delete_after=7)
-                    # await ctx.send(f'**No aliases found for:** `{tag}`', delete_after=7)
-            await ctx.send('**Invalid url or file**', delete_after=7)
+    @get.command(name='info', aliases=['i'], brief='e621 - Get info from post', description='Return info for given post', usage='[info|i]')
     @checks.del_ctx()
-    async def get_pool(self, ctx, *args):
+    async def _get_info(self, ctx, *args):
+        try:
+            kwargs = u.get_kwargs(ctx, args)
+            dest, posts = kwargs['destination'], kwargs['remaining']
+
+            if not posts:
+                raise exc.MissingArgument
+
+            for ident in posts:
+                try:
+                    await dest.trigger_typing()
+
+                    ident = ident if not ident.isdigit() else re.search('show/([0-9]+)', ident).group(1)
+                    post = await u.fetch('https://e621.net/post/show.json', params={'id': ident}, json=True)
+
+                    embed = d.Embed(
+                        title=', '.join(post['artist']), url=f'https://e621.net/post/show/{post["id"]}', color=ctx.me.color if isinstance(ctx.channel, d.TextChannel) else u.color)
+                    embed.set_thumbnail(url=post['file_url'])
+                    embed.set_author(name=f'{u.get_aspectratio(post["width"], post["height"])} \N{ZERO WIDTH SPACE} {post["width"]} x {post["height"]}',
+                                     url=f'https://e621.net/post?tags=ratio:{post["width"]/post["height"]:.2f}', icon_url=ctx.author.avatar_url)
+                    embed.set_footer(text=str(post['score']),
+                                     icon_url=self._get_score(post['score']))
+
+                # except
+
+                finally:
+                    await asyncio.sleep(self.RATE_LIMIT)
+
+        except exc.MissingArgument:
+            await ctx.send('**Invalid url**', delete_after=7)
+            await ctx.message.add_reaction('\N{CROSS MARK}')
+
+    @get.command(name='image', aliases=['img'], brief='e621 - Get image link', description='Return image for given post', usage='[image|img]')
+    @checks.del_ctx()
+    async def _get_image(self, ctx, *args):
+        try:
+            kwargs = u.get_kwargs(ctx, args)
+            dest, urls = kwargs['destination'], kwargs['remaining']
+            c = 0
+
+            if not urls:
+                raise exc.MissingArgument
+
+            for url in urls:
+                try:
+                    await dest.trigger_typing()
+
+                    await dest.send(await scraper.get_image(url))
+
+                    c += 1
+
+                # except
+                    # await ctx.send(f'**No aliases found for:** `{tag}`', delete_after=7)
+
+                finally:
+                    await asyncio.sleep(self.RATE_LIMIT)
+
+            if not c:
+                await ctx.message.add_reaction('\N{CROSS MARK}')
+
+        except exc.MissingArgument:
+            await ctx.send('**Invalid url or file**', delete_after=7)
+            await ctx.message.add_reaction('\N{CROSS MARK}')
+
+    @get.command(name='pool', aliases=['p'], brief='e621 - Get pool link', description='Return pool info for given query', usage='[pool|p]')
+    @checks.del_ctx()
+    async def _get_pool(self, ctx, *args):
         def on_reaction(reaction, user):
             if reaction.emoji == '\N{OCTAGONAL SIGN}' and reaction.message.id == ctx.message.id and user is ctx.author:
                 raise exc.Abort(match)
@@ -237,7 +303,8 @@ class MsG:
                     selection = future.result()
 
                 await match.delete()
-                tempool = [pool for pool in pool_request if pool['name'] == pools[int(selection.content) - 1]][0]
+                tempool = [pool for pool in pool_request if pool['name']
+                           == pools[int(selection.content) - 1]][0]
                 await selection.delete()
             elif pool_request:
                 tempool = pool_request[0]
@@ -247,29 +314,6 @@ class MsG:
             await ctx.send(f'**{tempool["name"]}**\nhttps://e621.net/pool/show/{tempool["id"]}')
 
         except exc.Abort as e:
-
-    @commands.command(name='getimage', aliases=['geti', 'gi'])
-    @checks.del_ctx()
-    async def get_image(self, ctx, *args):
-        try:
-            kwargs = u.get_kwargs(ctx, args)
-            dest, urls = kwargs['destination'], kwargs['remaining']
-
-            if not urls:
-                raise exc.MissingArgument
-
-            for url in urls:
-                try:
-                    await dest.trigger_typing()
-
-                    await dest.send('{}'.format(await scraper.get_image(url)))
-
-                finally:
-                    await asyncio.sleep(self.RATE_LIMIT)
-
-
-        except exc.MissingArgument:
-            await ctx.message.add_reaction('\N{CROSS MARK}')
             await e.message.edit(content='**Search aborted**', delete_after=7)
 
     # Reverse image searches a linked image using the public iqdb
@@ -491,7 +535,8 @@ class MsG:
                 await destination.trigger_typing()
             elif pool_request:
                 tempool = pool_request[0]
-                pool = {'name': pool_request[0]['name'], 'id': pool_request[0]['id']}
+                pool = {'name': pool_request[0]
+                        ['name'], 'id': pool_request[0]['id']}
             else:
                 raise exc.NotFound
 
@@ -499,7 +544,8 @@ class MsG:
             while len(posts) < tempool['post_count']:
                 posts_request = await u.fetch('https://{}.net/pool/show.json'.format(booru), params={'id': tempool['id'], 'page': page}, json=True)
                 for post in posts_request['posts']:
-                    posts[post['id']] = {'artist': ', '.join(post['artist']), 'url': post['file_url']}
+                    posts[post['id']] = {'artist': ', '.join(
+                        post['artist']), 'url': post['file_url']}
                 page += 1
 
             return pool, posts
