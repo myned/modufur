@@ -28,9 +28,18 @@ class Administration:
             self.deleting = True
             self.bot.loop.create_task(self.delete())
 
-    @commands.command(name=',prunefromguild', aliases=[',pfg', ',prunefromserver', ',pfs'], brief='Prune a user\'s messages from the guild', description='about flag centers on message 50 of 101 messages\n\npfg \{user id\} [before|after|about] [\{message id\}]\n\nExample:\npfg \{user id\} before \{message id\}')
+    @commands.group(aliases=['pru', 'clear', 'cl'], hidden=True)
     @commands.is_owner()
-    async def prune_all_user(self, ctx, user, when=None, reference=None):
+    async def prune(self, ctx):
+        pass
+
+    @prune.group(name='user', aliases=['u', 'member', 'm'])
+    async def _prune_user(self, ctx):
+        pass
+
+    @_prune_user.command(name='all', aliases=['a'], brief='Prune a user\'s messages from the guild', description='about flag centers on message 50 of 101 messages\n\npfg \{user id\} [before|after|about] [\{message id\}]\n\nExample:\npfg \{user id\} before \{message id\}', hidden=True)
+    @commands.is_owner()
+    async def _prune_user_all(self, ctx, user, when=None, reference=None):
         def yes(msg):
             if msg.content.lower() == 'y' and msg.channel is ctx.channel and msg.author is ctx.author:
                 return True
