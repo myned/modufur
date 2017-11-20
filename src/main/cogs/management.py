@@ -24,7 +24,7 @@ class Administration:
             for channel in u.tasks['auto_del']:
                 temp = self.bot.get_channel(channel)
                 self.bot.loop.create_task(self.queue_for_deletion(temp))
-                print('AUTO-DELETING : #{}'.format(temp.id))
+                print('AUTO-DELETING : #{}'.format(temp.name))
             self.deleting = True
             self.bot.loop.create_task(self.delete())
 
