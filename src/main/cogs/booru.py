@@ -52,9 +52,6 @@ class MsG:
         #     self.updating = True
         #     self.bot.loop.create_task(self._update_suggested())
 
-    # async def get_post(self, channel):
-    #     post_request = await u.fetch('https://e621.net/post/index.json', json=True)
-    #
     async def _update_suggested(self):
         while self.updating:
             print('Checking for tag updates...')
