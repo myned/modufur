@@ -1324,7 +1324,7 @@ class MsG:
 
     @_get_blacklist.group(name='all', aliases=['a'])
     async def __get_all_blacklists(self, ctx):
-        if ctx.invoked_subcommand is None:
+        if not ctx.invoked_subcommand:
             await ctx.send('**Invalid blacklist**')
             await ctx.message.add_reaction('\N{CROSS MARK}')
 
