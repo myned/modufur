@@ -5,7 +5,7 @@ from datetime import datetime as dt
 
 import discord as d
 from discord import errors as err
-from discord.ext import commands
+from discord.ext import commands as cmds
 
 from misc import exceptions as exc
 from misc import checks
@@ -28,8 +28,8 @@ class Administration:
             self.deleting = True
             self.bot.loop.create_task(self.delete())
 
-    @commands.group(aliases=['pru', 'clear', 'cl'], hidden=True)
-    @commands.is_owner()
+    @cmds.group(aliases=['pru', 'clear', 'cl'], hidden=True)
+    @cmds.is_owner()
     async def prune(self, ctx):
         pass
 
@@ -38,7 +38,7 @@ class Administration:
         pass
 
     @_prune_user.command(name='all', aliases=['a'], brief='Prune a user\'s messages from the guild', description='about flag centers on message 50 of 101 messages\n\npfg \{user id\} [before|after|about] [\{message id\}]\n\nExample:\npfg \{user id\} before \{message id\}', hidden=True)
-    @commands.is_owner()
+    @cmds.is_owner()
     async def _prune_user_all(self, ctx, user, when=None, reference=None):
         def yes(msg):
             if msg.content.lower() == 'y' and msg.channel is ctx.channel and msg.author is ctx.author:
@@ -153,8 +153,8 @@ class Administration:
             print('STOPPED : deleting #{}'.format(channel.id))
             await channel.send('**Stopped queueing messages for deletion in** {}'.format(channel.mention), delete_after=5)
 
-    @commands.command(name='autodelete', aliases=['autodel'])
-    @commands.has_permissions(administrator=True)
+    @cmds.command(name='autodelete', aliases=['autodel'])
+    @cmds.has_permissions(administrator=True)
     async def auto_delete(self, ctx):
         try:
             if ctx.channel.id not in u.tasks['auto_del']:
@@ -173,8 +173,8 @@ class Administration:
             await ctx.send('**Already auto-deleting in {}.** Type `stop` to stop.'.format(ctx.channel.mention), delete_after=7)
             await ctx.message.add_reaction('\N{CROSS MARK}')
 
-    @commands.group(aliases=['setting', 'set', 's'])
-    @commands.has_permissions(administrator=True)
+    @cmds.group(aliases=['setting', 'set', 's'])
+    @cmds.has_permissions(administrator=True)
     async def settings(self, ctx):
         pass
 

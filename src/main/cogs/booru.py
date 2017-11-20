@@ -11,7 +11,7 @@ from fractions import gcd
 import discord as d
 from discord import errors as err
 from discord import reaction
-from discord.ext import commands
+from discord.ext import commands as cmds
 from discord.ext.commands import errors as errext
 
 from cogs import tools
@@ -113,7 +113,7 @@ class MsG:
             return 'https://emojipedia-us.s3.amazonaws.com/thumbs/320/twitter/103/sparkles_2728.png'
         return None
 
-    # @commands.command()
+    # @cmds.command()
     # async def auto_post(self, ctx):
     #     try:
     #         if ctx.channel.id not in u.tasks['auto_post']:
@@ -133,7 +133,7 @@ class MsG:
     #         await ctx.send('**Already auto-posting in {}.** Type `stop` to stop.'.format(ctx.channel.mention), delete_after=7)
     #         await ctx.message.add_reaction('\N{CROSS MARK}')
 
-    @commands.group(aliases=['tag', 't'], brief='e621 - Get info on tags', description='e621 | NSFW\nGroup command for obtaining info on tags', usage='[tags|tag|t]')
+    @cmds.group(aliases=['tag', 't'], brief='e621 - Get info on tags', description='e621 | NSFW\nGroup command for obtaining info on tags', usage='[tags|tag|t]')
     async def tags(self, ctx):
         pass
 
@@ -197,7 +197,7 @@ class MsG:
         if not c:
             await ctx.message.add_reaction('\N{CROSS MARK}')
 
-    @commands.group(aliases=['g'])
+    @cmds.group(aliases=['g'])
     async def get(self, ctx):
         if not ctx.invoked_subcommand:
             await ctx.send('**Use a flag to get items.**\n*Type* `{}help get` *for more info.*'.format(ctx.prefix), delete_after=7)
@@ -313,7 +313,7 @@ class MsG:
             await e.message.edit(content='**Search aborted**', delete_after=7)
 
     # Reverse image searches a linked image using the public iqdb
-    @commands.command(name='reverse', aliases=['rev', 'ris'], brief='e621 Reverse image search', description='e621 | NSFW\nReverse-search an image with given URL')
+    @cmds.command(name='reverse', aliases=['rev', 'ris'], brief='e621 Reverse image search', description='e621 | NSFW\nReverse-search an image with given URL')
     async def reverse(self, ctx, *args):
         try:
             kwargs = u.get_kwargs(ctx, args)
@@ -357,7 +357,7 @@ class MsG:
             await ctx.send(f'`{e}` **too large.** Maximum is 8 MB', delete_after=7)
             await ctx.message.add_reaction('\N{CROSS MARK}')
 
-    @commands.command(name='reversify', aliases=['revify', 'risify', 'rify'])
+    @cmds.command(name='reversify', aliases=['revify', 'risify', 'rify'])
     async def reversify(self, ctx, *args):
         try:
             kwargs = u.get_kwargs(ctx, args, limit=self.HISTORY_LIMIT / 5)
@@ -500,8 +500,8 @@ class MsG:
             print('STOPPED : reversifying #{}'.format(channel.name))
             await channel.send('**Stopped queueing messages for reversification in** {}'.format(channel.mention), delete_after=5)
 
-    @commands.command(name='autoreversify', aliases=['autorev'])
-    @commands.has_permissions(manage_channels=True)
+    @cmds.command(name='autoreversify', aliases=['autorev'])
+    @cmds.has_permissions(manage_channels=True)
     async def auto_reversify(self, ctx):
         if ctx.channel.id not in u.tasks['auto_rev']:
             u.tasks['auto_rev'].append(ctx.channel.id)
@@ -641,7 +641,7 @@ class MsG:
             raise exc.NotFound(formatter.tostring(tags))
 
     # Creates reaction-based paginator for linked pools
-    @commands.command(name='poolpage', aliases=['poolp', 'pp', 'e621pp', 'e6pp', '6pp'], brief='e621 pool paginator', description='e621 | NSFW\nShow pools in a page format')
+    @cmds.command(name='poolpage', aliases=['poolp', 'pp', 'e621pp', 'e6pp', '6pp'], brief='e621 pool paginator', description='e621 | NSFW\nShow pools in a page format')
     async def pool_paginator(self, ctx, *args):
         def on_reaction(reaction, user):
             if reaction.emoji == '\N{OCTAGONAL SIGN}' and reaction.message.id == ctx.message.id and (user is ctx.author or user.permissions_in(reaction.message.channel).manage_messages):
@@ -772,7 +772,7 @@ class MsG:
 
                     await ctx.author.send('`{} / {}`'.format(hearted.index(embed) + 1, len(hearted)), embed=embed)
 
-    @commands.command(name='e621page', aliases=['e621p', 'e6p', '6p'])
+    @cmds.command(name='e621page', aliases=['e621p', 'e6p', '6p'])
     @checks.is_nsfw()
     async def e621_paginator(self, ctx, *args):
         def on_reaction(reaction, user):
@@ -932,7 +932,7 @@ class MsG:
     #         await ctx.send('\N{NO ENTRY} {} **is not an NSFW channel**'.format(ctx.channel.mention), delete_after=7)
     #         await ctx.message.add_reaction('\N{NO ENTRY}')
 
-    @commands.command(name='e926page', aliases=['e926p', 'e9p', '9p'])
+    @cmds.command(name='e926page', aliases=['e926p', 'e9p', '9p'])
     async def e926_paginator(self, ctx, *args):
         def on_reaction(reaction, user):
             if reaction.emoji == '\N{OCTAGONAL SIGN}' and reaction.message.id == ctx.message.id and (user is ctx.author or user.permissions_in(reaction.message.channel).manage_messages):
@@ -1086,7 +1086,7 @@ class MsG:
                     await ctx.author.send('`{} / {}`'.format(hearted.index(embed) + 1, len(hearted)), embed=embed)
 
     # Searches for and returns images from e621.net given tags when not blacklisted
-    @commands.group(aliases=['e6', '6'], brief='e621 | NSFW', description='e621 | NSFW\nTag-based search for e621.net\n\nYou can only search 5 tags and 6 images at once for now.\ne6 [tags...] ([# of images])')
+    @cmds.group(aliases=['e6', '6'], brief='e621 | NSFW', description='e621 | NSFW\nTag-based search for e621.net\n\nYou can only search 5 tags and 6 images at once for now.\ne6 [tags...] ([# of images])')
     @checks.is_nsfw()
     async def e621(self, ctx, *args):
         try:
@@ -1135,7 +1135,7 @@ class MsG:
     #         await ctx.message.add_reaction('\N{NO ENTRY}')
 
     # Searches for and returns images from e926.net given tags when not blacklisted
-    @commands.command(aliases=['e9', '9'], brief='e926 | SFW', description='e926 | SFW\nTag-based search for e926.net\n\nYou can only search 5 tags and 6 images at once for now.\ne9 [tags...] ([# of images])')
+    @cmds.command(aliases=['e9', '9'], brief='e926 | SFW', description='e926 | SFW\nTag-based search for e926.net\n\nYou can only search 5 tags and 6 images at once for now.\ne9 [tags...] ([# of images])')
     async def e926(self, ctx, *args):
         try:
             kwargs = u.get_kwargs(ctx, args, limit=3)
@@ -1176,7 +1176,7 @@ class MsG:
             await ctx.send('**Request timed out**')
             await ctx.message.add_reaction('\N{CROSS MARK}')
 
-    @commands.group(aliases=['fave', 'fav', 'f'])
+    @cmds.group(aliases=['fave', 'fav', 'f'])
     async def favorite(self, ctx):
         if not ctx.invoked_subcommand:
             await ctx.send('**Use a flag to manage favorites.**\n*Type* `{}help fav` *for more info.*'.format(ctx.prefix), delete_after=7)
@@ -1286,7 +1286,7 @@ class MsG:
         pass
 
     # Umbrella command structure to manage global, channel, and user blacklists
-    @commands.group(aliases=['bl', 'b'], brief='Manage blacklists', description='Blacklist base command for managing blacklists\n\n`bl get [blacklist]` to show a blacklist\n`bl set [blacklist] [tags]` to replace a blacklist\n`bl clear [blacklist]` to clear a blacklist\n`bl add [blacklist] [tags]` to add tags to a blacklist\n`bl remove [blacklist] [tags]` to remove tags from a blacklist', usage='[flag] [blacklist] ([tags])')
+    @cmds.group(aliases=['bl', 'b'], brief='Manage blacklists', description='Blacklist base command for managing blacklists\n\n`bl get [blacklist]` to show a blacklist\n`bl set [blacklist] [tags]` to replace a blacklist\n`bl clear [blacklist]` to clear a blacklist\n`bl add [blacklist] [tags]` to add tags to a blacklist\n`bl remove [blacklist] [tags]` to remove tags from a blacklist', usage='[flag] [blacklist] ([tags])')
     async def blacklist(self, ctx):
         if not ctx.invoked_subcommand:
             await ctx.send('**Use a flag to manage blacklists.**\n*Type* `{}help bl` *for more info.*'.format(ctx.prefix), delete_after=7)
@@ -1340,7 +1340,7 @@ class MsG:
             await ctx.message.add_reaction('\N{CROSS MARK}')
 
     @__get_all_blacklists.command(name='guild', aliases=['g'])
-    @commands.has_permissions(manage_channels=True)
+    @cmds.has_permissions(manage_channels=True)
     async def ___get_all_guild_blacklists(self, ctx, *args):
         dest = u.get_kwargs(ctx, args)['destination']
 
@@ -1350,7 +1350,7 @@ class MsG:
         await dest.send('\N{NO ENTRY SIGN} **__{} blacklists:__**\n\n{}'.format(guild.name, formatter.dict_tostring(self.blacklists['guild_blacklist'].get(guild.id, {}))))
 
     @__get_all_blacklists.command(name='user', aliases=['u', 'member', 'm'])
-    @commands.is_owner()
+    @cmds.is_owner()
     async def ___get_all_user_blacklists(self, ctx, *args):
         dest = u.get_kwargs(ctx, args)['destination']
 
@@ -1363,7 +1363,7 @@ class MsG:
             await ctx.message.add_reaction('\N{CROSS MARK}')
 
     @_add_tags.command(name='global', aliases=['gl', 'g'])
-    @commands.is_owner()
+    @cmds.is_owner()
     async def __add_global_tags(self, ctx, *args):
         kwargs = u.get_kwargs(ctx, args)
         dest, tags = kwargs['destination'], kwargs['remaining']
@@ -1384,7 +1384,7 @@ class MsG:
         await dest.send('**Added to global blacklist:**\n```\n{}```'.format(formatter.tostring(tags)), delete_after=5)
 
     @_add_tags.command(name='channel', aliases=['ch', 'c'])
-    @commands.has_permissions(manage_channels=True)
+    @cmds.has_permissions(manage_channels=True)
     async def __add_channel_tags(self, ctx, *args):
         kwargs = u.get_kwargs(ctx, args)
         dest, tags = kwargs['destination'], kwargs['remaining']
@@ -1436,7 +1436,7 @@ class MsG:
             await ctx.message.add_reaction('\N{CROSS MARK}')
 
     @_remove_tags.command(name='global', aliases=['gl', 'g'])
-    @commands.is_owner()
+    @cmds.is_owner()
     async def __remove_global_tags(self, ctx, *args):
         try:
             kwargs = u.get_kwargs(ctx, args)
@@ -1458,7 +1458,7 @@ class MsG:
             await ctx.message.add_reaction('\N{CROSS MARK}')
 
     @_remove_tags.command(name='channel', aliases=['ch', 'c'])
-    @commands.has_permissions(manage_channels=True)
+    @cmds.has_permissions(manage_channels=True)
     async def __remove_channel_tags(self, ctx, *args):
         try:
             kwargs = u.get_kwargs(ctx, args)
@@ -1512,7 +1512,7 @@ class MsG:
             await ctx.message.add_reaction('\N{CROSS MARK}')
 
     @_clear_blacklist.command(name='global', aliases=['gl', 'g'])
-    @commands.is_owner()
+    @cmds.is_owner()
     async def __clear_global_blacklist(self, ctx, *args):
         dest = u.get_kwargs(ctx, args)['destination']
 
@@ -1522,7 +1522,7 @@ class MsG:
         await dest.send('**Global blacklist cleared**', delete_after=5)
 
     @_clear_blacklist.command(name='channel', aliases=['ch', 'c'])
-    @commands.has_permissions(manage_channels=True)
+    @cmds.has_permissions(manage_channels=True)
     async def __clear_channel_blacklist(self, ctx, *args):
         dest = u.get_kwargs(ctx, args)['destination']
 
