@@ -87,7 +87,7 @@ class Bot:
     @cmds.is_owner()
     async def change_username(self, ctx, *, username=None):
         if username:
-            await self.bot.edit(username=username)
+            await self.bot.user.edit(username=username)
             await ctx.send(f'**Username changed to** `{username}`')
         else:
             await ctx.send('**Invalid string**', delete_after=7)
