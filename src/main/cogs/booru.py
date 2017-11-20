@@ -1,12 +1,12 @@
 import asyncio
 import json
 import re
+import sys
 import traceback as tb
 from contextlib import suppress
-from fractions import gcd
 from datetime import datetime as dt
 from datetime import timedelta as td
-import sys
+from fractions import gcd
 
 import discord as d
 from discord import errors as err
@@ -219,7 +219,8 @@ class MsG:
                 try:
                     await dest.trigger_typing()
 
-                    ident = ident if not ident.isdigit() else re.search('show/([0-9]+)', ident).group(1)
+                    ident = ident if not ident.isdigit() else re.search(
+                        'show/([0-9]+)', ident).group(1)
                     post = await u.fetch('https://e621.net/post/show.json', params={'id': ident}, json=True)
 
                     embed = d.Embed(
