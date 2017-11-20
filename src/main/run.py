@@ -114,6 +114,17 @@ async def on_command_completion(ctx):
     if ctx.command.name != 'lastcommand':
         u.last_commands[ctx.author.id] = ctx
 
+@bot.event
+async def on_guild_remove(guild):
+    print(f'LEFT : {guild.name}')
+
+    for task, idents in u.tasks.items():
+        for channel in guild.channels:
+            if channel.id in idents:
+                idents.remove(channel.id)
+                print(f'STOPPED : {task} in #{channel.id}')
+    u.dump(u.tasks, 'cogs/tasks.pkl')
+
 # d.opus.load_opus('opus')
 
 

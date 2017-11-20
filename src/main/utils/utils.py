@@ -67,7 +67,7 @@ def dump(obj, filename, *, json=False):
 
 
 settings = setdefault('settings.pkl', {'del_ctx': [], 'prefixes': {}})
-tasks = setdefault('cogs/tasks.pkl', {'auto_del': [], 'auto_qual': [], 'auto_rev': []})
+tasks = setdefault('cogs/tasks.pkl', {'auto_del': [], 'auto_rev': []})
 temp = setdefault('temp.pkl', {})
 
 RATE_LIMIT = 2.2
@@ -107,9 +107,11 @@ def close(loop):
     print('Finished cancelling tasks.')
 
 
-async def fetch(url, *, params={}, json=False):
+async def fetch(url, *, params={}, json=False, response=False):
     async with session.get(url, params=params, headers={'User-Agent': 'Myned/Modumind/dev'}) as r:
-        if json:
+        if response:
+            return r
+        elif json:
             return await r.json()
         return await r.read()
 

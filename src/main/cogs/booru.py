@@ -1,12 +1,12 @@
 import asyncio
 import json
 import re
+import sys
 import traceback as tb
 from contextlib import suppress
-from fractions import gcd
 from datetime import datetime as dt
 from datetime import timedelta as td
-import sys
+from fractions import gcd
 
 import discord as d
 from discord import errors as err
@@ -41,11 +41,11 @@ class MsG:
             'cogs/blacklists.pkl', {'global_blacklist': set(), 'guild_blacklist': {}, 'user_blacklist': {}})
         self.aliases = u.setdefault('cogs/aliases.pkl', {})
 
-        if u.tasks['auto_qual']:
-            for channel in u.tasks['auto_qual']:
+        if u.tasks['auto_rev']:
+            for channel in u.tasks['auto_rev']:
                 temp = self.bot.get_channel(channel)
                 self.bot.loop.create_task(self.queue_for_reversification(temp))
-                print('AUTO-QUALITIFYING : #{}'.format(temp.name))
+                print('AUTO-REVERSIFYING : #{}'.format(temp.name))
             self.reversifying = True
             self.bot.loop.create_task(self._reversify())
         # if not self.updating:
@@ -219,7 +219,8 @@ class MsG:
                 try:
                     await dest.trigger_typing()
 
-                    ident = ident if not ident.isdigit() else re.search('show/([0-9]+)', ident).group(1)
+                    ident = ident if not ident.isdigit() else re.search(
+                        'show/([0-9]+)', ident).group(1)
                     post = await u.fetch('https://e621.net/post/show.json', params={'id': ident}, json=True)
 
                     embed = d.Embed(
@@ -227,7 +228,7 @@ class MsG:
                     embed.set_thumbnail(url=post['file_url'])
                     embed.set_author(name=f'{u.get_aspectratio(post["width"], post["height"])} \N{ZERO WIDTH SPACE} {post["width"]} x {post["height"]}',
                                      url=f'https://e621.net/post?tags=ratio:{post["width"]/post["height"]:.2f}', icon_url=ctx.author.avatar_url)
-                    embed.set_footer(text=str(post['score']),
+                    embed.set_footer(text=post['score'],
                                      icon_url=self._get_score(post['score']))
 
                 # except
@@ -342,7 +343,7 @@ class MsG:
                     embed.set_image(url=post['file_url'])
                     embed.set_author(name=f'{u.get_aspectratio(post["width"], post["height"])} \N{ZERO WIDTH SPACE} {post["width"]} x {post["height"]}',
                                      url=f'https://e621.net/post?tags=ratio:{post["width"]/post["height"]:.2f}', icon_url=ctx.author.avatar_url)
-                    embed.set_footer(text=str(post['score']),
+                    embed.set_footer(text=post['score'],
                                      icon_url=self._get_score(post['score']))
 
                     await dest.send('**Probable match**', embed=embed)
@@ -352,14 +353,14 @@ class MsG:
                 except exc.MatchError as e:
                     await ctx.send('**No probable match for:** `{}`'.format(e), delete_after=7)
 
-                finally:
-                    await asyncio.sleep(self.RATE_LIMIT)
-
             if not c:
                 await ctx.message.add_reaction('\N{CROSS MARK}')
 
         except exc.MissingArgument:
-            await ctx.send('**Invalid url or file** Be sure the link directs to an image file', delete_after=7)
+            await ctx.send('**Invalid url or file.** Be sure the link directs to an image file', delete_after=7)
+            await ctx.message.add_reaction('\N{CROSS MARK}')
+        except exc.SizeError as e:
+            await ctx.send(f'`{e}` **too large.** Maximum is 8 MB', delete_after=7)
             await ctx.message.add_reaction('\N{CROSS MARK}')
 
     @commands.command(name='reversify', aliases=['revify', 'risify', 'rify'])
@@ -399,7 +400,17 @@ class MsG:
                     try:
                         await dest.trigger_typing()
 
-                        await dest.send('`{} / {}` **Probable match from** {}\n{}'.format(n, len(links), message.author.display_name, await scraper.get_post(url)))
+                        post = await scraper.get_post(url)
+
+                        embed = d.Embed(
+                            title=', '.join(post['artist']), url=f'https://e621.net/post/show/{post["id"]}', color=ctx.me.color if isinstance(ctx.channel, d.TextChannel) else u.color)
+                        embed.set_image(url=post['file_url'])
+                        embed.set_author(name=f'{u.get_aspectratio(post["width"], post["height"])} \N{ZERO WIDTH SPACE} {post["width"]} x {post["height"]}',
+                                         url=f'https://e621.net/post?tags=ratio:{post["width"]/post["height"]:.2f}', icon_url=ctx.author.avatar_url)
+                        embed.set_footer(
+                            text=post['score'], icon_url=self._get_score(post['score']))
+
+                        await dest.send(f'**Probable match from** {message.author.display_name}', embed=embed)
                         await message.add_reaction('\N{WHITE HEAVY CHECK MARK}')
 
                         if remove:
@@ -410,10 +421,13 @@ class MsG:
                         await ctx.send('`{} / {}` **No probable match for:** `{}`'.format(n, len(links), e), delete_after=7)
                         await message.add_reaction('\N{CROSS MARK}')
                         c -= 1
+                    except exc.SizeError as e:
+                        await ctx.send(f'`{e}` **too large.** Maximum is 8 MB', delete_after=7)
+                        await message.add_reaction('\N{CROSS MARK}')
+                        c -= 1
 
                     finally:
                         n += 1
-                        await asyncio.sleep(self.RATE_LIMIT)
 
             if c <= 0:
                 await ctx.message.add_reaction('\N{CROSS MARK}')
@@ -444,19 +458,30 @@ class MsG:
 
                     post = await scraper.get_post(url)
 
-                    await message.channel.send('**Probable match from** {}\n{}'.format(message.author.display_name, await scraper.get_image(post)))
-                    with suppress(err.NotFound):
-                        await message.add_reaction('\N{WHITE HEAVY CHECK MARK}')
+                    embed = d.Embed(
+                        title=', '.join(post['artist']), url=f'https://e621.net/post/show/{post["id"]}', color=message.channel.guild.me.color if isinstance(message.channel, d.TextChannel) else u.color)
+                    embed.set_image(url=post['file_url'])
+                    embed.set_author(name=f'{u.get_aspectratio(post["width"], post["height"])} \N{ZERO WIDTH SPACE} {post["width"]} x {post["height"]}',
+                                     url=f'https://e621.net/post?tags=ratio:{post["width"]/post["height"]:.2f}', icon_url=message.author.avatar_url)
+                    embed.set_footer(text=post['score'],
+                                     icon_url=self._get_score(post['score']['score']))
 
-                    with suppress(err.NotFound):
-                        await message.delete()
+                    await message.channel.send('**Probable match from** {}'.format(message.author.display_name), embed=embed)
+
+                    await message.add_reaction('\N{WHITE HEAVY CHECK MARK}')
 
                 except exc.MatchError as e:
                     await message.channel.send('**No probable match for:** `{}`'.format(e), delete_after=7)
                     await message.add_reaction('\N{CROSS MARK}')
+                except exc.SizeError as e:
+                    await message.channel.send(f'`{e}` **too large.** Maximum is 8 MB', delete_after=7)
+                    await message.add_reaction('\N{CROSS MARK}')
 
                 finally:
                     await asyncio.sleep(self.RATE_LIMIT)
+
+                    with suppress(err.NotFound):
+                        await message.delete()
 
         print('STOPPED : reversifying')
 
@@ -475,18 +500,18 @@ class MsG:
                 await message.add_reaction('\N{HOURGLASS WITH FLOWING SAND}')
 
         except exc.Abort:
-            u.tasks['auto_qual'].remove(channel.id)
+            u.tasks['auto_rev'].remove(channel.id)
             u.dump(u.tasks, 'cogs/tasks.pkl')
-            if not u.tasks['auto_qual']:
+            if not u.tasks['auto_rev']:
                 self.reversifying = False
             print('STOPPED : reversifying #{}'.format(channel.name))
             await channel.send('**Stopped queueing messages for reversification in** {}'.format(channel.mention), delete_after=5)
 
-    @commands.command(name='autoreversify', aliases=['autoqual'])
+    @commands.command(name='autoreversify', aliases=['autorev'])
     @commands.has_permissions(manage_channels=True)
     async def auto_reversify(self, ctx):
-        if ctx.channel.id not in u.tasks['auto_qual']:
-            u.tasks['auto_qual'].append(ctx.channel.id)
+        if ctx.channel.id not in u.tasks['auto_rev']:
+            u.tasks['auto_rev'].append(ctx.channel.id)
             u.dump(u.tasks, 'cogs/tasks.pkl')
             self.bot.loop.create_task(
                 self.queue_for_reversification(ctx.channel))

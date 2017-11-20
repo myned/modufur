@@ -3,12 +3,21 @@ import re
 
 from bs4 import BeautifulSoup
 from lxml import html
+from hurry.filesize import size, alternative
 
 from misc import exceptions as exc
 from utils import utils as u
 
 
 async def get_post(url):
+    try:
+        image = await u.fetch(url, response=True)
+        filesize = int(image.headers['Content-Length'])
+        if filesize > 8192 * 1024:
+            raise exc.SizeError(size(filesize, system=alternative))
+    except ValueError:
+        raise exc.MissingArgument
+
     await asyncio.sleep(u.RATE_LIMIT)
 
     content = await u.fetch('http://iqdb.harry.lu', params={'url': url})

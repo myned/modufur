@@ -10,6 +10,9 @@ async def send_error(ctx, error):
 # class NSFW(errext.CheckFailure):
 #     pass
 
+class SizeError(Exception):
+    pass
+
 
 class Wrong(Exception):
     pass
