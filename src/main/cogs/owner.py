@@ -194,10 +194,10 @@ class Tools:
         try:
             with io.StringIO() as buff, redirect_stdout(buff):
                 exec(exe)
-                await self.generate(ctx, exe, buff.getvalue())
+                await self.generate(ctx, exe, f'\n{buff.getvalue()}')
 
         except Exception:
-            await ctx.send('```\n{}```'.format(tb.format_exc()))
+            await self.generate(ctx, exe, f'\n{tb.format_exc()}')
 
     @commands.command(name=',evaluate', aliases=[',eval'], hidden=True)
     @commands.is_owner()
@@ -206,10 +206,10 @@ class Tools:
         try:
             with io.StringIO() as buff, redirect_stdout(buff):
                 eval(evl)
-                await self.generate(ctx, evl, buff.getvalue())
+                await self.generate(ctx, evl, f'\n{buff.getvalue()}')
 
         except Exception:
-            await ctx.send('```\n{}```'.format(tb.format_exc()))
+            await self.generate(ctx, evl, f'\n{tb.format_exc()}')
 
     @commands.group(aliases=[',db'], hidden=True)
     @commands.is_owner()
