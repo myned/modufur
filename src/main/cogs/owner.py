@@ -83,6 +83,16 @@ class Bot:
             u.dump(u.config, 'config.json', json=True)
             await ctx.send('**Game changed to** ` `')
 
+    @commands.command(name=',username', aliases=[',user'], hidden=True)
+    @commands.is_owner()
+    async def change_username(self, ctx, *, username=None):
+        if username:
+            await self.bot.edit(username=username)
+            await ctx.send(f'**Username changed to** `{username}`')
+        else:
+            await ctx.send('**Invalid string**', delete_after=7)
+            await ctx.message.add_reaction('\N{CROSS MARK}')
+
 
 class Tools:
 
