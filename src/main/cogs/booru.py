@@ -24,10 +24,9 @@ class MsG:
         self.LIMIT = 100
         self.HISTORY_LIMIT = 150
         self.RATE_LIMIT = u.RATE_LIMIT
-        self.qualiqueue = asyncio.Queue()
-        self.qualitifying = False
-
         self.favorites = u.setdefault('cogs/favorites.pkl', {'tags': set(), 'posts': set()})
+        self.reviqueue = asyncio.Queue()
+        self.reversifying = False
         self.blacklists = u.setdefault(
             'cogs/blacklists.pkl', {'global_blacklist': set(), 'guild_blacklist': {}, 'user_blacklist': {}})
         self.aliases = u.setdefault('cogs/aliases.pkl', {})
@@ -35,10 +34,10 @@ class MsG:
         if u.tasks['auto_qual']:
             for channel in u.tasks['auto_qual']:
                 temp = self.bot.get_channel(channel)
-                self.bot.loop.create_task(self.queue_for_qualitification(temp))
+                self.bot.loop.create_task(self.queue_for_reversification(temp))
                 print('AUTO-QUALITIFYING : #{}'.format(temp.name))
-            self.bot.loop.create_task(self._qualitify())
-            self.qualitifying = True
+            self.reversifying = True
+            self.bot.loop.create_task(self._reversify())
 
     # async def get_post(self, channel):
     #     post_request = await u.fetch('https://e621.net/post/index.json', json=True)
@@ -183,7 +182,7 @@ class MsG:
     # Reverse image searches a linked image using the public iqdb
     @commands.command(name='reverse', aliases=['rev', 'ris'], brief='e621 Reverse image search', description='e621 | NSFW\nReverse-search an image with given URL')
     @checks.del_ctx()
-    async def reverse_image_search(self, ctx, *args):
+    async def reverse(self, ctx, *args):
         try:
             kwargs = u.get_kwargs(ctx, args)
             dest, urls = kwargs['destination'], kwargs['remaining']
@@ -191,44 +190,9 @@ class MsG:
 
             if not urls and not ctx.message.attachments:
                 raise exc.MissingArgument
-
-            for url in urls:
-                try:
-                    await dest.trigger_typing()
-
-                    await dest.send('**Probable match**\n{}'.format(await scraper.get_post(url)))
-
-                    c += 1
-                    await asyncio.sleep(self.RATE_LIMIT)
-
-                except exc.MatchError as e:
 
             for attachment in ctx.message.attachments:
-                try:
-                    await dest.trigger_typing()
-
-                    await dest.send('**Probable match**\n{}'.format(await scraper.get_post(attachment.url)))
-
-                    c += 1
-                    await asyncio.sleep(self.RATE_LIMIT)
-
-                except exc.MatchError as e:
-                    await ctx.send('**No probable match for:** `{}`'.format(e), delete_after=10)
-
-
-        except exc.MissingArgument:
-            await ctx.message.add_reaction('\N{CROSS MARK}')
-
-    @commands.command(name='quality', aliases=['qual', 'qrev', 'qis'])
-    @checks.del_ctx()
-    async def quality_reverse_image_search(self, ctx, *args):
-        try:
-            kwargs = u.get_kwargs(ctx, args)
-            dest, urls = kwargs['destination'], kwargs['remaining']
-            c = 0
-
-            if not urls and not ctx.message.attachments:
-                raise exc.MissingArgument
+                urls.append(attachment.url)
 
             for url in urls:
                 try:
@@ -236,27 +200,25 @@ class MsG:
 
                     post = await scraper.get_post(url)
 
-                    await dest.send('**Probable match**\n{}'.format(await scraper.get_image(post)))
+                    embed = d.Embed(
+                        title=', '.join(post['artist']), url=f'https://e621.net/post/show/{post["id"]}', color=ctx.me.color if isinstance(ctx.channel, d.TextChannel) else u.color)
+                    embed.set_image(url=post['file_url'])
+                    embed.set_author(name=f'{u.get_aspectratio(post["width"], post["height"])} \N{ZERO WIDTH SPACE} {post["width"]} x {post["height"]}',
+                                     url=f'https://e621.net/post?tags=ratio:{post["width"]/post["height"]:.2f}', icon_url=ctx.author.avatar_url)
+                    embed.set_footer(text=str(post['score']),
+                                     icon_url=self._get_score(post['score']))
+
+                    await dest.send('**Probable match**', embed=embed)
 
                     c += 1
-                    await asyncio.sleep(self.RATE_LIMIT)
 
                 except exc.MatchError as e:
                     await ctx.send('**No probable match for:** `{}`'.format(e), delete_after=7)
 
-            for attachment in ctx.message.attachments:
-                try:
-                    await dest.trigger_typing()
-
-                    post = await scraper.get_post(attachment.url)
-
-                    await dest.send('**Probable match**\n{}'.format(await scraper.get_image(post)))
-
-                    c += 1
+                finally:
                     await asyncio.sleep(self.RATE_LIMIT)
 
-                except exc.MatchError as e:
-
+            if not c:
                 await ctx.message.add_reaction('\N{CROSS MARK}')
 
         except exc.MissingArgument:
@@ -303,8 +265,6 @@ class MsG:
                         await dest.send('`{} / {}` **Probable match from** {}\n{}'.format(n, len(links), message.author.display_name, await scraper.get_post(url)))
                         await message.add_reaction('\N{WHITE HEAVY CHECK MARK}')
 
-                        await asyncio.sleep(self.RATE_LIMIT)
-
                         if remove:
                             with suppress(err.NotFound):
                                 await message.delete()
@@ -316,68 +276,9 @@ class MsG:
 
                     finally:
                         n += 1
-
-
-        except exc.NotFound:
-            await ctx.message.add_reaction('\N{CROSS MARK}')
-        except exc.BoundsError as e:
-            await ctx.message.add_reaction('\N{CROSS MARK}')
-
-    @commands.command(name='qualitify', aliases=['qualify', 'qrevify', 'qrisify', 'qify'])
-    @checks.del_ctx()
-    async def qualitify(self, ctx, *args):
-        try:
-            kwargs = u.get_kwargs(ctx, args, limit=self.HISTORY_LIMIT / 5)
-            dest, remove, limit = kwargs['destination'], kwargs['remove'], kwargs['limit']
-            links = {}
-            c = 0
-
-            if not ctx.author.permissions_in(ctx.channel).manage_messages:
-                dest = ctx.author
-
-            async for message in ctx.channel.history(limit=self.HISTORY_LIMIT * limit):
-                if c >= limit:
-                    break
-                if message.author.id != self.bot.user.id and (re.search('(https?:\/\/[^ ]*\.(?:gif|png|jpg|jpeg))', message.content) is not None or message.embeds or message.attachments):
-                    links[message] = []
-                    for match in re.finditer('(https?:\/\/[^ ]*\.(?:gif|png|jpg|jpeg))', message.content):
-                        links[message].append(match.group(0))
-                    for embed in message.embeds:
-                        if embed.image.url is not d.Embed.Empty:
-                            links[message].append(embed.image.url)
-                    for attachment in message.attachments:
-                        links[message].append(attachment.url)
-
-                    await message.add_reaction('\N{HOURGLASS WITH FLOWING SAND}')
-                    c += 1
-
-            if not links:
-                raise exc.NotFound
-
-            n = 1
-            for message, urls in links.items():
-                for url in urls:
-                    try:
-                        await dest.trigger_typing()
-
-                        post = await scraper.get_post(url)
-
-                        await dest.send('`{} / {}` **Probable match from** {}\n{}'.format(n, len(links), message.author.display_name, await scraper.get_image(post)))
-                        await message.add_reaction('\N{WHITE HEAVY CHECK MARK}')
-
                         await asyncio.sleep(self.RATE_LIMIT)
 
-                        if remove:
-                            with suppress(err.NotFound):
-                                await message.delete()
-
-                    except exc.MatchError as e:
-                        await message.add_reaction('\N{CROSS MARK}')
-                        c -= 1
-
-                    finally:
-                        n += 1
-
+            if c <= 0:
                 await ctx.message.add_reaction('\N{CROSS MARK}')
 
         except exc.NotFound:
@@ -387,9 +288,9 @@ class MsG:
             await ctx.send('`{}` **invalid limit.** Query limited to 30'.format(e), delete_after=7)
             await ctx.message.add_reaction('\N{CROSS MARK}')
 
-    async def _qualitify(self):
-        while self.qualitifying:
-            message = await self.qualiqueue.get()
+    async def _reversify(self):
+        while self.reversifying:
+            message = await self.reviqueue.get()
             urls = []
 
             for match in re.finditer('(https?:\/\/[^ ]*\.(?:gif|png|jpg|jpeg))', message.content):
@@ -410,8 +311,6 @@ class MsG:
                     with suppress(err.NotFound):
                         await message.add_reaction('\N{WHITE HEAVY CHECK MARK}')
 
-                    await asyncio.sleep(self.RATE_LIMIT)
-
                     with suppress(err.NotFound):
                         await message.delete()
 
@@ -419,9 +318,12 @@ class MsG:
                     await message.channel.send('**No probable match for:** `{}`'.format(e), delete_after=7)
                     await message.add_reaction('\N{CROSS MARK}')
 
-        print('STOPPED : qualitifying')
+                finally:
+                    await asyncio.sleep(self.RATE_LIMIT)
 
-    async def queue_for_qualitification(self, channel):
+        print('STOPPED : reversifying')
+
+    async def queue_for_reversification(self, channel):
         def check(msg):
             if msg.content.lower() == 'stop' and msg.channel is channel and msg.author.guild_permissions.administrator:
                 raise exc.Abort
@@ -432,35 +334,32 @@ class MsG:
         try:
             while not self.bot.is_closed():
                 message = await self.bot.wait_for('message', check=check)
-                await self.qualiqueue.put(message)
+                await self.reviqueue.put(message)
                 await message.add_reaction('\N{HOURGLASS WITH FLOWING SAND}')
 
         except exc.Abort:
             u.tasks['auto_qual'].remove(channel.id)
             u.dump(u.tasks, 'cogs/tasks.pkl')
             if not u.tasks['auto_qual']:
-                self.qualitifying = False
-            print('STOPPED : qualitifying #{}'.format(channel.name))
-            await channel.send('**Stopped queueing messages for qualitification in** {}'.format(channel.mention), delete_after=5)
+                self.reversifying = False
+            print('STOPPED : reversifying #{}'.format(channel.name))
+            await channel.send('**Stopped queueing messages for reversification in** {}'.format(channel.mention), delete_after=5)
 
-    @commands.command(name='autoqualitify', aliases=['autoqual'])
+    @commands.command(name='autoreversify', aliases=['autoqual'])
     @commands.has_permissions(manage_channels=True)
-    async def auto_qualitify(self, ctx):
-        try:
+    async def auto_reversify(self, ctx):
         if ctx.channel.id not in u.tasks['auto_qual']:
             u.tasks['auto_qual'].append(ctx.channel.id)
             u.dump(u.tasks, 'cogs/tasks.pkl')
-                self.bot.loop.create_task(self.queue_for_qualitification(ctx.channel))
-                if not self.qualitifying:
-                    self.bot.loop.create_task(self._qualitify())
-                    self.qualitifying = True
+            self.bot.loop.create_task(
+                self.queue_for_reversification(ctx.channel))
+            if not self.reversifying:
+                self.bot.loop.create_task(self._reversify())
+                self.reversifying = True
 
             print('AUTO-QUALITIFYING : #{}'.format(ctx.channel.name))
-                await ctx.send('**Auto-qualitifying all images in** {}'.format(ctx.channel.mention), delete_after=5)
+            await ctx.send('**Auto-reversifying all images in** {}'.format(ctx.channel.mention), delete_after=5)
         else:
-                raise exc.Exists
-
-        except exc.Exists:
             await ctx.send('**Already auto-reversifying in {}.** Type `stop` to stop.'.format(ctx.channel.mention), delete_after=7)
             await ctx.message.add_reaction('\N{CROSS MARK}')
 
