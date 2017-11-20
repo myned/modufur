@@ -24,7 +24,6 @@ class Bot:
     # Close connection to Discord - immediate offline
     @commands.command(name=',die', aliases=[',d'], brief='Kills the bot', description='BOT OWNER ONLY\nCloses the connection to Discord', hidden=True)
     @commands.is_owner()
-    @checks.del_ctx()
     async def die(self, ctx):
         await ctx.message.add_reaction('\N{CRESCENT MOON}')
 
@@ -44,7 +43,6 @@ class Bot:
 
     @commands.command(name=',restart', aliases=[',res', ',r'], hidden=True)
     @commands.is_owner()
-    @checks.del_ctx()
     async def restart(self, ctx):
         await ctx.message.add_reaction('\N{SLEEPING SYMBOL}')
 
@@ -66,7 +64,6 @@ class Bot:
     # Invite bot to bot owner's server
     @commands.command(name=',invite', aliases=[',inv', ',link'], brief='Invite the bot', description='BOT OWNER ONLY\nInvite the bot to a server (Requires admin)', hidden=True)
     @commands.is_owner()
-    @checks.del_ctx()
     async def invite(self, ctx):
         await ctx.message.add_reaction('\N{ENVELOPE}')
 
@@ -74,16 +71,27 @@ class Bot:
 
     @commands.command(name=',status', aliases=[',presence', ',game'], hidden=True)
     @commands.is_owner()
-    @checks.del_ctx()
-    async def status(self, ctx, *, game=None):
-        if game is not None:
+    async def change_status(self, ctx, *, game=None):
+        if game:
             await self.bot.change_presence(game=d.Game(name=game))
             u.config['playing'] = game
             u.dump(u.config, 'config.json', json=True)
+            await ctx.send(f'**Game changed to** `{game}`')
         else:
             await self.bot.change_presence(game=None)
             u.config['playing'] = 'None'
             u.dump(u.config, 'config.json', json=True)
+            await ctx.send('**Game changed to** ` `')
+
+    @commands.command(name=',username', aliases=[',user'], hidden=True)
+    @commands.is_owner()
+    async def change_username(self, ctx, *, username=None):
+        if username:
+            await self.bot.edit(username=username)
+            await ctx.send(f'**Username changed to** `{username}`')
+        else:
+            await ctx.send('**Invalid string**', delete_after=7)
+            await ctx.message.add_reaction('\N{CROSS MARK}')
 
 
 class Tools:
@@ -115,7 +123,6 @@ class Tools:
 
     @commands.command(name=',console', aliases=[',con', ',c'], hidden=True)
     @commands.is_owner()
-    @checks.del_ctx()
     async def console(self, ctx):
         def execute(msg):
             if msg.content.lower().startswith('exec ') and msg.author is ctx.author and msg.channel is ctx.channel:
@@ -189,7 +196,6 @@ class Tools:
 
     @commands.command(name=',execute', aliases=[',exec'], hidden=True)
     @commands.is_owner()
-    @checks.del_ctx()
     async def execute(self, ctx, *, exe):
         try:
             with io.StringIO() as buff, redirect_stdout(buff):
@@ -201,7 +207,6 @@ class Tools:
 
     @commands.command(name=',evaluate', aliases=[',eval'], hidden=True)
     @commands.is_owner()
-    @checks.del_ctx()
     async def evaluate(self, ctx, *, evl):
         try:
             with io.StringIO() as buff, redirect_stdout(buff):
@@ -213,7 +218,6 @@ class Tools:
 
     @commands.group(aliases=[',db'], hidden=True)
     @commands.is_owner()
-    @checks.del_ctx()
     async def debug(self, ctx):
         console = await self.generate(ctx)
 

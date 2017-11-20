@@ -28,10 +28,18 @@ class Administration:
             self.deleting = True
             self.bot.loop.create_task(self.delete())
 
-    @commands.command(name=',prunefromguild', aliases=[',pfg', ',prunefromserver', ',pfs'], brief='Prune a user\'s messages from the guild', description='about flag centers on message 50 of 101 messages\n\npfg \{user id\} [before|after|about] [\{message id\}]\n\nExample:\npfg \{user id\} before \{message id\}')
+    @commands.group(aliases=['pru', 'clear', 'cl'], hidden=True)
     @commands.is_owner()
-    @checks.del_ctx()
-    async def prune_all_user(self, ctx, user, when=None, reference=None):
+    async def prune(self, ctx):
+        pass
+
+    @prune.group(name='user', aliases=['u', 'member', 'm'])
+    async def _prune_user(self, ctx):
+        pass
+
+    @_prune_user.command(name='all', aliases=['a'], brief='Prune a user\'s messages from the guild', description='about flag centers on message 50 of 101 messages\n\npfg \{user id\} [before|after|about] [\{message id\}]\n\nExample:\npfg \{user id\} before \{message id\}', hidden=True)
+    @commands.is_owner()
+    async def _prune_user_all(self, ctx, user, when=None, reference=None):
         def yes(msg):
             if msg.content.lower() == 'y' and msg.channel is ctx.channel and msg.author is ctx.author:
                 return True
@@ -147,7 +155,6 @@ class Administration:
 
     @commands.command(name='autodelete', aliases=['autodel'])
     @commands.has_permissions(administrator=True)
-    @checks.del_ctx()
     async def auto_delete(self, ctx):
         try:
             if ctx.channel.id not in u.tasks['auto_del']:
@@ -166,9 +173,13 @@ class Administration:
             await ctx.send('**Already auto-deleting in {}.** Type `stop` to stop.'.format(ctx.channel.mention), delete_after=7)
             await ctx.message.add_reaction('\N{CROSS MARK}')
 
-    @commands.command(name='deletecommands', aliases=['delcmds'])
+    @commands.group(aliases=['setting', 'set', 's'])
     @commands.has_permissions(administrator=True)
-    async def delete_commands(self, ctx):
+    async def settings(self, ctx):
+        pass
+
+    @settings.command(name='deletecommands', aliases=['delcmds', 'delcmd'])
+    async def _settings_delete_commands(self, ctx):
         if ctx.guild.id not in u.settings['del_ctx']:
             u.settings['del_ctx'].append(ctx.guild.id)
         else:
@@ -177,13 +188,12 @@ class Administration:
 
         await ctx.send('**Delete command invocations:** `{}`'.format(ctx.guild.id in u.settings['del_ctx']))
 
-    @commands.command(name='setprefix', aliases=['setpre', 'spre'])
-    @commands.has_permissions(administrator=True)
-    async def set_prefix(self, ctx, prefix=None):
-        if prefix is not None:
-            u.settings['prefixes'][ctx.guild.id] = prefix
+    @settings.command(name='prefix', aliases=['pre', 'p'])
+    async def _settings_prefix(self, ctx, *prefixes):
+        if prefixes:
+            u.settings['prefixes'][ctx.guild.id] = prefixes
         else:
             with suppress(KeyError):
                 del u.settings['prefixes'][ctx.guild.id]
 
-        await ctx.send(f'**Prefix set to:** `{"` or `".join(prefix if ctx.guild.id in u.settings["prefixes"] else u.config["prefix"])}`')
+        await ctx.send(f'**Prefix set to:** `{"` or `".join(prefixes if ctx.guild.id in u.settings["prefixes"] else u.config["prefix"])}`')

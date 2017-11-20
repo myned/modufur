@@ -23,19 +23,44 @@ from utils import utils as u
 log.basicConfig(level=log.WARNING)
 
 
-class HelpFormatter(commands.HelpFormatter):
-    async def format():
-        pass
+# class HelpFormatter(commands.HelpFormatter):
+#
+#     async def format(self):
+#         self._paginator = commands.Paginator()
+#
+#         # we need a padding of ~80 or so
+#
+#         description = self.command.description if not self.is_cog() else inspect.getdoc(self.command)
+#
+#         if description:
+#             # <description> portion
+#             self._paginator.add_line(description, empty=True)
+#
+#         if isinstance(self.command, commands.Command):
+#             # <signature portion>
+#             signature = self.get_command_signature()
+#             self._paginator.add_line(signature, empty=True)
+#
+#             # <long doc> section
+#             if self.command.help:
+#                 self._paginator.add_line(self.command.help, empty=True)
+#
+#             # end it here if it's just a regular command
+#             if not self.has_subcommands():
+#                 self._paginator.close_page()
+#                 return self._paginator.pages
+#
+#         max_width = self.max_name_size
 
 
 def get_prefix(bot, message):
-    if isinstance(message.guild, d.Guild) and message.guild.id in u.settings['prefixes']:
-        return u.settings['prefixes'][message.guild.id]
-    return u.config['prefix']
+    return u.settings['prefixes'].get(message.guild.id, u.config['prefix'])
 
+bot = commands.Bot(command_prefix=get_prefix, formatter=commands.HelpFormatter(show_check_failure=True), description='Modumind - A booru bot with a side of management\n\nS for single command\nG for group command', help_attrs={'aliases': ['h']}, pm_help=None)
 
-help_formatter = HelpFormatter(show_check_failure=True)
-bot = commands.Bot(command_prefix=get_prefix, formatter=help_formatter, description='Experimental miscellaneous bot')
+@bot.command(help='help', brief='brief', description='description', usage='usage')
+async def test(ctx):
+    pass
 
 # Send and print ready message to #testing and console after logon
 
@@ -109,7 +134,12 @@ async def on_command_error(ctx, error):
 
 @bot.event
 async def on_command_completion(ctx):
-    await ctx.message.add_reaction('\N{WHITE HEAVY CHECK MARK}')
+    with suppress(err.NotFound):
+        with suppress(AttributeError):
+            if ctx.guild.id in u.settings['del_ctx'] and ctx.me.permissions_in(ctx.channel).manage_messages and isinstance(ctx.message.channel, d.TextChannel):
+                await ctx.message.delete()
+
+        await ctx.message.add_reaction('\N{WHITE HEAVY CHECK MARK}')
 
     if ctx.command.name != 'lastcommand':
         u.last_commands[ctx.author.id] = ctx
@@ -141,7 +171,6 @@ def after(voice, error):
 # suggested = u.setdefault('cogs/suggested.pkl', {'last_update': 'None', 'tags': {}, 'total': 0})
 @bot.command(name=',test', hidden=True)
 @commands.is_owner()
-@checks.del_ctx()
 async def test(ctx):
     post = await u.fetch('https://e621.net/post/show.json?id=1145042', json=True)
 

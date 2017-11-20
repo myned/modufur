@@ -47,19 +47,16 @@ class Utils:
 
     # Displays latency
     @commands.command(aliases=['p'], brief='Pong!', description='Returns latency from bot to Discord servers, not to user')
-    @checks.del_ctx()
     async def ping(self, ctx):
         await ctx.message.add_reaction('\N{TABLE TENNIS PADDLE AND BALL}')
         await ctx.send(ctx.author.mention + '  \N{TABLE TENNIS PADDLE AND BALL}  `' + str(round(self.bot.latency * 1000)) + 'ms`', delete_after=5)
 
     @commands.command(aliases=['pre'], brief='List bot prefixes', description='Shows all used prefixes')
-    @checks.del_ctx()
     async def prefix(self, ctx):
         await ctx.send('**Prefix:** `{}`'.format('` or `'.join(u.settings['prefixes'][ctx.guild.id] if ctx.guild.id in u.settings['prefixes'] else u.config['prefix'])))
 
     @commands.group(name=',send', aliases=[',s'], hidden=True)
     @commands.is_owner()
-    @checks.del_ctx()
     async def send(self, ctx):
         pass
 
@@ -84,7 +81,7 @@ class Utils:
     async def send_user(self, ctx, user, *, message):
         await d.utils.get(self.bot.get_all_members(), id=int(user)).send(message)
 
-    @commands.command(aliases=['authenticateupload', 'authupload', 'authup', 'auth'])
+    @commands.command(aliases=['authenticateupload', 'authupload', 'authup', 'auth'], hidden=True)
     async def authenticate_upload(self, ctx):
         global youtube
         flow = flow_from_clientsecrets('client_secrets.json', scope='https://www.googleapis.com/auth/youtube.upload',
@@ -95,7 +92,7 @@ class Utils:
         youtube = build('youtube', 'v3', http=credentials.authorize(http.build_http()))
         print('Service built.')
 
-    @commands.command(aliases=['up', 'u', 'vid', 'v'])
+    @commands.command(aliases=['up', 'u', 'vid', 'v'], hidden=True)
     @commands.has_permissions(administrator=True)
     async def upload(self, ctx):
         global youtube
