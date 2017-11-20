@@ -28,7 +28,6 @@ class MsG:
         self.LIMIT = 100
         self.HISTORY_LIMIT = 150
         self.RATE_LIMIT = u.RATE_LIMIT
-        self.favorites = u.setdefault('cogs/favorites.pkl', {'tags': set(), 'posts': set()})
         self.reviqueue = asyncio.Queue()
         self.reversifying = False
         self.updating = False
@@ -37,6 +36,7 @@ class MsG:
         self.suggested = u.setdefault('cogs/suggested.pkl', 7)
         # self.suggested = u.setdefault('cogs/suggested.pkl', {'last_update': 'test', 'tags': {}, 'total': 1})
         print(self.suggested)
+        self.favorites = u.setdefault('cogs/favorites.pkl', {})
         self.blacklists = u.setdefault(
             'cogs/blacklists.pkl', {'global_blacklist': set(), 'guild_blacklist': {}, 'user_blacklist': {}})
         self.aliases = u.setdefault('cogs/aliases.pkl', {})
@@ -1129,10 +1129,12 @@ class MsG:
             for tag in tags:
                 if tag in self.blacklists['user_blacklist'].get(ctx.author.id, set()):
                     raise exc.TagBlacklisted(tag)
+            with suppress(KeyError):
                 if len(self.favorites[ctx.author.id]['tags']) + len(tags) > 5:
                     raise exc.BoundsError
 
-            self.favorites.setdefault(ctx.author.id, {}).setdefault('tags', set()).update(tags)
+            self.favorites.setdefault(ctx.author.id, {}).setdefault(
+                'tags', set()).update(tags)
             u.dump(self.favorites, 'cogs/favorites.pkl')
 
             await dest.send('{} **added to their favorites:**\n```\n{}```'.format(ctx.author.mention, formatter.tostring(tags)), delete_after=5)
@@ -1160,7 +1162,8 @@ class MsG:
 
             for tag in tags:
                 try:
-                    self.favorites[ctx.author.id].get('tags', set()).remove(tag)
+                    self.favorites[ctx.author.id].get(
+                        'tags', set()).remove(tag)
 
                 except KeyError:
                     raise exc.TagError(tag)
@@ -1169,7 +1172,9 @@ class MsG:
 
             await dest.send('{} **removed from their favorites:**\n```\n{}```'.format(ctx.author.mention, formatter.tostring(tags)), delete_after=5)
 
+        except KeyError:
             await ctx.send('**You do not have any favorites**', delete_after=7)
+            await ctx.message.add_reaction('\N{CROSS MARK}')
         except exc.TagError as e:
             await ctx.send('`{}` **not in favorites**'.format(e), delete_after=7)
             await ctx.message.add_reaction('\N{CROSS MARK}')
