@@ -70,7 +70,7 @@ class Bot:
     async def invite(self, ctx):
         await ctx.message.add_reaction('\N{ENVELOPE}')
 
-        await ctx.send('https://discordapp.com/oauth2/authorize?&client_id={}&scope=bot&permissions={}'.format(u.config['client_id'], u.config['permissions']), delete_after=10)
+        await ctx.send('https://discordapp.com/oauth2/authorize?&client_id={}&scope=bot&permissions={}'.format(u.config['client_id'], u.config['permissions']), delete_after=5)
 
     @commands.command(name=',status', aliases=[',presence', ',game'], hidden=True)
     @commands.is_owner()
