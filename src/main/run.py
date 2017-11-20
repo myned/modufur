@@ -54,9 +54,7 @@ log.basicConfig(level=log.WARNING)
 
 
 def get_prefix(bot, message):
-    if isinstance(message.guild, d.Guild) and message.guild.id in u.settings['prefixes']:
-        return u.settings['prefixes'][message.guild.id]
-    return u.config['prefix']
+    return u.settings['prefixes'].get(message.guild.id, u.config['prefix'])
 
 
 help_formatter = HelpFormatter(show_check_failure=True)
