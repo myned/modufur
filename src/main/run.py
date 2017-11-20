@@ -56,8 +56,8 @@ log.basicConfig(level=log.WARNING)
 def get_prefix(bot, message):
     return u.settings['prefixes'].get(message.guild.id, u.config['prefix'])
 
+bot = commands.Bot(command_prefix=get_prefix, formatter=commands.HelpFormatter(show_check_failure=True), description='Modumind - A booru bot with a side of management\n\nS for single command\nG for group command', help_attrs={'aliases': ['h']}, pm_help=None)
 
-bot = commands.Bot(command_prefix=get_prefix, formatter=help_formatter, description='Experimental miscellaneous bot')
 
 # Send and print ready message to #testing and console after logon
 
