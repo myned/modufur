@@ -39,7 +39,8 @@ class Right(Exception):
 
 
 class Save(Exception):
-    pass
+    def __init__(self, user):
+        self.user = user
 
 
 class GoTo(Exception):
