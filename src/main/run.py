@@ -85,7 +85,7 @@ async def on_ready():
     print('\n> > > > > > > > >\nC O N N E C T E D : {}\n> > > > > > > > >\n'.format(bot.user.name))
     await bot.get_channel(u.config['info_channel']).send('**Started** \N{BLACK SUN WITH RAYS} .')
     # u.notify('C O N N E C T E D')
-    if u.temp:
+    if u.temp['startup']:
         with suppress(err.NotFound):
             if u.temp['startup'][0] == 'guild':
                 dest = bot.get_channel(u.temp['startup'][1])
@@ -112,9 +112,8 @@ async def on_error(error, *args, **kwargs):
     await bot.get_user(u.config['owner_id']).send('**ERROR** \N{WARNING SIGN}\n```\n{}```'.format(error))
     await bot.get_channel(u.config['info_channel']).send('**ERROR** \N{WARNING SIGN}\n```\n{}```'.format(error))
 
-    if u.temp:
+    if u.temp['startup']:
         with suppress(err.NotFound):
-            print(u.temp['startup'])
             if u.temp['startup'][0] == 'guild':
                 dest = bot.get_channel(u.temp['startup'][1])
             else:
