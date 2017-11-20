@@ -1,5 +1,5 @@
 import asyncio
-import datetime as dt
+from datetime import datetime as dt
 import json
 import logging as log
 import subprocess
@@ -7,6 +7,8 @@ import sys
 import traceback as tb
 from contextlib import suppress
 from pprint import pprint
+from hurry.filesize import size, alternative
+from urllib.parse import urlparse
 
 import discord as d
 from discord import errors as err
@@ -125,13 +127,52 @@ def after(voice, error):
     future = asyncio.run_coroutine_threadsafe(coro, voice.loop)
     future.result()
 
-
+# suggested = u.setdefault('cogs/suggested.pkl', {'last_update': 'None', 'tags': {}, 'total': 0})
 @bot.command(name=',test', hidden=True)
 @commands.is_owner()
 @checks.del_ctx()
-async def test(ctx, *, test):
-    print(ctx.args)
-    print(ctx.kwargs)
+async def test(ctx):
+    post = await u.fetch('https://e621.net/post/show.json?id=1145042', json=True)
+
+    tags = []
+    if post['tags']:
+        temptags = post['tags'].split(' ')
+        cis = []
+        for tag in suggested:
+            pass
+        for tag in temptags:
+            tags.append(f'[{tag}](https://e621.net/post?tags={tag})')
+        # tags = ' '.join(tags)
+    else:
+        tags = 'None'
+
+    if post['description']:
+        post_description = post['description'] if len(post['description']) < 200 else f'{post["description"][:200]}...'
+    else:
+        post_description = 'None'
+
+    title = ', '.join(post['artist'])
+    description = f'posted by: *[{post["author"]}](https://e621.net/post?tags=user:{post["author"]})*'
+    url = f'https://e621.net/post?tags={",".join(post["artist"])}'
+    # timestamp = dt.utcnow()
+    color = ctx.me.color
+    footer = {'text': post['score'], 'icon_url': 'https://images-ext-1.discordapp.net/external/W2k0ZzhU7ngvN_-CdqAa3H3FmkfCNYQTxPG_DsvacB4/https/emojipedia-us.s3.amazonaws.com/thumbs/320/twitter/103/sparkles_2728.png'}
+    # image = 'https://e621.net/post/show/54360'
+    thumbnail = post['file_url']
+    author = {'name': post['id'], 'url': f'https://e621.net/post/show/{post["id"]}', 'icon_url': ctx.author.avatar_url}
+
+    fields = []
+    names = ('File', 'Sources', 'Description', 'tags', 'tags (ext.)')
+    values = (f'[{post["md5"]}]({post["file_url"]}) | [{post["file_ext"]}](https://e621.net/post?tags=type:{post["file_ext"]})\n\n**Size** [{size(post["file_size"], system=alternative)}](https://e621.net/post?tags=filesize:{post["file_size"]})\n**Resolution** [{post["width"]} x {post["height"]}](https://e621.net/post?tags=width:{post["width"]},height:{post["height"]}) | [{u.get_aspectratio(post["width"], post["height"])}](https://e621.net/post?tags=ratio:{post["width"]/post["height"]:.2f})', '\n'.join([f'[{urlparse(source).netloc}]({source})' for source in post['sources']]), post_description, ' '.join(tags[:20]), ' '.join(tags[20:]))
+    inlines = (False, False, False, True, True)
+    for name, value, inline in zip(names, values, inlines):
+        fields.append({'name': name, 'value': value, 'inline': inline})
+
+    embed = u.generate_embed(ctx, title=title, description=description, url=url, colour=color, footer=footer, thumbnail=thumbnail, author=author, fields=fields)
+
+    await ctx.send(embed=embed)
+    # print(ctx.args)
+    # print(ctx.kwargs)
     # if '<:N_:368917475531816962>' in message:
     #     await ctx.send('<:N_:368917475531816962>')
     # logs = []
