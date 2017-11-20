@@ -88,6 +88,31 @@ class MsG:
 
             await asyncio.sleep(24 * 60 * 60)
 
+    def _get_favorites(self, ctx, args):
+        if '-f' in args or '-favs' in args or '-faves' in args or '-favorites' in args:
+            if self.favorites.get(ctx.author.id, {}).get('tags', set()):
+                args = ['~{}'.format(tag)
+                        for tag in self.favorites[ctx.author.id]['tags']]
+            else:
+                raise exc.FavoritesNotFound
+
+        return args
+
+    def _get_score(self, score):
+        if score < 0:
+            return 'https://emojipedia-us.s3.amazonaws.com/thumbs/320/twitter/103/pouting-face_1f621.png'
+        elif score == 0:
+            return 'https://emojipedia-us.s3.amazonaws.com/thumbs/320/mozilla/36/pile-of-poo_1f4a9.png'
+        elif 10 > score > 0:
+            return 'https://emojipedia-us.s3.amazonaws.com/thumbs/320/twitter/103/white-medium-star_2b50.png'
+        elif 50 > score >= 10:
+            return 'https://emojipedia-us.s3.amazonaws.com/thumbs/320/twitter/103/glowing-star_1f31f.png'
+        elif 100 > score >= 50:
+            return 'https://emojipedia-us.s3.amazonaws.com/thumbs/320/twitter/103/dizzy-symbol_1f4ab.png'
+        elif score >= 100:
+            return 'https://emojipedia-us.s3.amazonaws.com/thumbs/320/twitter/103/sparkles_2728.png'
+        return None
+
     # @commands.command()
     # async def auto_post(self, ctx):
     #     try:
@@ -408,30 +433,6 @@ class MsG:
         else:
             await ctx.send('**Already auto-reversifying in {}.** Type `stop` to stop.'.format(ctx.channel.mention), delete_after=7)
             await ctx.message.add_reaction('\N{CROSS MARK}')
-
-    def _get_favorites(self, ctx, args):
-        if '-f' in args or '-favs' in args or '-faves' in args or '-favorites' in args:
-            if self.favorites.get(ctx.author.id, {}).get('tags', set()):
-                args = ['~{}'.format(tag) for tag in self.favorites[ctx.author.id]['tags']]
-            else:
-                raise exc.FavoritesNotFound
-
-        return args
-
-    def _get_score(self, score):
-        if score < 0:
-            return 'https://emojipedia-us.s3.amazonaws.com/thumbs/320/mozilla/36/pile-of-poo_1f4a9.png'
-        elif score == 0:
-            return 'https://emojipedia-us.s3.amazonaws.com/thumbs/320/twitter/103/pouting-face_1f621.png'
-        elif 10 > score > 0:
-            return 'https://emojipedia-us.s3.amazonaws.com/thumbs/320/twitter/103/white-medium-star_2b50.png'
-        elif 50 > score >= 10:
-            return 'https://emojipedia-us.s3.amazonaws.com/thumbs/320/twitter/103/glowing-star_1f31f.png'
-        elif 100 > score >= 50:
-            return 'https://emojipedia-us.s3.amazonaws.com/thumbs/320/twitter/103/dizzy-symbol_1f4ab.png'
-        elif score >= 100:
-            return 'https://emojipedia-us.s3.amazonaws.com/thumbs/320/twitter/103/sparkles_2728.png'
-        return None
 
     async def _get_pool(self, ctx, *, destination, booru='e621', query=[]):
         def on_reaction(reaction, user):
