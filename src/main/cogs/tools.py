@@ -81,7 +81,7 @@ class Utils:
     async def send_user(self, ctx, user, *, message):
         await d.utils.get(self.bot.get_all_members(), id=int(user)).send(message)
 
-    @commands.command(aliases=['authenticateupload', 'authupload', 'authup', 'auth'])
+    @commands.command(aliases=['authenticateupload', 'authupload', 'authup', 'auth'], hidden=True)
     async def authenticate_upload(self, ctx):
         global youtube
         flow = flow_from_clientsecrets('client_secrets.json', scope='https://www.googleapis.com/auth/youtube.upload',
@@ -92,7 +92,7 @@ class Utils:
         youtube = build('youtube', 'v3', http=credentials.authorize(http.build_http()))
         print('Service built.')
 
-    @commands.command(aliases=['up', 'u', 'vid', 'v'])
+    @commands.command(aliases=['up', 'u', 'vid', 'v'], hidden=True)
     @commands.has_permissions(administrator=True)
     async def upload(self, ctx):
         global youtube
