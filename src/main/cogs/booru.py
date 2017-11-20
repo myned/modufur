@@ -228,7 +228,7 @@ class MsG:
                     embed.set_thumbnail(url=post['file_url'])
                     embed.set_author(name=f'{u.get_aspectratio(post["width"], post["height"])} \N{ZERO WIDTH SPACE} {post["width"]} x {post["height"]}',
                                      url=f'https://e621.net/post?tags=ratio:{post["width"]/post["height"]:.2f}', icon_url=ctx.author.avatar_url)
-                    embed.set_footer(text=str(post['score']),
+                    embed.set_footer(text=post['score'],
                                      icon_url=self._get_score(post['score']))
 
                 # except
@@ -343,7 +343,7 @@ class MsG:
                     embed.set_image(url=post['file_url'])
                     embed.set_author(name=f'{u.get_aspectratio(post["width"], post["height"])} \N{ZERO WIDTH SPACE} {post["width"]} x {post["height"]}',
                                      url=f'https://e621.net/post?tags=ratio:{post["width"]/post["height"]:.2f}', icon_url=ctx.author.avatar_url)
-                    embed.set_footer(text=str(post['score']),
+                    embed.set_footer(text=post['score'],
                                      icon_url=self._get_score(post['score']))
 
                     await dest.send('**Probable match**', embed=embed)
