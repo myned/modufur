@@ -94,10 +94,10 @@ class MsG:
     #         if ctx.channel.id not in u.tasks['auto_post']:
     #             u.tasks['auto_post'].append(ctx.channel.id)
     #             u.dump(u.tasks, 'cogs/tasks.pkl')
-    #             self.bot.loop.create_task(self.queue_for_qualitification(ctx.channel))
-    #             if not self.qualitifying:
-    #                 self.bot.loop.create_task(self._qualitify())
-    #                 self.qualitifying = True
+    #             self.bot.loop.create_task(self.queue_for_posting(ctx.channel))
+    #             if not self.posting:
+    #                 self.bot.loop.create_task(self._post())
+    #                 self.posting = True
     #
     #             print('AUTO-POSTING : #{}'.format(ctx.channel.name))
     #             await ctx.send('**Auto-posting all images in {}**'.format(ctx.channel.mention), delete_after=5)
