@@ -13,7 +13,7 @@ from urllib.parse import urlparse
 import discord as d
 from discord import errors as err
 from discord import utils
-from discord.ext import commands
+from discord.ext import commands as cmds
 from discord.ext.commands import errors as errext
 
 from misc import exceptions as exc
@@ -23,10 +23,10 @@ from utils import utils as u
 log.basicConfig(level=log.WARNING)
 
 
-# class HelpFormatter(commands.HelpFormatter):
+# class HelpFormatter(cmds.HelpFormatter):
 #
 #     async def format(self):
-#         self._paginator = commands.Paginator()
+#         self._paginator = cmds.Paginator()
 #
 #         # we need a padding of ~80 or so
 #
@@ -36,7 +36,7 @@ log.basicConfig(level=log.WARNING)
 #             # <description> portion
 #             self._paginator.add_line(description, empty=True)
 #
-#         if isinstance(self.command, commands.Command):
+#         if isinstance(self.command, cmds.Command):
 #             # <signature portion>
 #             signature = self.get_command_signature()
 #             self._paginator.add_line(signature, empty=True)
@@ -56,7 +56,7 @@ log.basicConfig(level=log.WARNING)
 def get_prefix(bot, message):
     return u.settings['prefixes'].get(message.guild.id, u.config['prefix'])
 
-bot = commands.Bot(command_prefix=get_prefix, formatter=commands.HelpFormatter(show_check_failure=True), description='Modumind - A booru bot with a side of management\n\nS for single command\nG for group command', help_attrs={'aliases': ['h']}, pm_help=None)
+bot = cmds.Bot(command_prefix=get_prefix, formatter=cmds.HelpFormatter(show_check_failure=True), description='Modumind - A booru bot with a side of management\n\nS for single command\nG for group command', help_attrs={'aliases': ['h']}, pm_help=None)
 
 @bot.command(help='help', brief='brief', description='description', usage='usage')
 async def test(ctx):
@@ -170,7 +170,7 @@ def after(voice, error):
 
 # suggested = u.setdefault('cogs/suggested.pkl', {'last_update': 'None', 'tags': {}, 'total': 0})
 @bot.command(name=',test', hidden=True)
-@commands.is_owner()
+@cmds.is_owner()
 async def test(ctx):
     post = await u.fetch('https://e621.net/post/show.json?id=1145042', json=True)
 
