@@ -173,9 +173,13 @@ class Administration:
             await ctx.send('**Already auto-deleting in {}.** Type `stop` to stop.'.format(ctx.channel.mention), delete_after=7)
             await ctx.message.add_reaction('\N{CROSS MARK}')
 
-    @commands.command(name='deletecommands', aliases=['delcmds'])
+    @commands.group(aliases=['setting', 'set', 's'])
     @commands.has_permissions(administrator=True)
-    async def delete_commands(self, ctx):
+    async def settings(self, ctx):
+        pass
+
+    @settings.command(name='deletecommands', aliases=['delcmds', 'delcmd'])
+    async def _settings_delete_commands(self, ctx):
         if ctx.guild.id not in u.settings['del_ctx']:
             u.settings['del_ctx'].append(ctx.guild.id)
         else:
@@ -184,9 +188,6 @@ class Administration:
 
         await ctx.send('**Delete command invocations:** `{}`'.format(ctx.guild.id in u.settings['del_ctx']))
 
-    @commands.command(name='setprefix', aliases=['setpre', 'spre'])
-    @commands.has_permissions(administrator=True)
-    async def set_prefix(self, ctx, prefix=None):
         if prefix is not None:
             u.settings['prefixes'][ctx.guild.id] = prefix
         else:
