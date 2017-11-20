@@ -675,12 +675,12 @@ class MsG:
                                            self.bot.wait_for('reaction_remove', check=on_reaction, timeout=7 * 60)])
 
                 except exc.Save:
-                    if values[c - 1]['url'] not in hearted:
-                        hearted.append(values[c - 1]['url'])
+                    if embed not in hearted:
+                        hearted.append(embed)
 
                         await paginator.edit(content='\N{HEAVY BLACK HEART}')
                     else:
-                        hearted.remove(values[c - 1]['url'])
+                        hearted.remove(embed)
 
                         await paginator.edit(content='\N{BROKEN HEART}')
 
@@ -688,7 +688,8 @@ class MsG:
                     if c > 1:
                         c -= 1
                         embed.title = values[c - 1]['artist']
-                        embed.url = 'https://e621.net/post/show/{}'.format(keys[c - 1])
+                        embed.url = 'https://e621.net/post/show/{}'.format(
+                            keys[c - 1])
                         embed.set_footer(text='{} / {}'.format(c, len(posts)),
                                          icon_url=self._get_score(values[c - 1]['score']))
                         embed.set_image(url=values[c - 1]['url'])
@@ -704,7 +705,8 @@ class MsG:
                     c = int(number.content)
                     await number.delete()
                     embed.title = values[c - 1]['artist']
-                    embed.url = 'https://e621.net/post/show/{}'.format(keys[c - 1])
+                    embed.url = 'https://e621.net/post/show/{}'.format(
+                        keys[c - 1])
                     embed.set_footer(text='{} / {}'.format(c, len(posts)),
                                      icon_url=self._get_score(values[c - 1]['score']))
                     embed.set_image(url=values[c - 1]['url'])
@@ -715,7 +717,8 @@ class MsG:
                     if c < len(keys):
                         c += 1
                         embed.title = values[c - 1]['artist']
-                        embed.url = 'https://e621.net/post/show/{}'.format(keys[c - 1])
+                        embed.url = 'https://e621.net/post/show/{}'.format(
+                            keys[c - 1])
                         embed.set_footer(text='{} / {}'.format(c, len(posts)),
                                          icon_url=self._get_score(values[c - 1]['score']))
                         embed.set_image(url=values[c - 1]['url'])
@@ -747,11 +750,10 @@ class MsG:
             if hearted:
                 await ctx.message.add_reaction('\N{HOURGLASS WITH FLOWING SAND}')
 
-                for url in hearted:
-                    await ctx.author.send('`{} / {}`\n{}'.format(hearted.index(url) + 1, len(hearted), url))
-
+                for embed in hearted:
                     await asyncio.sleep(self.RATE_LIMIT)
 
+                    await ctx.author.send('`{} / {}`'.format(hearted.index(embed) + 1, len(hearted)), embed=embed)
 
     @commands.command(name='e621page', aliases=['e621p', 'e6p', '6p'])
     @checks.del_ctx()
@@ -809,12 +811,12 @@ class MsG:
                                            self.bot.wait_for('reaction_remove', check=on_reaction, timeout=7 * 60)])
 
                 except exc.Save:
-                    if values[c - 1]['url'] not in hearted:
-                        hearted.append(values[c - 1]['url'])
+                    if embed not in hearted:
+                        hearted.append(embed)
 
                         await paginator.edit(content='\N{HEAVY BLACK HEART}')
                     else:
-                        hearted.remove(values[c - 1]['url'])
+                        hearted.remove(embed)
 
                         await paginator.edit(content='\N{BROKEN HEART}')
 
@@ -822,7 +824,8 @@ class MsG:
                     if c > 1:
                         c -= 1
                         embed.title = values[c - 1]['artist']
-                        embed.url = 'https://e621.net/post/show/{}'.format(keys[c - 1])
+                        embed.url = 'https://e621.net/post/show/{}'.format(
+                            keys[c - 1])
                         embed.set_footer(text='{} / {}'.format(c, len(posts)),
                                          icon_url=self._get_score(values[c - 1]['score']))
                         embed.set_image(url=values[c - 1]['url'])
@@ -838,7 +841,8 @@ class MsG:
                     c = int(number.content)
                     await number.delete()
                     embed.title = values[c - 1]['artist']
-                    embed.url = 'https://e621.net/post/show/{}'.format(keys[c - 1])
+                    embed.url = 'https://e621.net/post/show/{}'.format(
+                        keys[c - 1])
                     embed.set_footer(text='{} / {}'.format(c, len(posts)),
                                      icon_url=self._get_score(values[c - 1]['score']))
                     embed.set_image(url=values[c - 1]['url'])
@@ -858,7 +862,8 @@ class MsG:
                         if c < len(keys):
                             c += 1
                             embed.title = values[c - 1]['artist']
-                            embed.url = 'https://e621.net/post/show/{}'.format(keys[c - 1])
+                            embed.url = 'https://e621.net/post/show/{}'.format(
+                                keys[c - 1])
                             embed.set_footer(text='{} / {}'.format(c, len(posts)),
                                              icon_url=self._get_score(values[c - 1]['score']))
                             embed.set_image(url=values[c - 1]['url'])
@@ -900,11 +905,10 @@ class MsG:
             if hearted:
                 await ctx.message.add_reaction('\N{HOURGLASS WITH FLOWING SAND}')
 
-                for url in hearted:
-                    await ctx.author.send('`{} / {}`\n{}'.format(hearted.index(url) + 1, len(hearted), url))
-
+                for embed in hearted:
                     await asyncio.sleep(self.RATE_LIMIT)
 
+                    await ctx.author.send('`{} / {}`'.format(hearted.index(embed) + 1, len(hearted)), embed=embed)
 
     # @e621_paginator.error
     # async def e621_paginator_error(self, ctx, error):
@@ -967,12 +971,12 @@ class MsG:
                                            self.bot.wait_for('reaction_remove', check=on_reaction, timeout=7 * 60)])
 
                 except exc.Save:
-                    if values[c - 1]['url'] not in hearted:
-                        hearted.append(values[c - 1]['url'])
+                    if embed not in hearted:
+                        hearted.append(embed)
 
                         await paginator.edit(content='\N{HEAVY BLACK HEART}')
                     else:
-                        hearted.remove(values[c - 1]['url'])
+                        hearted.remove(embed)
 
                         await paginator.edit(content='\N{BROKEN HEART}')
 
@@ -980,7 +984,8 @@ class MsG:
                     if c > 1:
                         c -= 1
                         embed.title = values[c - 1]['artist']
-                        embed.url = 'https://e926.net/post/show/{}'.format(keys[c - 1])
+                        embed.url = 'https://e926.net/post/show/{}'.format(
+                            keys[c - 1])
                         embed.set_footer(text='{} / {}'.format(c, len(posts)),
                                          icon_url=self._get_score(values[c - 1]['score']))
                         embed.set_image(url=values[c - 1]['url'])
@@ -996,7 +1001,8 @@ class MsG:
                     c = int(number.content)
                     await number.delete()
                     embed.title = values[c - 1]['artist']
-                    embed.url = 'https://e926.net/post/show/{}'.format(keys[c - 1])
+                    embed.url = 'https://e926.net/post/show/{}'.format(
+                        keys[c - 1])
                     embed.set_footer(text='{} / {}'.format(c, len(posts)),
                                      icon_url=self._get_score(values[c - 1]['score']))
                     embed.set_image(url=values[c - 1]['url'])
@@ -1016,7 +1022,8 @@ class MsG:
                         if c < len(keys):
                             c += 1
                             embed.title = values[c - 1]['artist']
-                            embed.url = 'https://e926.net/post/show/{}'.format(keys[c - 1])
+                            embed.url = 'https://e926.net/post/show/{}'.format(
+                                keys[c - 1])
                             embed.set_footer(text='{} / {}'.format(c, len(posts)),
                                              icon_url=self._get_score(values[c - 1]['score']))
                             embed.set_image(url=values[c - 1]['url'])
@@ -1058,11 +1065,10 @@ class MsG:
             if hearted:
                 await ctx.message.add_reaction('\N{HOURGLASS WITH FLOWING SAND}')
 
-                for url in hearted:
-                    await ctx.author.send('`{} / {}`\n{}'.format(hearted.index(url) + 1, len(hearted), url))
-
+                for embed in hearted:
                     await asyncio.sleep(self.RATE_LIMIT)
 
+                    await ctx.author.send('`{} / {}`'.format(hearted.index(embed) + 1, len(hearted)), embed=embed)
 
     # Searches for and returns images from e621.net given tags when not blacklisted
     @commands.group(aliases=['e6', '6'], brief='e621 | NSFW', description='e621 | NSFW\nTag-based search for e621.net\n\nYou can only search 5 tags and 6 images at once for now.\ne6 [tags...] ([# of images])')
