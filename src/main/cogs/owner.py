@@ -71,8 +71,8 @@ class Bot:
 
     @commands.command(name=',status', aliases=[',presence', ',game'], hidden=True)
     @commands.is_owner()
-    async def status(self, ctx, *, game=None):
-        if game is not None:
+    async def change_status(self, ctx, *, game=None):
+        if game:
             await self.bot.change_presence(game=d.Game(name=game))
             u.config['playing'] = game
             u.dump(u.config, 'config.json', json=True)
