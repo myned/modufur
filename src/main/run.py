@@ -57,7 +57,6 @@ def get_prefix(bot, message):
     return u.settings['prefixes'].get(message.guild.id, u.config['prefix'])
 
 
-help_formatter = HelpFormatter(show_check_failure=True)
 bot = commands.Bot(command_prefix=get_prefix, formatter=help_formatter, description='Experimental miscellaneous bot')
 
 # Send and print ready message to #testing and console after logon
