@@ -7,6 +7,7 @@ from contextlib import suppress
 from datetime import datetime as dt
 from datetime import timedelta as td
 from fractions import gcd
+import copy
 
 import discord as d
 from discord import errors as err
@@ -729,12 +730,12 @@ class MsG:
                                            self.bot.wait_for('reaction_remove', check=on_reaction, timeout=7 * 60)])
 
                 except exc.Save:
-                    if embed not in hearted:
-                        hearted.append(embed)
+                    if keys[c - 1] not in hearted:
+                        hearted[keys[c - 1]] = copy.deepcopy(embed)
 
                         await paginator.edit(content='\N{HEAVY BLACK HEART}')
                     else:
-                        hearted.remove(embed)
+                        del hearted[keys[c - 1]]
 
                         await paginator.edit(content='\N{BROKEN HEART}')
 
@@ -871,8 +872,8 @@ class MsG:
                                            self.bot.wait_for('reaction_remove', check=on_reaction, timeout=7 * 60)])
 
                 except exc.Save:
-                    if keys[c - 1] not in hearted:
-                        hearted[keys[c - 1]] = embed
+                    if keys[c - 1] not in hearted.keys():
+                        hearted[keys[c - 1]] = copy.deepcopy(embed)
 
                         await paginator.edit(content='\N{HEAVY BLACK HEART}')
                     else:
@@ -1037,12 +1038,12 @@ class MsG:
                                            self.bot.wait_for('reaction_remove', check=on_reaction, timeout=7 * 60)])
 
                 except exc.Save:
-                    if embed not in hearted:
-                        hearted.append(embed)
+                    if keys[c - 1] not in hearted:
+                        hearted[keys[c - 1]] = copy.deepcopy(embed)
 
                         await paginator.edit(content='\N{HEAVY BLACK HEART}')
                     else:
-                        hearted.remove(embed)
+                        del hearted[keys[c - 1]]
 
                         await paginator.edit(content='\N{BROKEN HEART}')
 
