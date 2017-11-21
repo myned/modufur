@@ -7,6 +7,7 @@ from contextlib import suppress
 from datetime import datetime as dt
 from datetime import timedelta as td
 from fractions import gcd
+import copy
 
 import discord as d
 from discord import errors as err
@@ -600,7 +601,7 @@ class MsG:
                 posts_request = await u.fetch('https://{}.net/pool/show.json'.format(booru), params={'id': tempool['id'], 'page': page}, json=True)
                 for post in posts_request['posts']:
                     posts[post['id']] = {'artist': ', '.join(
-                        post['artist']), 'file_url': post['file_url']}
+                        post['artist']), 'file_url': post['file_url'], 'score': post['score']}
                 page += 1
 
             return pool, posts
@@ -694,7 +695,7 @@ class MsG:
             return False
 
         def on_message(msg):
-            return msg.content.isdigit() and 1 <= int(msg.content) <= len(posts) and msg.author is ctx.author and msg.channel is ctx.channel
+            return msg.content.isdigit() and 0 <= int(msg.content) <= len(posts) and msg.author is ctx.author and msg.channel is ctx.channel
 
         try:
             kwargs = u.get_kwargs(ctx, args)
@@ -729,12 +730,12 @@ class MsG:
                                            self.bot.wait_for('reaction_remove', check=on_reaction, timeout=7 * 60)])
 
                 except exc.Save:
-                    if embed not in hearted:
-                        hearted.append(embed)
+                    if keys[c - 1] not in hearted:
+                        hearted[keys[c - 1]] = copy.deepcopy(embed)
 
                         await paginator.edit(content='\N{HEAVY BLACK HEART}')
                     else:
-                        hearted.remove(embed)
+                        del hearted[keys[c - 1]]
 
                         await paginator.edit(content='\N{BROKEN HEART}')
 
@@ -756,14 +757,17 @@ class MsG:
                     await paginator.edit(content='\N{INPUT SYMBOL FOR NUMBERS}')
                     number = await self.bot.wait_for('message', check=on_message, timeout=7 * 60)
 
-                    c = int(number.content)
+                    if int(number.content) != 0:
+                        c = int(number.content)
+
+                        embed.title = values[c - 1]['artist']
+                        embed.url = 'https://e621.net/post/show/{}'.format(
+                            keys[c - 1])
+                        embed.set_footer(text='{} / {}'.format(c, len(posts)),
+                                         icon_url=self._get_score(values[c - 1]['score']))
+                        embed.set_image(url=values[c - 1]['file_url'])
+
                     await number.delete()
-                    embed.title = values[c - 1]['artist']
-                    embed.url = 'https://e621.net/post/show/{}'.format(
-                        keys[c - 1])
-                    embed.set_footer(text='{} / {}'.format(c, len(posts)),
-                                     icon_url=self._get_score(values[c - 1]['score']))
-                    embed.set_image(url=values[c - 1]['file_url'])
 
                     await paginator.edit(content='\N{HEAVY BLACK HEART}' if keys[c - 1] in hearted.keys() else None, embed=embed)
 
@@ -808,9 +812,7 @@ class MsG:
                 for embed in hearted.values():
                     await asyncio.sleep(self.RATE_LIMIT)
 
-                    embed.footer.text = f'{n} / {len(hearted)}'
-
-                    await ctx.author.send(embed=embed)
+                    await ctx.author.send(content=f'`{n} / {len(hearted)}`', embed=embed)
                     n += 1
 
     @cmds.command(name='e621page', aliases=['e621p', 'e6p', '6p'])
@@ -830,7 +832,7 @@ class MsG:
             return False
 
         def on_message(msg):
-            return msg.content.isdigit() and 1 <= int(msg.content) <= len(posts) and msg.author is ctx.author and msg.channel is ctx.channel
+            return msg.content.isdigit() and 0 <= int(msg.content) <= len(posts) and msg.author is ctx.author and msg.channel is ctx.channel
 
         try:
             kwargs = u.get_kwargs(ctx, args)
@@ -852,7 +854,7 @@ class MsG:
             embed.set_image(url=values[c - 1]['file_url'])
             embed.set_author(name=formatter.tostring(tags, order=order),
                              url='https://e621.net/post?tags={}'.format(','.join(tags)), icon_url=ctx.author.avatar_url)
-            embed.set_footer(text='{} / {}'.format(c, len(posts)),
+            embed.set_footer(text=values[c - 1]['score'],
                              icon_url=self._get_score(values[c - 1]['score']))
 
             paginator = await dest.send(embed=embed)
@@ -868,8 +870,8 @@ class MsG:
                                            self.bot.wait_for('reaction_remove', check=on_reaction, timeout=7 * 60)])
 
                 except exc.Save:
-                    if keys[c - 1] not in hearted:
-                        hearted[keys[c - 1]] = embed
+                    if keys[c - 1] not in hearted.keys():
+                        hearted[keys[c - 1]] = copy.deepcopy(embed)
 
                         await paginator.edit(content='\N{HEAVY BLACK HEART}')
                     else:
@@ -883,7 +885,7 @@ class MsG:
                         embed.title = values[c - 1]['artist']
                         embed.url = 'https://e621.net/post/show/{}'.format(
                             keys[c - 1])
-                        embed.set_footer(text='{} / {}'.format(c, len(posts)),
+                        embed.set_footer(text=values[c - 1]['score'],
                                          icon_url=self._get_score(values[c - 1]['score']))
                         embed.set_image(url=values[c - 1]['file_url'])
 
@@ -892,17 +894,20 @@ class MsG:
                         await paginator.edit(content='\N{BLACK RIGHTWARDS ARROW}')
 
                 except exc.GoTo:
-                    await paginator.edit(content='\N{INPUT SYMBOL FOR NUMBERS}')
-                    number = await self.bot.wait_for('message', check=on_message, timeout=7 * 60)
+                    await paginator.edit(content=f'`{c} / {len(posts)}`')
+                    number = int(await self.bot.wait_for('message', check=on_message, timeout=7 * 60))
 
-                    c = int(number.content)
+                    if int(number.content) != 0:
+                        c = int(number.content)
+
+                        embed.title = values[c - 1]['artist']
+                        embed.url = 'https://e621.net/post/show/{}'.format(
+                            keys[c - 1])
+                        embed.set_footer(text=values[c - 1]['score'],
+                                         icon_url=self._get_score(values[c - 1]['score']))
+                        embed.set_image(url=values[c - 1]['file_url'])
+
                     await number.delete()
-                    embed.title = values[c - 1]['artist']
-                    embed.url = 'https://e621.net/post/show/{}'.format(
-                        keys[c - 1])
-                    embed.set_footer(text='{} / {}'.format(c, len(posts)),
-                                     icon_url=self._get_score(values[c - 1]['score']))
-                    embed.set_image(url=values[c - 1]['file_url'])
 
                     await paginator.edit(content='\N{HEAVY BLACK HEART}' if keys[c - 1] in hearted.keys() else None, embed=embed)
 
@@ -921,7 +926,7 @@ class MsG:
                             embed.title = values[c - 1]['artist']
                             embed.url = 'https://e621.net/post/show/{}'.format(
                                 keys[c - 1])
-                            embed.set_footer(text='{} / {}'.format(c, len(posts)),
+                            embed.set_footer(text=values[c - 1]['score'],
                                              icon_url=self._get_score(values[c - 1]['score']))
                             embed.set_image(url=values[c - 1]['file_url'])
 
@@ -966,9 +971,7 @@ class MsG:
                 for embed in hearted.values():
                     await asyncio.sleep(self.RATE_LIMIT)
 
-                    embed.footer.text = f'{n} / {len(hearted)}'
-
-                    await ctx.author.send(embed=embed)
+                    await ctx.author.send(content=f'`{n} / {len(hearted)}`', embed=embed)
                     n += 1
 
     # @e621_paginator.error
@@ -993,7 +996,7 @@ class MsG:
             return False
 
         def on_message(msg):
-            return msg.content.isdigit() and 1 <= int(msg.content) <= len(posts) and msg.author is ctx.author and msg.channel is ctx.channel
+            return msg.content.isdigit() and 0 <= int(msg.content) <= len(posts) and msg.author is ctx.author and msg.channel is ctx.channel
 
         try:
             kwargs = u.get_kwargs(ctx, args)
@@ -1015,7 +1018,7 @@ class MsG:
             embed.set_image(url=values[c - 1]['file_url'])
             embed.set_author(name=formatter.tostring(tags, order=order),
                              url='https://e926.net/post?tags={}'.format(','.join(tags)), icon_url=ctx.author.avatar_url)
-            embed.set_footer(text='{} / {}'.format(c, len(posts)),
+            embed.set_footer(text=values[c - 1]['score'],
                              icon_url=self._get_score(values[c - 1]['score']))
 
             paginator = await dest.send(embed=embed)
@@ -1031,12 +1034,12 @@ class MsG:
                                            self.bot.wait_for('reaction_remove', check=on_reaction, timeout=7 * 60)])
 
                 except exc.Save:
-                    if embed not in hearted:
-                        hearted.append(embed)
+                    if keys[c - 1] not in hearted:
+                        hearted[keys[c - 1]] = copy.deepcopy(embed)
 
                         await paginator.edit(content='\N{HEAVY BLACK HEART}')
                     else:
-                        hearted.remove(embed)
+                        del hearted[keys[c - 1]]
 
                         await paginator.edit(content='\N{BROKEN HEART}')
 
@@ -1046,7 +1049,7 @@ class MsG:
                         embed.title = values[c - 1]['artist']
                         embed.url = 'https://e926.net/post/show/{}'.format(
                             keys[c - 1])
-                        embed.set_footer(text='{} / {}'.format(c, len(posts)),
+                        embed.set_footer(text=values[c - 1]['score'],
                                          icon_url=self._get_score(values[c - 1]['score']))
                         embed.set_image(url=values[c - 1]['file_url'])
 
@@ -1055,17 +1058,20 @@ class MsG:
                         await paginator.edit(content='\N{BLACK RIGHTWARDS ARROW}')
 
                 except exc.GoTo:
-                    await paginator.edit(content='\N{INPUT SYMBOL FOR NUMBERS}')
+                    await paginator.edit(content=f'`{c} / {len(posts)}`')
                     number = await self.bot.wait_for('message', check=on_message, timeout=7 * 60)
 
-                    c = int(number.content)
+                    if int(number.content) != 0:
+                        c = int(number.content)
+
+                        embed.title = values[c - 1]['artist']
+                        embed.url = 'https://e926.net/post/show/{}'.format(
+                            keys[c - 1])
+                        embed.set_footer(text=values[c - 1]['score'],
+                                         icon_url=self._get_score(values[c - 1]['score']))
+                        embed.set_image(url=values[c - 1]['file_url'])
+
                     await number.delete()
-                    embed.title = values[c - 1]['artist']
-                    embed.url = 'https://e926.net/post/show/{}'.format(
-                        keys[c - 1])
-                    embed.set_footer(text='{} / {}'.format(c, len(posts)),
-                                     icon_url=self._get_score(values[c - 1]['score']))
-                    embed.set_image(url=values[c - 1]['file_url'])
 
                     await paginator.edit(content='\N{HEAVY BLACK HEART}' if keys[c - 1] in hearted.keys() else None, embed=embed)
 
@@ -1084,7 +1090,7 @@ class MsG:
                             embed.title = values[c - 1]['artist']
                             embed.url = 'https://e926.net/post/show/{}'.format(
                                 keys[c - 1])
-                            embed.set_footer(text='{} / {}'.format(c, len(posts)),
+                            embed.set_footer(text=values[c - 1]['score'],
                                              icon_url=self._get_score(values[c - 1]['score']))
                             embed.set_image(url=values[c - 1]['file_url'])
 
@@ -1129,9 +1135,7 @@ class MsG:
                 for embed in hearted.values():
                     await asyncio.sleep(self.RATE_LIMIT)
 
-                    embed.footer.text = f'{n} / {len(hearted)}'
-
-                    await ctx.author.send(embed=embed)
+                    await ctx.author.send(content=f'`{n} / {len(hearted)}`', embed=embed)
                     n += 1
 
     # Searches for and returns images from e621.net given tags when not blacklisted
