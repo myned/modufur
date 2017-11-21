@@ -812,9 +812,7 @@ class MsG:
                 for embed in hearted.values():
                     await asyncio.sleep(self.RATE_LIMIT)
 
-                    embed.footer.text = f'{n} / {len(hearted)}'
-
-                    await ctx.author.send(embed=embed)
+                    await ctx.author.send(content=f'`{n} / {len(hearted)}`', embed=embed)
                     n += 1
 
     @cmds.command(name='e621page', aliases=['e621p', 'e6p', '6p'])
@@ -856,7 +854,7 @@ class MsG:
             embed.set_image(url=values[c - 1]['file_url'])
             embed.set_author(name=formatter.tostring(tags, order=order),
                              url='https://e621.net/post?tags={}'.format(','.join(tags)), icon_url=ctx.author.avatar_url)
-            embed.set_footer(text='{} / {}'.format(c, len(posts)),
+            embed.set_footer(text=values[c - 1]['score'],
                              icon_url=self._get_score(values[c - 1]['score']))
 
             paginator = await dest.send(embed=embed)
@@ -887,7 +885,7 @@ class MsG:
                         embed.title = values[c - 1]['artist']
                         embed.url = 'https://e621.net/post/show/{}'.format(
                             keys[c - 1])
-                        embed.set_footer(text='{} / {}'.format(c, len(posts)),
+                        embed.set_footer(text=values[c - 1]['score'],
                                          icon_url=self._get_score(values[c - 1]['score']))
                         embed.set_image(url=values[c - 1]['file_url'])
 
@@ -928,7 +926,7 @@ class MsG:
                             embed.title = values[c - 1]['artist']
                             embed.url = 'https://e621.net/post/show/{}'.format(
                                 keys[c - 1])
-                            embed.set_footer(text='{} / {}'.format(c, len(posts)),
+                            embed.set_footer(text=values[c - 1]['score'],
                                              icon_url=self._get_score(values[c - 1]['score']))
                             embed.set_image(url=values[c - 1]['file_url'])
 
@@ -973,9 +971,7 @@ class MsG:
                 for embed in hearted.values():
                     await asyncio.sleep(self.RATE_LIMIT)
 
-                    embed.footer.text = f'{n} / {len(hearted)}'
-
-                    await ctx.author.send(embed=embed)
+                    await ctx.author.send(content=f'`{n} / {len(hearted)}`', embed=embed)
                     n += 1
 
     # @e621_paginator.error
@@ -1022,7 +1018,7 @@ class MsG:
             embed.set_image(url=values[c - 1]['file_url'])
             embed.set_author(name=formatter.tostring(tags, order=order),
                              url='https://e926.net/post?tags={}'.format(','.join(tags)), icon_url=ctx.author.avatar_url)
-            embed.set_footer(text='{} / {}'.format(c, len(posts)),
+            embed.set_footer(text=values[c - 1]['score'],
                              icon_url=self._get_score(values[c - 1]['score']))
 
             paginator = await dest.send(embed=embed)
@@ -1053,7 +1049,7 @@ class MsG:
                         embed.title = values[c - 1]['artist']
                         embed.url = 'https://e926.net/post/show/{}'.format(
                             keys[c - 1])
-                        embed.set_footer(text='{} / {}'.format(c, len(posts)),
+                        embed.set_footer(text=values[c - 1]['score'],
                                          icon_url=self._get_score(values[c - 1]['score']))
                         embed.set_image(url=values[c - 1]['file_url'])
 
@@ -1094,7 +1090,7 @@ class MsG:
                             embed.title = values[c - 1]['artist']
                             embed.url = 'https://e926.net/post/show/{}'.format(
                                 keys[c - 1])
-                            embed.set_footer(text='{} / {}'.format(c, len(posts)),
+                            embed.set_footer(text=values[c - 1]['score'],
                                              icon_url=self._get_score(values[c - 1]['score']))
                             embed.set_image(url=values[c - 1]['file_url'])
 
@@ -1139,9 +1135,7 @@ class MsG:
                 for embed in hearted.values():
                     await asyncio.sleep(self.RATE_LIMIT)
 
-                    embed.footer.text = f'{n} / {len(hearted)}'
-
-                    await ctx.author.send(embed=embed)
+                    await ctx.author.send(content=f'`{n} / {len(hearted)}`', embed=embed)
                     n += 1
 
     # Searches for and returns images from e621.net given tags when not blacklisted
