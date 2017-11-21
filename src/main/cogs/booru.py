@@ -600,7 +600,7 @@ class MsG:
                 posts_request = await u.fetch('https://{}.net/pool/show.json'.format(booru), params={'id': tempool['id'], 'page': page}, json=True)
                 for post in posts_request['posts']:
                     posts[post['id']] = {'artist': ', '.join(
-                        post['artist']), 'file_url': post['file_url']}
+                        post['artist']), 'file_url': post['file_url'], 'score': post['score']}
                 page += 1
 
             return pool, posts
