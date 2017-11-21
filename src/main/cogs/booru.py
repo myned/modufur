@@ -694,7 +694,7 @@ class MsG:
             return False
 
         def on_message(msg):
-            return msg.content.isdigit() and 1 <= int(msg.content) <= len(posts) and msg.author is ctx.author and msg.channel is ctx.channel
+            return msg.content.isdigit() and 0 <= int(msg.content) <= len(posts) and msg.author is ctx.author and msg.channel is ctx.channel
 
         try:
             kwargs = u.get_kwargs(ctx, args)
@@ -756,14 +756,17 @@ class MsG:
                     await paginator.edit(content='\N{INPUT SYMBOL FOR NUMBERS}')
                     number = await self.bot.wait_for('message', check=on_message, timeout=7 * 60)
 
-                    c = int(number.content)
+                    if int(number.content) != 0:
+                        c = int(number.content)
+
+                        embed.title = values[c - 1]['artist']
+                        embed.url = 'https://e621.net/post/show/{}'.format(
+                            keys[c - 1])
+                        embed.set_footer(text='{} / {}'.format(c, len(posts)),
+                                         icon_url=self._get_score(values[c - 1]['score']))
+                        embed.set_image(url=values[c - 1]['file_url'])
+
                     await number.delete()
-                    embed.title = values[c - 1]['artist']
-                    embed.url = 'https://e621.net/post/show/{}'.format(
-                        keys[c - 1])
-                    embed.set_footer(text='{} / {}'.format(c, len(posts)),
-                                     icon_url=self._get_score(values[c - 1]['score']))
-                    embed.set_image(url=values[c - 1]['file_url'])
 
                     await paginator.edit(content='\N{HEAVY BLACK HEART}' if keys[c - 1] in hearted.keys() else None, embed=embed)
 
@@ -830,7 +833,7 @@ class MsG:
             return False
 
         def on_message(msg):
-            return msg.content.isdigit() and 1 <= int(msg.content) <= len(posts) and msg.author is ctx.author and msg.channel is ctx.channel
+            return msg.content.isdigit() and 0 <= int(msg.content) <= len(posts) and msg.author is ctx.author and msg.channel is ctx.channel
 
         try:
             kwargs = u.get_kwargs(ctx, args)
@@ -892,17 +895,20 @@ class MsG:
                         await paginator.edit(content='\N{BLACK RIGHTWARDS ARROW}')
 
                 except exc.GoTo:
-                    await paginator.edit(content='\N{INPUT SYMBOL FOR NUMBERS}')
-                    number = await self.bot.wait_for('message', check=on_message, timeout=7 * 60)
+                    await paginator.edit(content=f'`{c} / {len(posts)}`')
+                    number = int(await self.bot.wait_for('message', check=on_message, timeout=7 * 60))
 
-                    c = int(number.content)
+                    if int(number.content) != 0:
+                        c = int(number.content)
+
+                        embed.title = values[c - 1]['artist']
+                        embed.url = 'https://e621.net/post/show/{}'.format(
+                            keys[c - 1])
+                        embed.set_footer(text=values[c - 1]['score'],
+                                         icon_url=self._get_score(values[c - 1]['score']))
+                        embed.set_image(url=values[c - 1]['file_url'])
+
                     await number.delete()
-                    embed.title = values[c - 1]['artist']
-                    embed.url = 'https://e621.net/post/show/{}'.format(
-                        keys[c - 1])
-                    embed.set_footer(text='{} / {}'.format(c, len(posts)),
-                                     icon_url=self._get_score(values[c - 1]['score']))
-                    embed.set_image(url=values[c - 1]['file_url'])
 
                     await paginator.edit(content='\N{HEAVY BLACK HEART}' if keys[c - 1] in hearted.keys() else None, embed=embed)
 
@@ -993,7 +999,7 @@ class MsG:
             return False
 
         def on_message(msg):
-            return msg.content.isdigit() and 1 <= int(msg.content) <= len(posts) and msg.author is ctx.author and msg.channel is ctx.channel
+            return msg.content.isdigit() and 0 <= int(msg.content) <= len(posts) and msg.author is ctx.author and msg.channel is ctx.channel
 
         try:
             kwargs = u.get_kwargs(ctx, args)
@@ -1055,17 +1061,20 @@ class MsG:
                         await paginator.edit(content='\N{BLACK RIGHTWARDS ARROW}')
 
                 except exc.GoTo:
-                    await paginator.edit(content='\N{INPUT SYMBOL FOR NUMBERS}')
+                    await paginator.edit(content=f'`{c} / {len(posts)}`')
                     number = await self.bot.wait_for('message', check=on_message, timeout=7 * 60)
 
-                    c = int(number.content)
+                    if int(number.content) != 0:
+                        c = int(number.content)
+
+                        embed.title = values[c - 1]['artist']
+                        embed.url = 'https://e926.net/post/show/{}'.format(
+                            keys[c - 1])
+                        embed.set_footer(text=values[c - 1]['score'],
+                                         icon_url=self._get_score(values[c - 1]['score']))
+                        embed.set_image(url=values[c - 1]['file_url'])
+
                     await number.delete()
-                    embed.title = values[c - 1]['artist']
-                    embed.url = 'https://e926.net/post/show/{}'.format(
-                        keys[c - 1])
-                    embed.set_footer(text='{} / {}'.format(c, len(posts)),
-                                     icon_url=self._get_score(values[c - 1]['score']))
-                    embed.set_image(url=values[c - 1]['file_url'])
 
                     await paginator.edit(content='\N{HEAVY BLACK HEART}' if keys[c - 1] in hearted.keys() else None, embed=embed)
 
