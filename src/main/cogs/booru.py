@@ -895,7 +895,7 @@ class MsG:
 
                 except exc.GoTo:
                     await paginator.edit(content=f'`{c} / {len(posts)}`')
-                    number = int(await self.bot.wait_for('message', check=on_message, timeout=7 * 60))
+                    number = await self.bot.wait_for('message', check=on_message, timeout=7 * 60)
 
                     if int(number.content) != 0:
                         c = int(number.content)
