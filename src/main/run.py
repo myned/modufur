@@ -60,7 +60,7 @@ def get_prefix(bot, message):
 
 bot = cmds.Bot(command_prefix=get_prefix, formatter=cmds.HelpFormatter(show_check_failure=True), description='Modumind - A booru bot with a side of management\n\nS for single command\nG for group command', help_attrs={'aliases': ['h']}, pm_help=None)
 
-@bot.command(help='help', brief='brief', description='description', usage='usage')
+@bot.command(help='help', brief='brief', description='description', usage='usage', hidden=True)
 async def test(ctx):
     pass
 
