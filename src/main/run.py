@@ -102,8 +102,12 @@ async def on_ready():
 
 @bot.event
 async def on_message(message):
-    if message.author is not bot.user and not message.author.bot:
-        await bot.process_commands(message)
+    if u.config['selfbot'] == 'False':
+        if message.author is not bot.user and not message.author.bot:
+            await bot.process_commands(message)
+    else:
+        if not message.author.bot:
+            await bot.process_commands(message)
 
 
 @bot.event
@@ -162,7 +166,7 @@ async def on_command_completion(ctx):
     for command in ('lastcommand', ',restart', ',die'):
         if ctx.command.name == command:
             return
-        
+
     u.last_commands[ctx.author.id] = ctx
 
 @bot.event
