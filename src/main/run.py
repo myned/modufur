@@ -85,6 +85,7 @@ async def on_ready():
     print('\n> > > > > > > > >\nC O N N E C T E D : {}\n> > > > > > > > >\n'.format(bot.user.name))
     await bot.get_channel(u.config['info_channel']).send('**Started** \N{BLACK SUN WITH RAYS} .')
     # u.notify('C O N N E C T E D')
+
     if u.temp['startup']:
         with suppress(err.NotFound):
             if u.temp['startup'][0] == 'guild':
