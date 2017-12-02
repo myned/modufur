@@ -77,10 +77,8 @@ async def on_ready():
 
     # bot.loop.create_task(u.clear(booru.temp_urls, 30*60))
 
-    if u.config['playing'] is not 'None':
+    if u.config['playing'] is not '':
         await bot.change_presence(game=d.Game(name=u.config['playing']))
-    else:
-        await bot.change_presence(game=None)
 
     print('\n> > > > > > > > >\nC O N N E C T E D : {}\n> > > > > > > > >\n'.format(bot.user.name))
     await bot.get_channel(u.config['info_channel']).send('**Started** \N{BLACK SUN WITH RAYS} .')
