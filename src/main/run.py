@@ -58,7 +58,7 @@ def get_prefix(bot, message):
         return u.settings['prefixes'].get(message.guild.id, u.config['prefix'])
     return u.config['prefix']
 
-bot = cmds.Bot(command_prefix=get_prefix, formatter=cmds.HelpFormatter(show_check_failure=True), description='Modumind - A booru bot with a side of management\n\nS for single command\nG for group command', help_attrs={'aliases': ['h']}, pm_help=None)
+bot = cmds.Bot(command_prefix=get_prefix, self_bot=u.config['selfbot'], formatter=cmds.HelpFormatter(show_check_failure=True), description='Modumind - A booru bot with a side of management\n\nS for single command\nG for group command', help_attrs={'aliases': ['h']}, pm_help=None)
 
 @bot.command(help='help', brief='brief', description='description', usage='usage', hidden=True)
 async def test(ctx):
@@ -102,7 +102,7 @@ async def on_ready():
 
 @bot.event
 async def on_message(message):
-    if u.config['selfbot'] == 'False':
+    if not u.config['selfbot']:
         if message.author is not bot.user and not message.author.bot:
             await bot.process_commands(message)
     else:
@@ -249,4 +249,4 @@ async def test(ctx):
     # voice = await channel.connect()
     # voice.play(d.AudioSource, after=lambda: after(voice))
 
-bot.run(u.config['token'])
+bot.run(u.config['token'], bot=not u.config['selfbot'])
