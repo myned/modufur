@@ -60,7 +60,7 @@ def get_prefix(bot, message):
 
 bot = cmds.Bot(command_prefix=get_prefix, self_bot=u.config['selfbot'], formatter=cmds.HelpFormatter(show_check_failure=True), description='Modumind - A booru bot with a side of management\n\nS for single command\nG for group command', help_attrs={'aliases': ['h']}, pm_help=None)
 
-@bot.command(help='help', brief='brief', description='description', usage='usage')
+@bot.command(help='help', brief='brief', description='description', usage='usage', hidden=True)
 async def test(ctx):
     pass
 
@@ -85,6 +85,7 @@ async def on_ready():
     print('\n> > > > > > > > >\nC O N N E C T E D : {}\n> > > > > > > > >\n'.format(bot.user.name))
     await bot.get_channel(u.config['info_channel']).send('**Started** \N{BLACK SUN WITH RAYS} .')
     # u.notify('C O N N E C T E D')
+
     if u.temp['startup']:
         with suppress(err.NotFound):
             if u.temp['startup'][0] == 'guild':
@@ -102,8 +103,8 @@ async def on_ready():
 @bot.event
 async def on_message(message):
     if not u.config['selfbot']:
-    if message.author is not bot.user and not message.author.bot:
-        await bot.process_commands(message)
+        if message.author is not bot.user and not message.author.bot:
+            await bot.process_commands(message)
     else:
         if not message.author.bot:
             await bot.process_commands(message)
@@ -147,7 +148,7 @@ async def on_command_error(ctx, error):
         print('\n! ! ! ! ! ! !  ! ! ! ! !\nC O M M A N D  E R R O R : {}\n! ! ! ! ! ! !  ! ! ! ! !\n'.format(
             error), file=sys.stderr)
         tb.print_exception(type(error), error, error.__traceback__, file=sys.stderr)
-        await bot.get_user(u.config['owner_id']).send('**COMMAND ERROR** \N{WARNING SIGN} `{}` from {} in {}\n```\n{}```'.format(ctx.message.content, ctx.author.mention, ctx.channel.mention, ''.join(tb.format_exception(type(error), error, error.__traceback__))))
+        await bot.get_user(u.config['owner_id']).send('**COMMAND ERROR** \N{WARNING SIGN} `{}` from {} in {}\n```\n{}```'.format(ctx.message.content, ctx.author.mention, ctx.channel.mention, ''.join(tb.format_exception(type(error), error, error.__traceback__ if len(error.__traceback__) < 1500 else error.__traceback__[:1500]))))
         await bot.get_channel(u.config['info_channel']).send('**COMMAND ERROR** \N{WARNING SIGN} `{}` from {} in {}\n```\n{}```'.format(ctx.message.content, ctx.author.mention, ctx.channel.mention, error))
         await exc.send_error(ctx, error)
         await ctx.message.add_reaction('\N{WARNING SIGN}')
@@ -165,7 +166,7 @@ async def on_command_completion(ctx):
     for command in ('lastcommand', ',restart', ',die'):
         if ctx.command.name == command:
             return
-        
+
     u.last_commands[ctx.author.id] = ctx
 
 @bot.event
