@@ -79,7 +79,7 @@ class Bot:
             await ctx.send(f'**Game changed to** `{game}`')
         else:
             await self.bot.change_presence(game=None)
-            u.config['playing'] = 'None'
+            u.config['playing'] = ''
             u.dump(u.config, 'config.json', json=True)
             await ctx.send('**Game changed to** ` `')
 
