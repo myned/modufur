@@ -69,7 +69,7 @@ def dump(obj, filename, *, json=False):
 
 settings = setdefault('misc/settings.pkl', {'del_ctx': [], 'prefixes': {}})
 tasks = setdefault('cogs/tasks.pkl', {'auto_del': [], 'auto_rev': []})
-temp = setdefault('temp/temp.pkl', {})
+temp = setdefault('temp/temp.pkl', {'startup': ()})
 
 RATE_LIMIT = 2.2
 color = d.Color(0x1A1A1A)
