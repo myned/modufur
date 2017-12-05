@@ -6,6 +6,7 @@ import subprocess
 from contextlib import suppress
 from fractions import gcd
 import math
+import gmusicapi as gpm
 
 import aiohttp
 import discord as d
