@@ -81,7 +81,7 @@ async def on_ready():
         await bot.change_presence(game=d.Game(name=u.config['playing']))
 
     print('\n> > > > > > > > >\nC O N N E C T E D : {}\n> > > > > > > > >\n'.format(bot.user.name))
-    await bot.get_channel(u.config['info_channel']).send('**Started** \N{BLACK SUN WITH RAYS} .')
+    await bot.get_channel(u.config['info_channel']).send(f'**Started** \N{BLACK SUN WITH RAYS} `{"` or `".join(u.settings["prefixes"][ctx.guild.id] if ctx.guild.id in u.settings["prefixes"] else u.config["prefix"])}`')
     # u.notify('C O N N E C T E D')
 
     if u.temp['startup']:
