@@ -77,6 +77,15 @@ session = aiohttp.ClientSession()
 last_commands = {}
 
 
+async def fetch(url, *, params={}, json=False, response=False):
+    async with session.get(url, params=params, headers={'User-Agent': 'Myned/Modumind'}) as r:
+        if response:
+            return r
+        elif json:
+            return await r.json()
+        return await r.read()
+
+
 # async def clear(obj, interval=10 * 60, replace=None):
 #     if replace is None:
 #         if type(obj) is list:
@@ -106,15 +115,6 @@ def close(loop):
     # loop.close()
 
     print('Finished cancelling tasks.')
-
-
-async def fetch(url, *, params={}, json=False, response=False):
-    async with session.get(url, params=params, headers={'User-Agent': 'Myned/Modumind/dev'}) as r:
-        if response:
-            return r
-        elif json:
-            return await r.json()
-        return await r.read()
 
 
 def generate_embed(ctx, *, title=d.Embed.Empty, type='rich', description=d.Embed.Empty, url=d.Embed.Empty, timestamp=d.Embed.Empty, colour=color, footer={}, image=d.Embed.Empty, thumbnail=d.Embed.Empty, author={}, fields=[]):
