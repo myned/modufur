@@ -6,6 +6,7 @@ import subprocess
 from contextlib import suppress
 from fractions import gcd
 import math
+import gmusicapi as gpm
 
 import aiohttp
 import discord as d
@@ -68,12 +69,21 @@ def dump(obj, filename, *, json=False):
 
 settings = setdefault('misc/settings.pkl', {'del_ctx': [], 'prefixes': {}})
 tasks = setdefault('cogs/tasks.pkl', {'auto_del': [], 'auto_rev': []})
-temp = setdefault('temp/temp.pkl', {})
+temp = setdefault('temp/temp.pkl', {'startup': ()})
 
 RATE_LIMIT = 2.2
 color = d.Color(0x1A1A1A)
 session = aiohttp.ClientSession()
 last_commands = {}
+
+
+async def fetch(url, *, params={}, json=False, response=False):
+    async with session.get(url, params=params, headers={'User-Agent': 'Myned/Modumind'}) as r:
+        if response:
+            return r
+        elif json:
+            return await r.json()
+        return await r.read()
 
 
 # async def clear(obj, interval=10 * 60, replace=None):
@@ -107,17 +117,8 @@ def close(loop):
     print('Finished cancelling tasks.')
 
 
-async def fetch(url, *, params={}, json=False, response=False):
-    async with session.get(url, params=params, headers={'User-Agent': 'Myned/Modumind/dev'}) as r:
-        if response:
-            return r
-        elif json:
-            return await r.json()
-        return await r.read()
-
-
-def generate_embed(ctx, *, title=d.Embed.Empty, type='rich', description=d.Embed.Empty, url=d.Embed.Empty, timestamp=d.Embed.Empty, colour=color, footer={}, image=d.Embed.Empty, thumbnail=d.Embed.Empty, author={}, fields=[]):
-    embed = d.Embed(title=title, type=type, description=description, url=url, timestamp=timestamp, colour=colour if isinstance(ctx.channel, d.TextChannel) else color)
+def generate_embed(ctx, *, title=d.Embed.Empty, kind='rich', description=d.Embed.Empty, url=d.Embed.Empty, timestamp=d.Embed.Empty, colour=color, footer={}, image=d.Embed.Empty, thumbnail=d.Embed.Empty, author={}, fields=[]):
+    embed = d.Embed(title=title, type=kind, description=description, url=url, timestamp=timestamp, colour=colour if isinstance(ctx.channel, d.TextChannel) else color)
 
     if footer:
         embed.set_footer(text=footer.get('text', d.Embed.Empty), icon_url=footer.get('icon_url', d.Embed.Empty))
