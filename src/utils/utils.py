@@ -68,7 +68,7 @@ def dump(obj, filename, *, json=False):
 
 
 settings = setdefault('misc/settings.pkl', {'del_ctx': [], 'prefixes': {}})
-tasks = setdefault('cogs/tasks.pkl', {'auto_del': [], 'auto_rev': []})
+tasks = setdefault('cogs/tasks.pkl', {'auto_del': [], 'auto_rev': [], 'periodic_gpm': []})
 temp = setdefault('temp/temp.pkl', {'startup': ()})
 
 RATE_LIMIT = 2.2
