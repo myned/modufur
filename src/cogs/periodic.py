@@ -17,3 +17,9 @@ class Post:
 
     def __init__(self, bot):
         self.bot = bot
+
+        for task in u.tasks['periodic_gpm']:
+            self.bot.loop.create_task()
+
+    async def _check_posts(self, user, channel):
+        pass
