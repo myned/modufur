@@ -11,6 +11,7 @@ from discord.ext.commands import errors as errext
 from utils import utils as u
 
 owner_id = u.config['owner_id']
+ready = False
 
 
 def is_owner():

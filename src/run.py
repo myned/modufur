@@ -69,7 +69,7 @@ async def test(ctx):
 
 @bot.event
 async def on_ready():
-    if not bot.is_ready():
+    if not checks.ready:
         from cogs import booru, info, management, owner, tools
 
         for cog in (tools.Utils(bot), owner.Bot(bot), owner.Tools(bot), management.Administration(bot), info.Info(bot), booru.MsG(bot)):
@@ -98,6 +98,8 @@ async def on_ready():
             u.temp['startup'] = ()
             u.dump(u.temp, 'temp/temp.pkl')
 
+        checks.ready = True
+
 
 @bot.event
 async def on_message(message):
@@ -111,6 +113,8 @@ async def on_message(message):
 
 @bot.event
 async def on_error(error, *args, **kwargs):
+    print(bot.is_closed())
+    print(bot.is_ready())
     print('\n! ! ! ! !\nE R R O R : {}\n! ! ! ! !\n'.format(error), file=sys.stderr)
     tb.print_exc()
     await bot.get_user(u.config['owner_id']).send('**ERROR** \N{WARNING SIGN}\n```\n{}```'.format(error))
