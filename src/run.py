@@ -69,7 +69,7 @@ async def test(ctx):
 
 @bot.event
 async def on_ready():
-    if not is_ready():
+    if not bot.is_ready():
         from cogs import booru, info, management, owner, tools
 
         for cog in (tools.Utils(bot), owner.Bot(bot), owner.Tools(bot), management.Administration(bot), info.Info(bot), booru.MsG(bot)):
