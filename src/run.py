@@ -69,33 +69,34 @@ async def test(ctx):
 
 @bot.event
 async def on_ready():
-    from cogs import booru, info, management, owner, tools
+    if not is_ready():
+        from cogs import booru, info, management, owner, tools
 
-    for cog in (tools.Utils(bot), owner.Bot(bot), owner.Tools(bot), management.Administration(bot), info.Info(bot), booru.MsG(bot)):
-        bot.add_cog(cog)
-        print(f'COG : {type(cog).__name__}')
+        for cog in (tools.Utils(bot), owner.Bot(bot), owner.Tools(bot), management.Administration(bot), info.Info(bot), booru.MsG(bot)):
+            bot.add_cog(cog)
+            print(f'COG : {type(cog).__name__}')
 
-    # bot.loop.create_task(u.clear(booru.temp_urls, 30*60))
+        # bot.loop.create_task(u.clear(booru.temp_urls, 30*60))
 
-    if u.config['playing'] is not '':
-        await bot.change_presence(game=d.Game(name=u.config['playing']))
+        if u.config['playing'] is not '':
+            await bot.change_presence(game=d.Game(name=u.config['playing']))
 
-    print('\n> > > > > > > > >\nC O N N E C T E D : {}\n> > > > > > > > >\n'.format(bot.user.name))
-    await bot.get_channel(u.config['info_channel']).send(f'**Started** \N{BLACK SUN WITH RAYS} `{"` or `".join(u.config["prefix"])}`')
-    # u.notify('C O N N E C T E D')
+        print('\n> > > > > > > > >\nC O N N E C T E D : {}\n> > > > > > > > >\n'.format(bot.user.name))
+        await bot.get_channel(u.config['info_channel']).send(f'**Started** \N{BLACK SUN WITH RAYS} `{"` or `".join(u.config["prefix"])}`')
+        # u.notify('C O N N E C T E D')
 
-    if u.temp['startup']:
-        with suppress(err.NotFound):
-            if u.temp['startup'][0] == 'guild':
-                dest = bot.get_channel(u.temp['startup'][1])
-            else:
-                dest = bot.get_user(u.temp['startup'][1])
-            message = await dest.get_message(u.temp['startup'][2])
+        if u.temp['startup']:
+            with suppress(err.NotFound):
+                if u.temp['startup'][0] == 'guild':
+                    dest = bot.get_channel(u.temp['startup'][1])
+                else:
+                    dest = bot.get_user(u.temp['startup'][1])
+                message = await dest.get_message(u.temp['startup'][2])
 
-            await message.add_reaction('\N{WHITE HEAVY CHECK MARK}')
+                await message.add_reaction('\N{WHITE HEAVY CHECK MARK}')
 
-        u.temp['startup'] = ()
-        u.dump(u.temp, 'temp/temp.pkl')
+            u.temp['startup'] = ()
+            u.dump(u.temp, 'temp/temp.pkl')
 
 
 @bot.event
@@ -110,8 +111,6 @@ async def on_message(message):
 
 @bot.event
 async def on_error(error, *args, **kwargs):
-    print(bot.is_closed())
-    print(bot.is_ready())
     print('\n! ! ! ! !\nE R R O R : {}\n! ! ! ! !\n'.format(error), file=sys.stderr)
     tb.print_exc()
     await bot.get_user(u.config['owner_id']).send('**ERROR** \N{WARNING SIGN}\n```\n{}```'.format(error))
