@@ -99,6 +99,8 @@ async def on_ready():
             u.dump(u.temp, 'temp/temp.pkl')
 
         checks.ready = True
+    else:
+        print('\n- - - -\nI N F O : reconnected, skipping initialization\n- - - -')
 
 
 @bot.event
