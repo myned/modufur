@@ -142,8 +142,8 @@ class MsG:
 
             while self.hearting:
                 try:
-                    await asyncio.gather(*[self.bot.wait_for('reaction_add', check=on_reaction, timeout=7 * 60),
-                                   self.bot.wait_for('reaction_remove', check=on_reaction, timeout=7 * 60)])
+                    await asyncio.gather(*[self.bot.wait_for('reaction_add', check=on_reaction, timeout=60 * 60),
+                                   self.bot.wait_for('reaction_remove', check=on_reaction, timeout=60 * 60)])
 
                 except exc.Save as e:
                     await self.heartqueue.put((e.user, send))
