@@ -58,7 +58,7 @@ def get_prefix(bot, message):
         return u.settings['prefixes'].get(message.guild.id, u.config['prefix'])
     return u.config['prefix']
 
-bot = cmds.Bot(command_prefix=get_prefix, self_bot=u.config['selfbot'], formatter=cmds.HelpFormatter(show_check_failure=True), description='Modumind - A booru bot with a side of management\n\nS for single command\nG for group command', help_attrs={'aliases': ['h']}, pm_help=None)
+bot = cmds.Bot(command_prefix=get_prefix, self_bot=u.config['selfbot'], formatter=cmds.HelpFormatter(show_check_failure=True), description='Modufur - A booru bot with a side of management and automated tasking\nMade by @Myned#3985\n\nNSFW for Not Safe For Wumpus commands\n(G) for group commands\np for prefix\n\n\{\} for mandatory argument\n[] for optional argument', help_attrs={'aliases': ['h']}, pm_help=None)
 
 @bot.command(help='help', brief='brief', description='description', usage='usage', hidden=True)
 async def test(ctx):
