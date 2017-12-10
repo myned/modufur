@@ -149,7 +149,7 @@ class MsG:
                     await self.heartqueue.put((e.user, send))
 
         except asyncio.TimeoutError:
-            await message.edit(content='\N{HOURGLASS}')
+            await message.add_reaction('\N{WHITE HEAVY CHECK MARK}')
 
     # @cmds.command()
     # async def auto_post(self, ctx):
