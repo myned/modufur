@@ -142,7 +142,7 @@ async def on_error(error, *args, **kwargs):
 @bot.event
 async def on_command_error(ctx, error):
     if isinstance(error, err.NotFound):
-        pass
+        print('NOT FOUND')
     elif isinstance(error, errext.CheckFailure):
         await ctx.send('**Insufficient permissions**', delete_after=10)
         await ctx.message.add_reaction('\N{NO ENTRY}')
