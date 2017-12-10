@@ -171,12 +171,12 @@ class MsG:
     #         await ctx.send('**Already auto-posting in {}.** Type `stop` to stop.'.format(ctx.channel.mention), delete_after=7)
     #         await ctx.message.add_reaction('\N{CROSS MARK}')
 
-    @cmds.group(aliases=['tag', 't'], brief='e621 - Get info on tags', description='e621 | NSFW\nGroup command for obtaining info on tags', usage='[tags|tag|t]')
+    @cmds.group(aliases=['tag', 't'], brief='(G) Get info on tags', description='Group command for obtaining info on tags\n\nUsage:\n\{p\}tag \{flag\} \{tag(s)\}')
     async def tags(self, ctx):
         pass
 
     # Tag search
-    @tags.command(name='related', aliases=['relate', 'rel'], brief='e621 - Search for related tags', description='Return related tags for given tag(s)', usage='[related|relate|rel]')
+    @tags.command(name='related', aliases=['relate', 'rel'], brief='(tags) Search for related tags', description='Return related tags for given tag(s)\n\nExample:\n\{p\}tag related wolf')
     async def _tags_related(self, ctx, *args):
         kwargs = u.get_kwargs(ctx, args)
         dest, tags = kwargs['destination'], kwargs['remaining']
@@ -206,7 +206,7 @@ class MsG:
             await ctx.message.add_reaction('\N{CROSS MARK}')
 
     # Tag aliases
-    @tags.command(name='aliases', aliases=['alias', 'als'], brief='e621 - Search for tag aliases', description='Return aliases for given tag(s)', usage='[aliases|alias|als]')
+    @tags.command(name='aliases', aliases=['alias', 'als'], brief='(tags) Search for tag aliases', description='Return aliases for given tag(s)\n\nExample:\n\{p\}tag alias wolf')
     async def _tags_aliases(self, ctx, *args):
         kwargs = u.get_kwargs(ctx, args)
         dest, tags = kwargs['destination'], kwargs['remaining']
@@ -235,13 +235,13 @@ class MsG:
         if not c:
             await ctx.message.add_reaction('\N{CROSS MARK}')
 
-    @cmds.group(aliases=['g'])
+    @cmds.group(aliases=['g'], brief='(G) Get e621 elements', description='Group command for obtaining various elements like post info\n\nUsage:\n\{p\}get \{flag\} \{args\}')
     async def get(self, ctx):
         if not ctx.invoked_subcommand:
             await ctx.send('**Use a flag to get items.**\n*Type* `{}help get` *for more info.*'.format(ctx.prefix), delete_after=7)
             await ctx.message.add_reaction('\N{CROSS MARK}')
 
-    @get.command(name='info', aliases=['i'], brief='e621 - Get info from post', description='Return info for given post', usage='[info|i]')
+    @get.command(name='info', aliases=['i'], brief='(get) Get info from post', description='Return info for given post URL or ID\n\nExample:\n\{p\}get info 1145042')
     async def _get_info(self, ctx, *args):
         try:
             kwargs = u.get_kwargs(ctx, args)
@@ -275,7 +275,7 @@ class MsG:
             await ctx.send('**Invalid url**', delete_after=7)
             await ctx.message.add_reaction('\N{CROSS MARK}')
 
-    @get.command(name='image', aliases=['img'], brief='e621 - Get image link', description='Return image for given post', usage='[image|img]')
+    @get.command(name='image', aliases=['img'], brief='(get) Get direct image from post', description='Return direct image URL for given post\n\nExample:\n\{p\}get image 1145042')
     async def _get_image(self, ctx, *args):
         try:
             kwargs = u.get_kwargs(ctx, args)
@@ -306,7 +306,7 @@ class MsG:
             await ctx.send('**Invalid url or file**', delete_after=7)
             await ctx.message.add_reaction('\N{CROSS MARK}')
 
-    @get.command(name='pool', aliases=['p'], brief='e621 - Get pool link', description='Return pool info for given query', usage='[pool|p]')
+    @get.command(name='pool', aliases=['p'], brief='(get) Get pool from query', description='Return pool info for given query\n\nExample:\n\{p\}get pool 1145042')
     async def _get_pool(self, ctx, *args):
         def on_reaction(reaction, user):
             if reaction.emoji == '\N{OCTAGONAL SIGN}' and reaction.message.id == ctx.message.id and user is ctx.author:
@@ -351,7 +351,7 @@ class MsG:
             await e.message.edit(content='\N{NO ENTRY SIGN}', delete_after=7)
 
     # Reverse image searches a linked image using the public iqdb
-    @cmds.command(name='reverse', aliases=['rev', 'ris'], brief='e621 Reverse image search', description='e621 | NSFW\nReverse-search an image with given URL')
+    @cmds.command(name='reverse', aliases=['rev', 'ris'], brief='Reverse image search from e621', description='NSFW\nReverse-search an image with given URL')
     async def reverse(self, ctx, *args):
         try:
             kwargs = u.get_kwargs(ctx, args)
