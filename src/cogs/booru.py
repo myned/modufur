@@ -176,7 +176,7 @@ class MsG:
         pass
 
     # Tag search
-    @tags.command(name='related', aliases=['relate', 'rel'], brief='(tags) Search for related tags', description='Return related tags for given tag(s)\n\nExample:\n\{p\}tag related wolf')
+    @tags.command(name='related', aliases=['relate', 'rel', 'r'], brief='(tags) Search for related tags', description='Return related tags for given tag(s)\n\nExample:\n\{p\}tag related wolf')
     async def _tags_related(self, ctx, *args):
         kwargs = u.get_kwargs(ctx, args)
         dest, tags = kwargs['destination'], kwargs['remaining']
@@ -206,7 +206,7 @@ class MsG:
             await ctx.message.add_reaction('\N{CROSS MARK}')
 
     # Tag aliases
-    @tags.command(name='aliases', aliases=['alias', 'als'], brief='(tags) Search for tag aliases', description='Return aliases for given tag(s)\n\nExample:\n\{p\}tag alias wolf')
+    @tags.command(name='aliases', aliases=['alias', 'als', 'a'], brief='(tags) Search for tag aliases', description='Return aliases for given tag(s)\n\nExample:\n\{p\}tag alias wolf')
     async def _tags_aliases(self, ctx, *args):
         kwargs = u.get_kwargs(ctx, args)
         dest, tags = kwargs['destination'], kwargs['remaining']
@@ -1345,7 +1345,7 @@ class MsG:
         pass
 
     # Umbrella command structure to manage global, channel, and user blacklists
-    @cmds.group(aliases=['bl', 'b'], brief='Manage blacklists', description='Blacklist base command for managing blacklists\n\n`bl get [blacklist]` to show a blacklist\n`bl set [blacklist] [tags]` to replace a blacklist\n`bl clear [blacklist]` to clear a blacklist\n`bl add [blacklist] [tags]` to add tags to a blacklist\n`bl remove [blacklist] [tags]` to remove tags from a blacklist', usage='[flag] [blacklist] ([tags])')
+    @cmds.group(aliases=['bl', 'b'], brief='(G) Manage blacklists', description='Manage channel or personal blacklists\n\nUsage:\n\{p\}bl get \{blacklist\} to show a blacklist\n\{p\}bl clear \{blacklist\} to clear a blacklist\n\{p\}bl add \{blacklist\} \{tags...\} to add tag(s) to a blacklist\n\{p\}bl remove \{blacklist\} \{tags...\} to remove tags from a blacklist')
     async def blacklist(self, ctx):
         if not ctx.invoked_subcommand:
             await ctx.send('**Use a flag to manage blacklists.**\n*Type* `{}help bl` *for more info.*'.format(ctx.prefix), delete_after=7)
@@ -1356,19 +1356,19 @@ class MsG:
         # if isinstance(error, KeyError):
         #     return await ctx.send('**Blacklist does not exist**', delete_after=7)
 
-    @blacklist.group(name='get', aliases=['g'])
+    @blacklist.group(name='get', aliases=['g'], brief='(G) Get a blacklist\n\nUsage:\n\{p\}bl get \{blacklist\}')
     async def _get_blacklist(self, ctx):
         if not ctx.invoked_subcommand:
             await ctx.send('**Invalid blacklist**', delete_after=7)
             await ctx.message.add_reaction('\N{CROSS MARK}')
 
-    @_get_blacklist.command(name='global', aliases=['gl', 'g'])
+    @_get_blacklist.command(name='global', aliases=['gl', 'g'], brief='Get current global blacklist', description='Get current global blacklist\n\nThis applies to all booru commands, in accordance with Discord\'s ToS agreement\n\nExample:\n\{p\}bl get global')
     async def __get_global_blacklist(self, ctx, *args):
         dest = u.get_kwargs(ctx, args)['destination']
 
         await dest.send('\N{NO ENTRY SIGN} **Global blacklist:**\n```\n{}```'.format(formatter.tostring(self.blacklists['global_blacklist'])))
 
-    @_get_blacklist.command(name='channel', aliases=['ch', 'c'])
+    @_get_blacklist.command(name='channel', aliases=['ch', 'c'], brief='Get current channel blacklist', description='Get current channel blacklist\n\nThis is based on context - the channel where the command was executed\n\nExample:\{p\}bl get channel')
     async def __get_channel_blacklist(self, ctx, *args):
         dest = u.get_kwargs(ctx, args)['destination']
 
@@ -1377,13 +1377,13 @@ class MsG:
 
         await dest.send('\N{NO ENTRY SIGN} {} **blacklist:**\n```\n{}```'.format(ctx.channel.mention, formatter.tostring(self.blacklists['guild_blacklist'].get(guild.id, {}).get(ctx.channel.id, set()))))
 
-    @_get_blacklist.command(name='me', aliases=['m'])
+    @_get_blacklist.command(name='me', aliases=['m'], brief='Get your personal blacklist', description='Get your personal blacklist\n\nYour blacklist is not viewable by anyone but you, except if you call this command in a public channel. The blacklist will be deleted soon after for your privacy\n\nExample:\n\{p\}bl get me')
     async def __get_user_blacklist(self, ctx, *args):
         dest = u.get_kwargs(ctx, args)['destination']
 
         await dest.send('\N{NO ENTRY SIGN} {}**\'s blacklist:**\n```\n{}```'.format(ctx.author.mention, formatter.tostring(self.blacklists['user_blacklist'].get(ctx.author.id, set()))), delete_after=7)
 
-    @_get_blacklist.command(name='here', aliases=['h'])
+    @_get_blacklist.command(name='here', aliases=['h'], brief='Get current global and channel blacklists', description='Get current global and channel blacklists in a single message\n\nExample:\{p\}bl get here')
     async def __get_here_blacklists(self, ctx, *args):
         dest = u.get_kwargs(ctx, args)['destination']
 
@@ -1392,7 +1392,7 @@ class MsG:
 
         await dest.send('\N{NO ENTRY SIGN} **__Blacklisted:__**\n\n**Global:**\n```\n{}```\n**{}:**\n```\n{}```'.format(formatter.tostring(self.blacklists['global_blacklist']), ctx.channel.mention, formatter.tostring(self.blacklists['guild_blacklist'].get(guild.id, {}).get(ctx.channel.id, set()))))
 
-    @_get_blacklist.group(name='all', aliases=['a'])
+    @_get_blacklist.group(name='all', aliases=['a'], hidden=True)
     async def __get_all_blacklists(self, ctx):
         if not ctx.invoked_subcommand:
             await ctx.send('**Invalid blacklist**')
@@ -1415,7 +1415,7 @@ class MsG:
 
         await dest.send('\N{NO ENTRY SIGN} **__User blacklists:__**\n\n{}'.format(formatter.dict_tostring(self.blacklists['user_blacklist'])))
 
-    @blacklist.group(name='add', aliases=['a'])
+    @blacklist.group(name='add', aliases=['a'], brief='(G) Add tag(s) to a blacklist\n\nUsage:\n\{p\}bl add \{blacklist\} \{tags...\}')
     async def _add_tags(self, ctx):
         if not ctx.invoked_subcommand:
             await ctx.send('**Invalid blacklist**', delete_after=7)
@@ -1442,7 +1442,7 @@ class MsG:
 
         await dest.send('**Added to global blacklist:**\n```\n{}```'.format(formatter.tostring(tags)), delete_after=5)
 
-    @_add_tags.command(name='channel', aliases=['ch', 'c'])
+    @_add_tags.command(name='channel', aliases=['ch', 'c'], brief='@manage_channel@ Add tag(s) to the current channel blacklist (requires manage_channel)', description='Add tag(s) to the current channel blacklist ')
     @cmds.has_permissions(manage_channels=True)
     async def __add_channel_tags(self, ctx, *args):
         kwargs = u.get_kwargs(ctx, args)
