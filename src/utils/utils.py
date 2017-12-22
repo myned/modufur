@@ -36,7 +36,8 @@ except FileNotFoundError:
             'FILE NOT FOUND : config.json created with abstract values. Restart run.py with correct values')
 
 
-def setdefault(filename, default=None):
+def setdefault(filename, default=None, json=False):
+    if not json:
     try:
         with open(filename, 'rb') as infile:
             print('LOADED : {}'.format(filename))
@@ -47,6 +48,17 @@ def setdefault(filename, default=None):
             pkl.dump(default, iofile)
             iofile.seek(0)
             return pkl.load(iofile)
+    else:
+        try:
+            with open(filename, 'rb') as infile:
+                print(f'LOADED : {filename}')
+                return jsn.load(infile)
+        except FileNotFoundError:
+            with open(filename, 'wb+') as iofile:
+                print(f'FILE NOT FOUND : {filename} created and loaded with default values')
+                jsn.dump(default, iofile)
+                iofile.seek(0)
+                return jsn.load(iofile)
 
 
 def load(filename, *, json=False):

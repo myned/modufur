@@ -58,7 +58,7 @@ def get_prefix(bot, message):
         return u.settings['prefixes'].get(message.guild.id, u.config['prefix'])
     return u.config['prefix']
 
-bot = cmds.Bot(command_prefix=get_prefix, self_bot=u.config['selfbot'], formatter=cmds.HelpFormatter(show_check_failure=True), description='Modufur - A booru bot with a side of management and automated tasking\nMade by @Myned#3985\n\nNSFW for Not Safe For Wumpus commands\n(G) for group commands\np for prefix\n\n\{\} for mandatory argument\n[] for optional argument', help_attrs={'aliases': ['h']}, pm_help=None)
+bot = cmds.Bot(command_prefix=get_prefix, self_bot=u.config['selfbot'], formatter=cmds.HelpFormatter(show_check_failure=True), description='Modufur - A booru bot with a side of management and automated tasking\nMade by @Myned#3985\n\nNSFW for Not Safe For Wumpus commands\n(G) for group commands\n@permission@ for required permissions\n!notice! for important information\np for prefix\n\n\{\} for mandatory argument\n[] for optional argument\n... for one or more arguments', help_attrs={'aliases': ['h']}, pm_help=None)
 
 @bot.command(help='help', brief='brief', description='description', usage='usage', hidden=True)
 async def test(ctx):
@@ -115,8 +115,6 @@ async def on_message(message):
 
 @bot.event
 async def on_error(error, *args, **kwargs):
-    print(bot.is_closed())
-    print(bot.is_ready())
     print('\n! ! ! ! !\nE R R O R : {}\n! ! ! ! !\n'.format(error), file=sys.stderr)
     tb.print_exc()
     await bot.get_user(u.config['owner_id']).send('**ERROR** \N{WARNING SIGN}\n```\n{}```'.format(error))
@@ -153,7 +151,7 @@ async def on_command_error(ctx, error):
         print('\n! ! ! ! ! ! !  ! ! ! ! !\nC O M M A N D  E R R O R : {}\n! ! ! ! ! ! !  ! ! ! ! !\n'.format(
             error), file=sys.stderr)
         tb.print_exception(type(error), error, error.__traceback__, file=sys.stderr)
-        await bot.get_user(u.config['owner_id']).send('**COMMAND ERROR** \N{WARNING SIGN} `{}` from {} in {}\n```\n{}```'.format(ctx.message.content, ctx.author.mention, ctx.channel.mention, ''.join(tb.format_exception(type(error), error, error.__traceback__ if len(error.__traceback__) < 1500 else error.__traceback__[:1500]))))
+        await bot.get_user(u.config['owner_id']).send('**COMMAND ERROR** \N{WARNING SIGN} `{}` from {} in {}\n```\n{}```'.format(ctx.message.content, ctx.author.mention, ctx.channel.mention, ''.join(tb.format_exception(type(error), error, error.__traceback__ if len(str(error.__traceback__)) < 1500 else str(error.__traceback__)[:1500]))))
         await bot.get_channel(u.config['info_channel']).send('**COMMAND ERROR** \N{WARNING SIGN} `{}` from {} in {}\n```\n{}```'.format(ctx.message.content, ctx.author.mention, ctx.channel.mention, error))
         await exc.send_error(ctx, error)
         await ctx.message.add_reaction('\N{WARNING SIGN}')
