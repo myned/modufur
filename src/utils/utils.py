@@ -41,15 +41,15 @@ def setdefault(filename, default=None, json=False):
     if json:
         try:
             with open(filename, 'rb') as infile:
-                    print(f'LOADED : {filename}')
-                    return jsn.load(infile)
+                print(f'LOADED : {filename}')
+                return jsn.load(infile)
 
         except FileNotFoundError:
             with open(filename, 'wb+') as iofile:
-                    print(f'FILE NOT FOUND : {filename} created and loaded with default values')
-                    jsn.dump(default, iofile)
+                print(f'FILE NOT FOUND : {filename} created and loaded with default values')
+                jsn.dump(default, iofile)
                 iofile.seek(0)
-                    return jsn.load(iofile)
+                return jsn.load(iofile)
     else:
         try:
             with open(filename, 'rb') as infile:
