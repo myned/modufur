@@ -28,6 +28,7 @@ try:
     with open('config.json') as infile:
         config = jsn.load(infile)
         print('LOADED : config.json')
+
 except FileNotFoundError:
     with open('config.json', 'w') as outfile:
         jsn.dump({'client_id': 0, 'info_channel': 0, 'owner_id': 0, 'permissions': 126016,
@@ -37,28 +38,30 @@ except FileNotFoundError:
 
 
 def setdefault(filename, default=None, json=False):
-    if not json:
+    if json:
     try:
         with open(filename, 'rb') as infile:
-            print('LOADED : {}'.format(filename))
-            return pkl.load(infile)
+                print(f'LOADED : {filename}')
+                return jsn.load(infile)
+
     except FileNotFoundError:
         with open(filename, 'wb+') as iofile:
-            print('FILE NOT FOUND : {} created and loaded with default values'.format(filename))
-            pkl.dump(default, iofile)
+                print(f'FILE NOT FOUND : {filename} created and loaded with default values')
+                jsn.dump(default, iofile)
             iofile.seek(0)
-            return pkl.load(iofile)
+                return jsn.load(iofile)
     else:
         try:
             with open(filename, 'rb') as infile:
                 print(f'LOADED : {filename}')
-                return jsn.load(infile)
+                return pkl.load(infile)
+
         except FileNotFoundError:
             with open(filename, 'wb+') as iofile:
                 print(f'FILE NOT FOUND : {filename} created and loaded with default values')
-                jsn.dump(default, iofile)
+                pkl.dump(default, iofile)
                 iofile.seek(0)
-                return jsn.load(iofile)
+                return pkl.load(iofile)
 
 
 def load(filename, *, json=False):
