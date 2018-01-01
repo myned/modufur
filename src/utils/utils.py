@@ -40,12 +40,12 @@ except FileNotFoundError:
 def setdefault(filename, default=None, json=False):
     if json:
         try:
-            with open(filename, 'rb') as infile:
+            with open(filename, 'r') as infile:
                 print(f'LOADED : {filename}')
                 return jsn.load(infile)
 
         except FileNotFoundError:
-            with open(filename, 'wb+') as iofile:
+            with open(filename, 'w+') as iofile:
                 print(f'FILE NOT FOUND : {filename} created and loaded with default values')
                 jsn.dump(default, iofile)
                 iofile.seek(0)
