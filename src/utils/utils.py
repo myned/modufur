@@ -83,7 +83,7 @@ def dump(obj, filename, *, json=False):
 
 
 settings = setdefault('misc/settings.pkl', {'del_ctx': [], 'prefixes': {}})
-tasks = setdefault('cogs/tasks.pkl', {'auto_del': [], 'auto_rev': [], 'periodic_gpm': []})
+tasks = setdefault('cogs/tasks.pkl', {'auto_del': [], 'auto_hrt': [], 'auto_rev': [], 'periodic_gpm': []})
 temp = setdefault('temp/temp.pkl', {'startup': ()})
 secrets = setdefault('secrets.json', {'client_secrets': {'client_id': '', 'client_secret': ''}}, json=True)
 
