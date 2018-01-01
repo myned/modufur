@@ -179,7 +179,7 @@ class Administration:
         pass
 
     @settings.command(name='deletecommands', aliases=['delcmds', 'delcmd'])
-    async def _settings_delete_commands(self, ctx):
+    async def _settings_deletecommands(self, ctx):
         if ctx.guild.id not in u.settings['del_ctx']:
             u.settings['del_ctx'].append(ctx.guild.id)
         else:
