@@ -85,6 +85,7 @@ def dump(obj, filename, *, json=False):
 settings = setdefault('misc/settings.pkl', {'del_ctx': [], 'prefixes': {}})
 tasks = setdefault('cogs/tasks.pkl', {'auto_del': [], 'auto_rev': [], 'periodic_gpm': []})
 temp = setdefault('temp/temp.pkl', {'startup': ()})
+secrets = setdefault('secrets.json', {'client_secrets': {'client_id': '', 'client_secret': ''}}, json=True)
 
 RATE_LIMIT = 2.2
 color = d.Color(0x1A1A1A)
