@@ -197,3 +197,13 @@ class Administration:
                 del u.settings['prefixes'][ctx.guild.id]
 
         await ctx.send(f'**Prefix set to:** `{"` or `".join(prefixes if ctx.guild.id in u.settings["prefixes"] else u.config["prefix"])}`')
+
+    @settings.command(name='deleteresponses', aliases=['delresps', 'delresp'])
+    async def _settings_deleteresponses(self, ctx):
+        if ctx.guild.id not in u.settings['del_resp']:
+            u.settings['del_resp'].append(ctx.guild.id)
+        else:
+            u.settings['del_resp'].remove(ctx.guild.id)
+        u.dump(u.settings, 'settings.pkl')
+
+        await ctx.send(f'**Delete command responses:** `{ctx.guild.id in u.settings["del_resp"]}`')
