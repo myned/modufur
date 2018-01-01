@@ -39,9 +39,9 @@ class Right(Exception):
 
 
 class Save(Exception):
-    def __init__(self, user=None):
+    def __init__(self, user=None, message=None):
         self.user = user
-
+        self.message = message
 
 class GoTo(Exception):
     pass

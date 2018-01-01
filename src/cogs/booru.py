@@ -55,6 +55,11 @@ class MsG:
                 print('STARTED : auto-reversifying in #{}'.format(temp.name))
             self.reversifying = True
             self.bot.loop.create_task(self._reversify())
+        if u.tasks['auto_hrt']:
+            for channel in u.tasks['auto_hrt']:
+                temp = self.bot.get_channel(channel)
+                self.bot.loop.create_task(self.queue_for_hearts(channel=temp))
+                print(f'STARTED : auto-hearting in #{temp.name}')
         # if not self.updating:
         #     self.updating = True
         #     self.bot.loop.create_task(self._update_suggested())
@@ -124,32 +129,92 @@ class MsG:
         while self.hearting:
             temp = await self.heartqueue.get()
 
-            await temp[0].send(embed=temp[1])
+            if isinstance(temp[1], d.Embed):
+                await temp[0].send(embed=temp[1])
 
-            await asyncio.sleep(self.RATE_LIMIT)
+                await asyncio.sleep(self.RATE_LIMIT)
+            elif isinstance(temp[1], d.Message):
+                for match in re.finditer('(https?:\/\/[^ ]*\.(?:gif|png|jpg|jpeg))', temp[1].content):
+                    await temp[0].send(match)
+
+                    await asyncio.sleep(self.RATE_LIMIT)
+
+                for attachment in temp[1].attachments:
+                    await temp[0].send(attachment.url)
+                    await asyncio.sleep(self.RATE_LIMIT)
 
         print('STOPPED : hearting')
 
-    async def queue_for_hearts(self, *, message, send):
+    async def queue_for_hearts(self, *, message=None, send=None, channel=None, reaction=True, timeout=60 * 60):
+        def on_reaction(reaction, user):
+            if reaction.emoji == '\N{HEAVY BLACK HEART}' and reaction.message.id == message.id:
+                raise exc.Save(user)
+            return False
+        def on_message(msg):
+            if 'stop h' in msg.content.lower():
+                raise exc.Abort
+            return msg.channel.id == channel.id and (re.search('(https?:\/\/[^ ]*\.(?:gif|png|jpg|jpeg))', msg.content) or msg.attachments)
+
+        if message:
+            try:
+                if reaction:
+                    await message.add_reaction('\N{HEAVY BLACK HEART}')
+                    await asyncio.sleep(1)
+
+                while self.hearting:
+                    try:
+                        await self.bot.wait_for('reaction_add', check=on_reaction, timeout=timeout)
+
+                    except exc.Save as e:
+                        await self.heartqueue.put((e.user, send if send else message))
+
+            except asyncio.TimeoutError:
+                await message.add_reaction('\N{WHITE HEAVY CHECK MARK}')
+        else:
+            try:
+                async for message in channel.history(limit=300):
+                    if re.search('(https?:\/\/[^ ]*\.(?:gif|png|jpg|jpeg))', message.content) or message.attachments:
+                        self.bot.loop.create_task(self._wait_for_reaction(message))
+
+                while self.hearting:
+                    message = await self.bot.wait_for('message', check=on_message)
+                    self.bot.loop.create_task(self._wait_for_reaction(message))
+
+            except exc.Abort:
+                u.tasks['auto_hrt'].remove(channel.id)
+                u.dump(u.tasks, 'cogs/tasks.pkl')
+                print('STOPPED : auto-hearting in #{}'.format(channel.name))
+                await channel.send('**Stopped queueing messages for hearting in** {}'.format(channel.mention), delete_after=5)
+
+    async def _wait_for_reaction(self, message):
         def on_reaction(reaction, user):
             if reaction.emoji == '\N{HEAVY BLACK HEART}' and reaction.message.id == message.id:
                 raise exc.Save(user)
             return False
 
+        while self.hearting:
+            try:
+                await self.bot.wait_for('reaction_add', check=on_reaction)
+
+            except exc.Save as e:
+                await self.heartqueue.put((e.user, message))
+
+    @cmds.command(name='autoheart', aliases=['autohrt'])
+    @cmds.has_permissions(administrator=True)
+    async def auto_heart(self, ctx):
         try:
-            await message.add_reaction('\N{HEAVY BLACK HEART}')
-            await asyncio.sleep(1)
+            if ctx.channel.id not in u.tasks['auto_hrt']:
+                u.tasks['auto_hrt'].append(ctx.channel.id)
+                u.dump(u.tasks, 'cogs/tasks.pkl')
+                self.bot.loop.create_task(self.queue_for_hearts(channel=ctx.channel))
+                print('STARTED : auto-hearting in #{}'.format(ctx.channel.name))
+                await ctx.send('**Auto-hearting all messages in {}**'.format(ctx.channel.mention), delete_after=5)
+            else:
+                raise exc.Exists
 
-            while self.hearting:
-                try:
-                    await asyncio.gather(*[self.bot.wait_for('reaction_add', check=on_reaction, timeout=60 * 60),
-                                   self.bot.wait_for('reaction_remove', check=on_reaction, timeout=60 * 60)])
-
-                except exc.Save as e:
-                    await self.heartqueue.put((e.user, send))
-
-        except asyncio.TimeoutError:
-            await message.add_reaction('\N{WHITE HEAVY CHECK MARK}')
+        except exc.Exists:
+            await ctx.send('**Already auto-hearting in {}.** Type `stop h(earting)` to stop.'.format(ctx.channel.mention), delete_after=7)
+            await ctx.message.add_reaction('\N{CROSS MARK}')
 
     # @cmds.command()
     # async def auto_post(self, ctx):
@@ -261,7 +326,7 @@ class MsG:
                     embed = d.Embed(
                         title=', '.join(post['artist']), url=f'https://e621.net/post/show/{post["id"]}', color=ctx.me.color if isinstance(ctx.channel, d.TextChannel) else u.color)
                     embed.set_thumbnail(url=post['file_url'])
-                    embed.set_author(name=f'{u.get_aspectratio(post["width"], post["height"])} \N{ZERO WIDTH SPACE} {post["width"]} x {post["height"]}',
+                    embed.set_author(name=f'{post["width"]} x {post["height"]}',
                                      url=f'https://e621.net/post?tags=ratio:{post["width"]/post["height"]:.2f}', icon_url=ctx.author.avatar_url)
                     embed.set_footer(text=post['score'],
                                      icon_url=self._get_score(post['score']))
@@ -373,7 +438,7 @@ class MsG:
                     embed = d.Embed(
                         title=', '.join(post['artist']), url=f'https://e621.net/post/show/{post["id"]}', color=ctx.me.color if isinstance(ctx.channel, d.TextChannel) else u.color)
                     embed.set_image(url=post['file_url'])
-                    embed.set_author(name=f'{u.get_aspectratio(post["width"], post["height"])} \N{ZERO WIDTH SPACE} {post["width"]} x {post["height"]}',
+                    embed.set_author(name=f'{post["width"]} x {post["height"]}',
                                      url=f'https://e621.net/post?tags=ratio:{post["width"]/post["height"]:.2f}', icon_url=ctx.author.avatar_url)
                     embed.set_footer(text=post['score'],
                                      icon_url=self._get_score(post['score']))
@@ -436,7 +501,7 @@ class MsG:
                         embed = d.Embed(
                             title=', '.join(post['artist']), url=f'https://e621.net/post/show/{post["id"]}', color=ctx.me.color if isinstance(ctx.channel, d.TextChannel) else u.color)
                         embed.set_image(url=post['file_url'])
-                        embed.set_author(name=f'{u.get_aspectratio(post["width"], post["height"])} \N{ZERO WIDTH SPACE} {post["width"]} x {post["height"]}',
+                        embed.set_author(name=f'{post["width"]} x {post["height"]}',
                                          url=f'https://e621.net/post?tags=ratio:{post["width"]/post["height"]:.2f}', icon_url=ctx.author.avatar_url)
                         embed.set_footer(
                             text=post['score'], icon_url=self._get_score(post['score']))
@@ -492,14 +557,19 @@ class MsG:
                     embed = d.Embed(
                         title=', '.join(post['artist']), url=f'https://e621.net/post/show/{post["id"]}', color=message.channel.guild.me.color if isinstance(message.channel, d.TextChannel) else u.color)
                     embed.set_image(url=post['file_url'])
-                    embed.set_author(name=f'{u.get_aspectratio(post["width"], post["height"])} \N{ZERO WIDTH SPACE} {post["width"]} x {post["height"]}',
+                    embed.set_author(name=f'{post["width"]} x {post["height"]}',
                                      url=f'https://e621.net/post?tags=ratio:{post["width"]/post["height"]:.2f}', icon_url=message.author.avatar_url)
                     embed.set_footer(text=post['score'],
-                                     icon_url=self._get_score(post['score']['score']))
+                                     icon_url=self._get_score(post['score']))
 
                     await message.channel.send('**Probable match from** {}'.format(message.author.display_name), embed=embed)
 
                     await message.add_reaction('\N{WHITE HEAVY CHECK MARK}')
+
+                    await asyncio.sleep(self.RATE_LIMIT)
+
+                    with suppress(err.NotFound):
+                        await message.delete()
 
                 except exc.MatchError as e:
                     await message.channel.send('**No probable match for:** `{}`'.format(e), delete_after=7)
@@ -507,18 +577,15 @@ class MsG:
                 except exc.SizeError as e:
                     await message.channel.send(f'`{e}` **too large.** Maximum is 8 MB', delete_after=7)
                     await message.add_reaction('\N{CROSS MARK}')
-
-                finally:
-                    await asyncio.sleep(self.RATE_LIMIT)
-
-                    with suppress(err.NotFound):
-                        await message.delete()
+                except Exception:
+                    await message.channel.send(f'**An unknown error occurred.**', delete_after=7)
+                    await message.add_reaction('\N{WARNING SIGN}')
 
         print('STOPPED : reversifying')
 
     async def queue_for_reversification(self, channel):
         def check(msg):
-            if msg.content.lower() == 'stop' and msg.channel is channel and msg.author.guild_permissions.administrator:
+            if 'stop r' in msg.content.lower() and msg.channel is channel and msg.author.guild_permissions.administrator:
                 raise exc.Abort
             elif msg.channel is channel and msg.author.id != self.bot.user.id and (re.search('(https?:\/\/[^ ]*\.(?:gif|png|jpg|jpeg))', msg.content) is not None or msg.attachments or msg.embeds):
                 return True
@@ -553,7 +620,7 @@ class MsG:
             print('STARTED : auto-reversifying in #{}'.format(ctx.channel.name))
             await ctx.send('**Auto-reversifying all images in** {}'.format(ctx.channel.mention), delete_after=5)
         else:
-            await ctx.send('**Already auto-reversifying in {}.** Type `stop` to stop.'.format(ctx.channel.mention), delete_after=7)
+            await ctx.send('**Already auto-reversifying in {}.** Type `stop r(eversifying)` to stop.'.format(ctx.channel.mention), delete_after=7)
             await ctx.message.add_reaction('\N{CROSS MARK}')
 
     async def _get_pool(self, ctx, *, destination, booru='e621', query=[]):

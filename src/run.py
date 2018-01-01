@@ -70,9 +70,11 @@ async def test(ctx):
 @bot.event
 async def on_ready():
     if not checks.ready:
-        from cogs import booru, info, management, owner, tools
+        # d.opus.load_opus('opuslib')
 
-        for cog in (tools.Utils(bot), owner.Bot(bot), owner.Tools(bot), management.Administration(bot), info.Info(bot), booru.MsG(bot)):
+        from cogs import booru, info, management, music, owner, tools
+
+        for cog in (tools.Utils(bot), owner.Bot(bot), owner.Tools(bot), management.Administration(bot), music.Music(bot), info.Info(bot), booru.MsG(bot)):
             bot.add_cog(cog)
             print(f'COG : {type(cog).__name__}')
 
@@ -157,6 +159,11 @@ async def on_command_error(ctx, error):
         await ctx.message.add_reaction('\N{WARNING SIGN}')
         # u.notify('C O M M A N D  E R R O R')
 
+# @bot.event
+# async def on_command(ctx):
+#     if ctx.guild.id in u.settings['del_resp']:
+#         pass
+
 @bot.event
 async def on_command_completion(ctx):
     with suppress(err.NotFound):
@@ -182,8 +189,6 @@ async def on_guild_remove(guild):
                 idents.remove(channel.id)
                 print(f'STOPPED : {task} in #{channel.id}')
     u.dump(u.tasks, 'cogs/tasks.pkl')
-
-# d.opus.load_opus('opus')
 
 
 async def wait(voice):

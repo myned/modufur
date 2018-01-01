@@ -116,6 +116,10 @@ class Administration:
             await ctx.send('**Deletion timed out**', delete_after=7)
             await ctx.message.add_reaction('\N{CROSS MARK}')
 
+    @cmds.group(aliases=['task', 'tsk'])
+    async def tasks(self):
+        pass
+
     async def delete(self):
         while self.deleting:
             message = await self.queue.get()
@@ -128,7 +132,7 @@ class Administration:
 
     async def queue_for_deletion(self, channel):
         def check(msg):
-            if msg.content.lower() == 'stop' and msg.channel is channel and msg.author.guild_permissions.administrator:
+            if 'stop d' in msg.content.lower() and msg.channel is channel and msg.author.guild_permissions.administrator:
                 raise exc.Abort
             elif msg.channel is channel and not msg.pinned:
                 return True
@@ -136,7 +140,7 @@ class Administration:
 
         try:
             async for message in channel.history(limit=None):
-                if message.content.lower() == 'stop' and message.author.guild_permissions.administrator:
+                if 'stop d' in message.content.lower() and message.author.guild_permissions.administrator:
                     raise exc.Abort
                 if not message.pinned:
                     await self.queue.put(message)
@@ -170,7 +174,7 @@ class Administration:
                 raise exc.Exists
 
         except exc.Exists:
-            await ctx.send('**Already auto-deleting in {}.** Type `stop` to stop.'.format(ctx.channel.mention), delete_after=7)
+            await ctx.send('**Already auto-deleting in {}.** Type `stop d(eleting)` to stop.'.format(ctx.channel.mention), delete_after=7)
             await ctx.message.add_reaction('\N{CROSS MARK}')
 
     @cmds.group(aliases=['setting', 'set', 's'])
@@ -179,7 +183,7 @@ class Administration:
         pass
 
     @settings.command(name='deletecommands', aliases=['delcmds', 'delcmd'])
-    async def _settings_delete_commands(self, ctx):
+    async def _settings_deletecommands(self, ctx):
         if ctx.guild.id not in u.settings['del_ctx']:
             u.settings['del_ctx'].append(ctx.guild.id)
         else:
@@ -197,3 +201,13 @@ class Administration:
                 del u.settings['prefixes'][ctx.guild.id]
 
         await ctx.send(f'**Prefix set to:** `{"` or `".join(prefixes if ctx.guild.id in u.settings["prefixes"] else u.config["prefix"])}`')
+
+    @settings.command(name='deleteresponses', aliases=['delresps', 'delresp'])
+    async def _settings_deleteresponses(self, ctx):
+        if ctx.guild.id not in u.settings['del_resp']:
+            u.settings['del_resp'].append(ctx.guild.id)
+        else:
+            u.settings['del_resp'].remove(ctx.guild.id)
+        u.dump(u.settings, 'settings.pkl')
+
+        await ctx.send(f'**Delete command responses:** `{ctx.guild.id in u.settings["del_resp"]}`')

@@ -23,3 +23,11 @@ class Post:
 
     async def _check_posts(self, user, channel):
         pass
+
+    @cmds.group(aliases=['update', 'up', 'u'])
+    async def updates(self, ctx):
+        pass
+
+    @updates.command(name='googleplaymusic', aliases=['googlemusic', 'playmusic', 'music', 'gpm'])
+    async def _updates_googleplaymusic(self, ctx):
+        pass
