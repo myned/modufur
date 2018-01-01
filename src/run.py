@@ -72,9 +72,9 @@ async def on_ready():
     if not checks.ready:
         # d.opus.load_opus('opuslib')
 
-        from cogs import booru, info, management, music, owner, tools
+        from cogs import booru, info, management, owner, tools
 
-        for cog in (tools.Utils(bot), owner.Bot(bot), owner.Tools(bot), management.Administration(bot), music.Music(bot), info.Info(bot), booru.MsG(bot)):
+        for cog in (tools.Utils(bot), owner.Bot(bot), owner.Tools(bot), management.Administration(bot), info.Info(bot), booru.MsG(bot)):
             bot.add_cog(cog)
             print(f'COG : {type(cog).__name__}')
 
