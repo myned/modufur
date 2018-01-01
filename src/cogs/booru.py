@@ -124,9 +124,9 @@ class MsG:
         while self.hearting:
             temp = await self.heartqueue.get()
 
-            await temp[0].send(embed=temp[1])
+                await temp[0].send(embed=temp[1])
 
-            await asyncio.sleep(self.RATE_LIMIT)
+                await asyncio.sleep(self.RATE_LIMIT)
 
         print('STOPPED : hearting')
 
@@ -135,21 +135,23 @@ class MsG:
             if reaction.emoji == '\N{HEAVY BLACK HEART}' and reaction.message.id == message.id:
                 raise exc.Save(user)
             return False
+            if 'stop h' in msg.content.lower():
 
-        try:
-            await message.add_reaction('\N{HEAVY BLACK HEART}')
-            await asyncio.sleep(1)
+            try:
+                    await message.add_reaction('\N{HEAVY BLACK HEART}')
+                    await asyncio.sleep(1)
 
-            while self.hearting:
-                try:
+                while self.hearting:
+                    try:
                     await asyncio.gather(*[self.bot.wait_for('reaction_add', check=on_reaction, timeout=60 * 60),
                                    self.bot.wait_for('reaction_remove', check=on_reaction, timeout=60 * 60)])
 
-                except exc.Save as e:
+                    except exc.Save as e:
                     await self.heartqueue.put((e.user, send))
 
-        except asyncio.TimeoutError:
-            await message.add_reaction('\N{WHITE HEAVY CHECK MARK}')
+            except asyncio.TimeoutError:
+                await message.add_reaction('\N{WHITE HEAVY CHECK MARK}')
+            await ctx.send('**Already auto-hearting in {}.** Type `stop h(earting)` to stop.'.format(ctx.channel.mention), delete_after=7)
 
     # @cmds.command()
     # async def auto_post(self, ctx):
@@ -518,7 +520,7 @@ class MsG:
 
     async def queue_for_reversification(self, channel):
         def check(msg):
-            if msg.content.lower() == 'stop' and msg.channel is channel and msg.author.guild_permissions.administrator:
+            if 'stop r' in msg.content.lower() and msg.channel is channel and msg.author.guild_permissions.administrator:
                 raise exc.Abort
             elif msg.channel is channel and msg.author.id != self.bot.user.id and (re.search('(https?:\/\/[^ ]*\.(?:gif|png|jpg|jpeg))', msg.content) is not None or msg.attachments or msg.embeds):
                 return True
@@ -553,7 +555,7 @@ class MsG:
             print('STARTED : auto-reversifying in #{}'.format(ctx.channel.name))
             await ctx.send('**Auto-reversifying all images in** {}'.format(ctx.channel.mention), delete_after=5)
         else:
-            await ctx.send('**Already auto-reversifying in {}.** Type `stop` to stop.'.format(ctx.channel.mention), delete_after=7)
+            await ctx.send('**Already auto-reversifying in {}.** Type `stop r(eversifying)` to stop.'.format(ctx.channel.mention), delete_after=7)
             await ctx.message.add_reaction('\N{CROSS MARK}')
 
     async def _get_pool(self, ctx, *, destination, booru='e621', query=[]):
