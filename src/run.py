@@ -159,6 +159,11 @@ async def on_command_error(ctx, error):
         await ctx.message.add_reaction('\N{WARNING SIGN}')
         # u.notify('C O M M A N D  E R R O R')
 
+# @bot.event
+# async def on_command(ctx):
+#     if ctx.guild.id in u.settings['del_resp']:
+#         pass
+
 @bot.event
 async def on_command_completion(ctx):
     with suppress(err.NotFound):

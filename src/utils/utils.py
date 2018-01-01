@@ -82,7 +82,7 @@ def dump(obj, filename, *, json=False):
             jsn.dump(obj, outfile, indent=4, sort_keys=True)
 
 
-settings = setdefault('misc/settings.pkl', {'del_ctx': [], 'prefixes': {}})
+settings = setdefault('misc/settings.pkl', {'del_ctx': [], 'del_resp': [], 'prefixes': {}})
 tasks = setdefault('cogs/tasks.pkl', {'auto_del': [], 'auto_hrt': [], 'auto_rev': [], 'periodic_gpm': []})
 temp = setdefault('temp/temp.pkl', {'startup': ()})
 secrets = setdefault('secrets.json', {'client_secrets': {'client_id': '', 'client_secret': ''}}, json=True)
