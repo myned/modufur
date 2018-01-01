@@ -116,6 +116,10 @@ class Administration:
             await ctx.send('**Deletion timed out**', delete_after=7)
             await ctx.message.add_reaction('\N{CROSS MARK}')
 
+    @cmds.group(aliases=['task', 'tsk'])
+    async def tasks(self):
+        pass
+
     async def delete(self):
         while self.deleting:
             message = await self.queue.get()
