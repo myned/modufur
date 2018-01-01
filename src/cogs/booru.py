@@ -560,7 +560,7 @@ class MsG:
                     embed.set_author(name=f'{post["width"]} x {post["height"]}',
                                      url=f'https://e621.net/post?tags=ratio:{post["width"]/post["height"]:.2f}', icon_url=message.author.avatar_url)
                     embed.set_footer(text=post['score'],
-                                     icon_url=self._get_score(post['score']['score']))
+                                     icon_url=self._get_score(post['score']))
 
                     await message.channel.send('**Probable match from** {}'.format(message.author.display_name), embed=embed)
 
