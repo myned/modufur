@@ -15,6 +15,7 @@ async def get_post(url):
         filesize = int(image.headers['Content-Length'])
         if filesize > 8192 * 1024:
             raise exc.SizeError(size(filesize, system=alternative))
+        
     except ValueError:
         raise exc.MissingArgument
 
