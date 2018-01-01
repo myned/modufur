@@ -326,7 +326,7 @@ class MsG:
                     embed = d.Embed(
                         title=', '.join(post['artist']), url=f'https://e621.net/post/show/{post["id"]}', color=ctx.me.color if isinstance(ctx.channel, d.TextChannel) else u.color)
                     embed.set_thumbnail(url=post['file_url'])
-                    embed.set_author(name=f'{u.get_aspectratio(post["width"], post["height"])} \N{ZERO WIDTH SPACE} {post["width"]} x {post["height"]}',
+                    embed.set_author(name=f'{post["width"]} x {post["height"]}',
                                      url=f'https://e621.net/post?tags=ratio:{post["width"]/post["height"]:.2f}', icon_url=ctx.author.avatar_url)
                     embed.set_footer(text=post['score'],
                                      icon_url=self._get_score(post['score']))
@@ -438,7 +438,7 @@ class MsG:
                     embed = d.Embed(
                         title=', '.join(post['artist']), url=f'https://e621.net/post/show/{post["id"]}', color=ctx.me.color if isinstance(ctx.channel, d.TextChannel) else u.color)
                     embed.set_image(url=post['file_url'])
-                    embed.set_author(name=f'{u.get_aspectratio(post["width"], post["height"])} \N{ZERO WIDTH SPACE} {post["width"]} x {post["height"]}',
+                    embed.set_author(name=f'{post["width"]} x {post["height"]}',
                                      url=f'https://e621.net/post?tags=ratio:{post["width"]/post["height"]:.2f}', icon_url=ctx.author.avatar_url)
                     embed.set_footer(text=post['score'],
                                      icon_url=self._get_score(post['score']))
@@ -501,7 +501,7 @@ class MsG:
                         embed = d.Embed(
                             title=', '.join(post['artist']), url=f'https://e621.net/post/show/{post["id"]}', color=ctx.me.color if isinstance(ctx.channel, d.TextChannel) else u.color)
                         embed.set_image(url=post['file_url'])
-                        embed.set_author(name=f'{u.get_aspectratio(post["width"], post["height"])} \N{ZERO WIDTH SPACE} {post["width"]} x {post["height"]}',
+                        embed.set_author(name=f'{post["width"]} x {post["height"]}',
                                          url=f'https://e621.net/post?tags=ratio:{post["width"]/post["height"]:.2f}', icon_url=ctx.author.avatar_url)
                         embed.set_footer(
                             text=post['score'], icon_url=self._get_score(post['score']))
@@ -557,7 +557,7 @@ class MsG:
                     embed = d.Embed(
                         title=', '.join(post['artist']), url=f'https://e621.net/post/show/{post["id"]}', color=message.channel.guild.me.color if isinstance(message.channel, d.TextChannel) else u.color)
                     embed.set_image(url=post['file_url'])
-                    embed.set_author(name=f'{u.get_aspectratio(post["width"], post["height"])} \N{ZERO WIDTH SPACE} {post["width"]} x {post["height"]}',
+                    embed.set_author(name=f'{post["width"]} x {post["height"]}',
                                      url=f'https://e621.net/post?tags=ratio:{post["width"]/post["height"]:.2f}', icon_url=message.author.avatar_url)
                     embed.set_footer(text=post['score'],
                                      icon_url=self._get_score(post['score']['score']))
