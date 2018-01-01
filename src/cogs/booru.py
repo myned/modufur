@@ -147,13 +147,16 @@ class MsG:
 
     async def queue_for_hearts(self, *, message=None, send=None, channel=None, reaction=True, timeout=60 * 60):
         def on_reaction(reaction, user):
-            if reaction.emoji == '\N{HEAVY BLACK HEART}' and reaction.message.id == message.id:
+            if reaction.emoji == '\N{HEAVY BLACK HEART}' and reaction.message.id == message.id and not user.bot:
                 raise exc.Save(user)
             return False
-        def on_message(msg):
-            if 'stop h' in msg.content.lower():
-                raise exc.Abort
-            return msg.channel.id == channel.id and (re.search('(https?:\/\/[^ ]*\.(?:gif|png|jpg|jpeg))', msg.content) or msg.attachments)
+        def on_reaction_channel(reaction, user):
+            if reaction.message.channel.id == channel.id and not user.bot:
+                if reaction.emoji == '\N{OCTAGONAL SIGN}' and user.permissions_in(reaction.message.channel).administrator:
+                    raise exc.Abort
+                if reaction.emoji == '\N{HEAVY BLACK HEART}' and (re.search('(https?:\/\/[^ ]*\.(?:gif|png|jpg|jpeg))', reaction.message.content) or reaction.message.attachments):
+                    raise exc.Save(user, reaction.message)
+            return False
 
         if message:
             try:
@@ -172,32 +175,18 @@ class MsG:
                 await message.add_reaction('\N{WHITE HEAVY CHECK MARK}')
         else:
             try:
-                async for message in channel.history(limit=300):
-                    if re.search('(https?:\/\/[^ ]*\.(?:gif|png|jpg|jpeg))', message.content) or message.attachments:
-                        self.bot.loop.create_task(self._wait_for_reaction(message))
-
                 while self.hearting:
-                    message = await self.bot.wait_for('message', check=on_message)
-                    self.bot.loop.create_task(self._wait_for_reaction(message))
+                    try:
+                        await self.bot.wait_for('reaction_add', check=on_reaction_channel)
+
+                    except exc.Save as e:
+                        await self.heartqueue.put((e.user, message))
 
             except exc.Abort:
                 u.tasks['auto_hrt'].remove(channel.id)
                 u.dump(u.tasks, 'cogs/tasks.pkl')
                 print('STOPPED : auto-hearting in #{}'.format(channel.name))
                 await channel.send('**Stopped queueing messages for hearting in** {}'.format(channel.mention), delete_after=5)
-
-    async def _wait_for_reaction(self, message):
-        def on_reaction(reaction, user):
-            if reaction.emoji == '\N{HEAVY BLACK HEART}' and reaction.message.id == message.id:
-                raise exc.Save(user)
-            return False
-
-        while self.hearting:
-            try:
-                await self.bot.wait_for('reaction_add', check=on_reaction)
-
-            except exc.Save as e:
-                await self.heartqueue.put((e.user, message))
 
     @cmds.command(name='autoheart', aliases=['autohrt'])
     @cmds.has_permissions(administrator=True)
@@ -213,8 +202,8 @@ class MsG:
                 raise exc.Exists
 
         except exc.Exists:
-            await ctx.send('**Already auto-hearting in {}.** Type `stop h(earting)` to stop.'.format(ctx.channel.mention), delete_after=7)
-            await ctx.message.add_reaction('\N{CROSS MARK}')
+            message = await ctx.send('**Already auto-hearting in {}.** React with \N{OCTAGONAL SIGN} to stop.'.format(ctx.channel.mention))
+            await message.add_reaction('\N{OCTAGONAL SIGN}')
 
     # @cmds.command()
     # async def auto_post(self, ctx):
