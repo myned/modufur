@@ -566,18 +566,20 @@ class MsG:
 
                     await message.add_reaction('\N{WHITE HEAVY CHECK MARK}')
 
+                    await asyncio.sleep(self.RATE_LIMIT)
+
+                    with suppress(err.NotFound):
+                        await message.delete()
+
                 except exc.MatchError as e:
                     await message.channel.send('**No probable match for:** `{}`'.format(e), delete_after=7)
                     await message.add_reaction('\N{CROSS MARK}')
                 except exc.SizeError as e:
                     await message.channel.send(f'`{e}` **too large.** Maximum is 8 MB', delete_after=7)
                     await message.add_reaction('\N{CROSS MARK}')
-
-                finally:
-                    await asyncio.sleep(self.RATE_LIMIT)
-
-                    with suppress(err.NotFound):
-                        await message.delete()
+                except Exception:
+                    await message.channel.send(f'**An unknown error occurred.**', delete_after=7)
+                    await message.add_reaction('\N{WARNING SIGN}')
 
         print('STOPPED : reversifying')
 
