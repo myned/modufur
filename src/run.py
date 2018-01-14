@@ -62,7 +62,7 @@ bot = cmds.Bot(command_prefix=get_prefix, self_bot=u.config['selfbot'], formatte
 
 @bot.command(help='help', brief='brief', description='description', usage='usage', hidden=True)
 async def test(ctx):
-    pass
+    await ctx.send('test')
 
 # Send and print ready message to #testing and console after logon
 
