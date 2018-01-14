@@ -143,6 +143,12 @@ async def on_error(error, *args, **kwargs):
 async def on_command_error(ctx, error):
     if isinstance(error, err.NotFound):
         print('NOT FOUND')
+    elif isinstance(error, errext.MissingRequiredArgument):
+        await ctx.send('**Missing required argument**', delete_after=7)
+        await ctx.message.add_reaction('\N{CROSS MARK}')
+    elif isinstance(error, errext.BadArgument):
+        await ctx.send(f'**Invalid argument.** {error}', delete_after=7)
+        await ctx.message.add_reaction('\N{CROSS MARK}')
     elif isinstance(error, errext.CheckFailure):
         await ctx.send('**Insufficient permissions**', delete_after=7)
         await ctx.message.add_reaction('\N{NO ENTRY}')
