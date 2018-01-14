@@ -93,7 +93,7 @@ last_commands = {}
 
 
 async def fetch(url, *, params={}, json=False, response=False):
-    async with session.get(url, params=params, headers={'User-Agent': 'Myned/Modumind'}) as r:
+    async with session.get(url, params=params, headers={'User-Agent': 'Myned/Modufur'}) as r:
         if response:
             return r
         elif json:
