@@ -29,7 +29,7 @@ class Administration:
             self.deleting = True
             self.bot.loop.create_task(self.delete())
 
-    @cmds.group(aliases=['pru', 'clear', 'cl'], hidden=True)
+    @cmds.group(aliases=['pru', 'purge', 'pur', 'clear', 'cl'], hidden=True)
     @cmds.is_owner()
     async def prune(self, ctx):
         pass
