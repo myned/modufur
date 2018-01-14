@@ -144,7 +144,7 @@ async def on_command_error(ctx, error):
     if isinstance(error, err.NotFound):
         print('NOT FOUND')
     elif isinstance(error, errext.CheckFailure):
-        await ctx.send('**Insufficient permissions**', delete_after=10)
+        await ctx.send('**Insufficient permissions**', delete_after=7)
         await ctx.message.add_reaction('\N{NO ENTRY}')
     elif isinstance(error, errext.CommandNotFound):
         print('INVALID COMMAND : {}'.format(error), file=sys.stderr)
