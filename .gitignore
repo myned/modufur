@@ -5,6 +5,7 @@
 *.DS_Store
 *.pkl
 *.png
+*.bat
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

@@ -6,6 +6,7 @@ from datetime import datetime as dt
 import discord as d
 from discord import errors as err
 from discord.ext import commands as cmds
+from discord.ext.commands import errors as errext
 
 from misc import exceptions as exc
 from misc import checks
@@ -28,7 +29,7 @@ class Administration:
             self.deleting = True
             self.bot.loop.create_task(self.delete())
 
-    @cmds.group(aliases=['pru', 'clear', 'cl'], hidden=True)
+    @cmds.group(aliases=['pru', 'purge', 'pur', 'clear', 'cl'], hidden=True)
     @cmds.is_owner()
     async def prune(self, ctx):
         pass
@@ -37,81 +38,102 @@ class Administration:
     async def _prune_user(self, ctx):
         pass
 
-    @_prune_user.command(name='all', aliases=['a'], brief='Prune a user\'s messages from the guild', description='about flag centers on message 50 of 101 messages\n\npfg \{user id\} [before|after|about] [\{message id\}]\n\nExample:\npfg \{user id\} before \{message id\}', hidden=True)
-    @cmds.is_owner()
-    async def _prune_user_all(self, ctx, user, when=None, reference=None):
-        def yes(msg):
-            if msg.content.lower() == 'y' and msg.channel is ctx.channel and msg.author is ctx.author:
-                return True
-            elif msg.content.lower() == 'n' and msg.channel is ctx.channel and msg.author is ctx.author:
-                raise exc.CheckFail
-            else:
-                return False
+    @_prune_user.command(name='channel', aliases=['channels', 'chans', 'chan', 'ch', 'c'])
+    async def _prune_user_channel(self, ctx, user: d.User, *channels: d.TextChannel):
+        def confirm(r, u):
+            if u is ctx.author:
+                if r.emoji == '\N{OCTAGONAL SIGN}':
+                    raise exc.Abort
+                if r.emoji == '\N{THUMBS UP SIGN}':
+                    return True
+            return False
 
-        channels = ctx.guild.text_channels
-        if reference is not None:
-            for channel in channels:
-                try:
-                    ref = await channel.get_message(reference)
+        if not channels:
+            channels = [ctx.channel]
 
-                except err.NotFound:
-                    continue
-
-        history = []
         try:
-            pru_sent = await ctx.send('\N{HOURGLASS} **Pruning** <@{}>**\'s messages will take some time**'.format(user))
-            ch_sent = await ctx.send('\N{FILE CABINET} **Caching channels...**')
+            pruning = await ctx.send(f'\N{HOURGLASS} **Pruning** {user.mention}**\'s messages from** {"**,** ".join([channel.mention for channel in channels])} **might take some time.** Proceed, {ctx.author.mention}?')
+            await pruning.add_reaction('\N{THUMBS UP SIGN}')
+            await pruning.add_reaction('\N{OCTAGONAL SIGN}')
+            await asyncio.sleep(1)
 
-            if when is None:
-                for channel in channels:
-                    async for message in channel.history(limit=None):
-                        if message.author.id == int(user):
-                            history.append(message)
-                    await ch_sent.edit(content='\N{FILE CABINET} **Cached** `{}/{}` **channels**'.format(channels.index(channel) + 1, len(channels)))
-                    await asyncio.sleep(self.RATE_LIMIT)
-            elif when == 'before':
-                for channel in channels:
-                    async for message in channel.history(limit=None, before=ref.created_at):
-                        if message.author.id == int(user):
-                            history.append(message)
-                    await ch_sent.edit(content='\N{FILE CABINET} **Cached** `{}/{}` **channels**'.format(channels.index(channel) + 1, len(channels)))
-                    await asyncio.sleep(self.RATE_LIMIT)
-            elif when == 'after':
-                for channel in channels:
-                    async for message in channel.history(limit=None, after=ref.created_at):
-                        if message.author.id == int(user):
-                            history.append(message)
-                    await ch_sent.edit(content='\N{FILE CABINET} **Cached** `{}/{}` **channels**'.format(channels.index(channel) + 1, len(channels)))
-                    await asyncio.sleep(self.RATE_LIMIT)
-            elif when == 'about':
-                for channel in channels:
-                    async for message in channel.history(limit=None, about=ref.created_at):
-                        if message.author.id == int(user):
-                            history.append(message)
-                    await ch_sent.edit(content='\N{FILE CABINET} **Cached** `{}/{}` **channels**'.format(channels.index(channel) + 1, len(channels)))
-                    await asyncio.sleep(self.RATE_LIMIT)
+            await self.bot.wait_for('reaction_add', check=confirm, timeout=10 * 60)
 
-            est_sent = await ctx.send('\N{STOPWATCH} **Estimated time to delete history:** `{}m {}s`'.format(int(self.RATE_LIMIT * len(history) / 60), int(self.RATE_LIMIT * len(history) % 60)))
-            cont_sent = await ctx.send('{} **Continue?** `Y` or `N`'.format(ctx.author.mention))
-            await self.bot.wait_for('message', check=yes, timeout=10 * 60)
-            await cont_sent.delete()
-            del_sent = await ctx.send('\N{WASTEBASKET} **Deleting messages..**')
-            await del_sent.pin()
+            deleting = await ctx.send(f'\N{WASTEBASKET} **Deleting** {user.mention}**\'s messages...**')
+            await asyncio.sleep(1)
+
             c = 0
-            for message in history:
-                with suppress(err.NotFound):
-                    await message.delete()
-                    c += 1
-                await del_sent.edit(content='\N{WASTEBASKET} **Deleted** `{}/{}` **messages**'.format(history.index(message) + 1, len(history)))
-                await asyncio.sleep(self.RATE_LIMIT)
-            await del_sent.unpin()
+            for channel in channels:
+                await deleting.edit(content=f'\N{WASTEBASKET} **Deleting** {user.mention}**\'s messages from** {channel.mention}')
 
-            await ctx.send('\N{WASTEBASKET} `{}` **of** <@{}>**\'s messages left in** {}****'.format(len(history) - c, user, ctx.guild.name))
+                deleted = await channel.purge(check=lambda m: m.author.id == user.id, before=pruning, limit=None)
+                c += len(deleted)
 
-        except exc.CheckFail:
+            await asyncio.sleep(1)
+
+            for channel in channels:
+                missed = 0
+                async for message in channel.history(before=pruning, limit=None):
+                    if message.author.id == user.id:
+                        missed += 1
+
+                if missed > 0:
+                    await ctx.send(f'\N{DOUBLE EXCLAMATION MARK} `{missed}` **messages were not deleted in** {channel.mention}')
+
+            await ctx.send(f'\N{WHITE HEAVY CHECK MARK} **Finished deleting** `{c}` **of** {user.mention}**\'s messages**')
+
+        except exc.Abort:
             await ctx.send('**Deletion aborted**', delete_after=7)
             await ctx.message.add_reaction('\N{CROSS MARK}')
+        except TimeoutError:
+            await ctx.send('**Deletion timed out**', delete_after=7)
+            await ctx.message.add_reaction('\N{CROSS MARK}')
 
+    @_prune_user.command(name='all', aliases=['a'], brief='Prune a user\'s messages from the guild', description='about flag centers on message 50 of 101 messages\n\npfg \{user id\} [before|after|about] [\{message id\}]\n\nExample:\npfg \{user id\} before \{message id\}', hidden=True)
+    @cmds.is_owner()
+    async def _prune_user_all(self, ctx, user: d.User):
+        def confirm(r, u):
+            if u is ctx.author:
+                if r.emoji == '\N{OCTAGONAL SIGN}':
+                    raise exc.Abort
+                if r.emoji == '\N{THUMBS UP SIGN}':
+                    return True
+            return False
+
+        try:
+            pruning = await ctx.send(f'\N{HOURGLASS} **Pruning** {user.mention}**\'s messages might take some time.** Proceed, {ctx.author.mention}?')
+            await pruning.add_reaction('\N{THUMBS UP SIGN}')
+            await pruning.add_reaction('\N{OCTAGONAL SIGN}')
+            await asyncio.sleep(1)
+
+            await self.bot.wait_for('reaction_add', check=confirm, timeout=10 * 60)
+
+            deleting = await ctx.send(f'\N{WASTEBASKET} **Deleting** {user.mention}**\'s messages...**')
+            await asyncio.sleep(1)
+
+            c = 0
+            for channel in ctx.guild.text_channels:
+                await deleting.edit(content=f'\N{WASTEBASKET} **Deleting** {user.mention}**\'s messages from** {channel.mention}')
+
+                deleted = await channel.purge(check=lambda m: m.author.id == user.id, before=pruning, limit=None)
+                c += len(deleted)
+
+            await asyncio.sleep(1)
+
+            for channel in ctx.guild.text_channels:
+                missed = 0
+                async for message in channel.history(before=pruning, limit=None):
+                    if message.author.id == user.id:
+                        missed += 1
+
+                if missed > 0:
+                    await ctx.send(f'\N{DOUBLE EXCLAMATION MARK} `{missed}` **messages were not deleted in** {channel.mention}')
+
+            await ctx.send(f'\N{WHITE HEAVY CHECK MARK} **Finished deleting** `{c}` **of** {user.mention}**\'s messages**')
+
+        except exc.Abort:
+            await ctx.send('**Deletion aborted**', delete_after=7)
+            await ctx.message.add_reaction('\N{CROSS MARK}')
         except TimeoutError:
             await ctx.send('**Deletion timed out**', delete_after=7)
             await ctx.message.add_reaction('\N{CROSS MARK}')

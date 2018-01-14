@@ -69,6 +69,17 @@ class Bot:
 
         await ctx.send('https://discordapp.com/oauth2/authorize?&client_id={}&scope=bot&permissions={}'.format(u.config['client_id'], u.config['permissions']), delete_after=5)
 
+    @cmds.command(name=',guilds', aliases=[',glds', ',servers', ',servs'])
+    @cmds.is_owner()
+    async def guilds(self, ctx):
+        paginator = cmds.Paginator()
+
+        for guild in self.bot.guilds:
+            paginator.add_line(guild.name)
+
+        for page in paginator.pages:
+            await ctx.send(f'**Guilds:**\n{page}')
+
     @cmds.command(name=',status', aliases=[',presence', ',game'], hidden=True)
     @cmds.is_owner()
     async def change_status(self, ctx, *, game=None):
@@ -192,7 +203,7 @@ class Tools:
         finally:
             sys.stdout = sys.__stdout__
             sys.stderr = sys.__stderr__
-            print('Reset sys output.')
+            print('RESET : sys.std output/error')
 
     @cmds.command(name=',execute', aliases=[',exec'], hidden=True)
     @cmds.is_owner()
