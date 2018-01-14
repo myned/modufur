@@ -1195,7 +1195,7 @@ class MsG:
                     n += 1
 
     # Searches for and returns images from e621.net given tags when not blacklisted
-    @cmds.group(aliases=['e6', '6'], brief='e621 | NSFW', description='e621 | NSFW\nTag-based search for e621.net\n\nYou can only search 5 tags and 6 images at once for now.\ne6 [tags...] ([# of images])')
+    @cmds.command(aliases=['e6', '6'], brief='e621 | NSFW', description='e621 | NSFW\nTag-based search for e621.net\n\nYou can only search 5 tags and 6 images at once for now.\ne6 [tags...] ([# of images])')
     @checks.is_nsfw()
     async def e621(self, ctx, *args):
         try:
