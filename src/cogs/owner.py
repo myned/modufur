@@ -192,7 +192,7 @@ class Tools:
         finally:
             sys.stdout = sys.__stdout__
             sys.stderr = sys.__stderr__
-            print('Reset sys output.')
+            print('RESET : sys.std output/error')
 
     @cmds.command(name=',execute', aliases=[',exec'], hidden=True)
     @cmds.is_owner()
