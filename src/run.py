@@ -104,6 +104,8 @@ async def on_ready():
     else:
         print('\n- - - -\nI N F O : reconnected,  reinitializing\n- - - -')
 
+        from cogs import booru, info, management, owner, tools
+        
         for cog in (tools.Utils(bot), owner.Bot(bot), owner.Tools(bot), management.Administration(bot), info.Info(bot), booru.MsG(bot)):
             bot.add_cog(cog)
             print(f'COG : {type(cog).__name__}')
