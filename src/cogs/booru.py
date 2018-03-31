@@ -1401,7 +1401,7 @@ class MsG:
         pass
 
     # Umbrella command structure to manage global, channel, and user blacklists
-    @cmds.group(aliases=['bl', 'b'], brief='(G) Manage blacklists', description='Manage channel or personal blacklists\n\nUsage:\n\{p\}bl get \{blacklist\} to show a blacklist\n\{p\}bl clear \{blacklist\} to clear a blacklist\n\{p\}bl add \{blacklist\} \{tags...\} to add tag(s) to a blacklist\n\{p\}bl remove \{blacklist\} \{tags...\} to remove tags from a blacklist')
+    @cmds.group(aliases=['bl', 'b'], brief='(G) Manage blacklists', description='Manage channel or personal blacklists\n\nUsage:\n{p}bl get {blacklist} to show a blacklist\n{p}bl clear {blacklist} to clear a blacklist\n{p}bl add {blacklist} {tags...} to add tag(s) to a blacklist\n{p}bl remove {blacklist} {tags...} to remove tags from a blacklist')
     async def blacklist(self, ctx):
         if not ctx.invoked_subcommand:
             await ctx.send('**Use a flag to manage blacklists.**\n*Type* `{}help bl` *for more info.*'.format(ctx.prefix), delete_after=7)
