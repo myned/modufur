@@ -4,6 +4,8 @@ url = "https://pypi.python.org/simple"
 verify_ssl = true
 name = "pypi"
 
+[requires]
+python_version = "3.6"
 
 [packages]
 
@@ -13,7 +15,15 @@ google-api-python-client = "*"
 pyrasite = "*"
 "discord.py" = {extras = ["voice"], git = "https://github.com/Rapptz/discord.py", ref = "rewrite"}
 aiohttp = "*"
+"hurry.filesize" = "*"
+gitpython = "*"
+gmusicapi = "*"
+python-telegram-bot = "*"
+requests = "*"
+requests-oauthlib = "*"
+yarl = "*"
+hurry = "*"
+pynacl = "*"
 
 
 [dev-packages]
-

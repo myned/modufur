@@ -102,7 +102,14 @@ async def on_ready():
 
         checks.ready = True
     else:
-        print('\n- - - -\nI N F O : reconnected, skipping initialization\n- - - -')
+        print('\n- - - -\nI N F O : reconnected,  reinitializing\n- - - -')
+
+        for cog in (tools.Utils(bot), owner.Bot(bot), owner.Tools(bot), management.Administration(bot), info.Info(bot), booru.MsG(bot)):
+            bot.add_cog(cog)
+            print(f'COG : {type(cog).__name__}')
+
+        if u.config['playing'] is not '':
+            await bot.change_presence(game=d.Game(name=u.config['playing']))
 
 
 @bot.event
@@ -136,7 +143,6 @@ async def on_error(error, *args, **kwargs):
         u.dump(u.temp, 'temp/temp.pkl')
     # u.notify('E R R O R')
     await bot.logout()
-    u.close(bot.loop)
 
 
 @bot.event
