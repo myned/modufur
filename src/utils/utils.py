@@ -86,6 +86,7 @@ tasks = setdefault('cogs/tasks.pkl', default={'auto_del': [], 'auto_hrt': [], 'a
 temp = setdefault('temp/temp.pkl', default={'startup': ()})
 secrets = setdefault('secrets.json', default={'client_secrets': {'client_id': '', 'client_secret': ''}}, json=True)
 
+cogs = {}
 RATE_LIMIT = 2.2
 color = d.Color(0x1A1A1A)
 session = aiohttp.ClientSession()
