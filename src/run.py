@@ -74,10 +74,9 @@ async def on_ready():
 
         from cogs import booru, info, management, owner, tools
 
-        cogs = {}
         for cog in (tools.Utils(bot), owner.Bot(bot), owner.Tools(bot), management.Administration(bot), info.Info(bot), booru.MsG(bot)):
             bot.add_cog(cog)
-            cogs[type(cog).__name__] = cog
+            u.cogs[type(cog).__name__] = cog
             print(f'COG : {type(cog).__name__}')
 
         # bot.loop.create_task(u.clear(booru.temp_urls, 30*60))
@@ -104,15 +103,15 @@ async def on_ready():
 
         checks.ready = True
     else:
-        print('\n- - - -\nI N F O : reconnected,  reinitializing\n- - - -')
+        print('\n- - - -\nI N F O : reconnected, reinitializing tasks\n- - - -')
 
         if u.tasks['auto_del']:
             for channel in u.tasks['auto_del']:
                 temp = bot.get_channel(channel)
-                bot.loop.create_task(cogs['Administration'].queue_for_deletion(temp))
+                bot.loop.create_task(u.cogs['Administration'].queue_for_deletion(temp))
                 print('RESTARTED : auto-deleting in #{}'.format(temp.name))
-            cogs['Administration'].deleting = True
-            bot.loop.create_task(cogs['Administration'].delete())
+            u.cogs['Administration'].deleting = True
+            bot.loop.create_task(u.cogs['Administration'].delete())
 
         # if u.config['playing'] is not '':
         #     await bot.change_presence(game=d.Game(name=u.config['playing']))
