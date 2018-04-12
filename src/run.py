@@ -103,7 +103,7 @@ async def on_ready():
 
         checks.ready = True
     else:
-        print('\n- - - -\nI N F O : reconnected, reinitializing tasks\n- - - -')
+        print('\n- - - -\nI N F O : reconnected, reinitializing tasks\n- - - -\n')
 
         if u.tasks['auto_del']:
             for channel in u.tasks['auto_del']:
