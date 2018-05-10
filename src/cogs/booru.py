@@ -390,10 +390,12 @@ class MsG:
                 for future in done:
                     selection = future.result()
 
-                await match.delete()
+                with suppress(err.Forbidden):
+                    await match.delete()
                 tempool = [pool for pool in pool_request if pool['name']
                            == pools[int(selection.content) - 1]][0]
-                await selection.delete()
+                with suppress(err.Forbidden):
+                    await selection.delete()
             elif pool_request:
                 tempool = pool_request[0]
             else:
@@ -638,10 +640,12 @@ class MsG:
                 for future in done:
                     selection = future.result()
 
-                await match.delete()
+                with suppress(err.Forbidden):
+                    await match.delete()
                 tempool = [pool for pool in pool_request if pool['name']
                            == pools[int(selection.content) - 1]][0]
-                await selection.delete()
+                with suppress(err.Forbidden):
+                    await selection.delete()
                 pool = {'name': tempool['name'], 'id': tempool['id']}
 
                 await destination.trigger_typing()
