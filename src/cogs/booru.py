@@ -450,6 +450,9 @@ class MsG:
         except exc.SizeError as e:
             await ctx.send(f'`{e}` **too large.** Maximum is 8 MB', delete_after=7)
             await ctx.message.add_reaction('\N{CROSS MARK}')
+        except Exception:
+            await ctx.send('**The image database is offline.** Please try again later')
+            await ctx.message.add_reaction('\N{CROSS MARK}')
 
     @cmds.command(name='reversify', aliases=['revify', 'risify', 'rify'])
     async def reversify(self, ctx, *args):
@@ -524,6 +527,9 @@ class MsG:
             await ctx.message.add_reaction('\N{CROSS MARK}')
         except exc.BoundsError as e:
             await ctx.send('`{}` **invalid limit.** Query limited to 30'.format(e), delete_after=7)
+            await ctx.message.add_reaction('\N{CROSS MARK}')
+        except Exception:
+            await ctx.send('**The image database is offline.** Please try again later')
             await ctx.message.add_reaction('\N{CROSS MARK}')
 
     async def _reversify(self):
