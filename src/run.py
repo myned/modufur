@@ -114,7 +114,7 @@ async def on_ready():
             bot.loop.create_task(u.cogs['Administration'].delete())
 
         if u.config['playing'] is not '':
-            await bot.change_presence(game=d.Game(name=u.config['playing']))
+            await bot.change_presence(activity=d.Game(name=u.config['playing']))
 
         print('\nS U C C E S S\n')
 
