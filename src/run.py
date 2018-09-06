@@ -104,6 +104,8 @@ async def on_ready():
         checks.ready = True
     else:
         print('\n- - - -\nI N F O : reconnected, reinitializing tasks\n- - - -\n')
+        reconnect = await bot.get_user(u.config['owner_id']).send('**RECONNECTING**')
+        await reconnect.add_reaction('\N{SLEEPING SYMBOL}')
 
         if u.tasks['auto_del']:
             for channel in u.tasks['auto_del']:
@@ -116,6 +118,7 @@ async def on_ready():
         if u.config['playing'] is not '':
             await bot.change_presence(activity=d.Game(name=u.config['playing']))
 
+        await reconnect.add_reaction('\N{WHITE HEAVY CHECK MARK}')
         print('\nS U C C E S S\n')
 
 
