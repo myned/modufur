@@ -82,7 +82,7 @@ async def on_ready():
         # bot.loop.create_task(u.clear(booru.temp_urls, 30*60))
 
         if u.config['playing'] is not '':
-            await bot.change_presence(activity=d.Game(name=u.config['playing']))
+            await bot.change_presence(activity=d.Game(u.config['playing']))
 
         print('\n> > > > > > > > >\nC O N N E C T E D : {}\n> > > > > > > > >\n'.format(bot.user.name))
         await bot.get_channel(u.config['info_channel']).send(f'**Started** \N{BLACK SUN WITH RAYS} `{"` or `".join(u.config["prefix"])}`')
@@ -116,7 +116,7 @@ async def on_ready():
             bot.loop.create_task(u.cogs['Administration'].delete())
 
         if u.config['playing'] is not '':
-            await bot.change_presence(activity=d.Game(name=u.config['playing']))
+            await bot.change_presence(activity=d.Game(u.config['playing']))
 
         await reconnect.add_reaction('\N{WHITE HEAVY CHECK MARK}')
         print('\nS U C C E S S\n')
