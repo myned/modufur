@@ -138,13 +138,13 @@ def get_kwargs(ctx, args, *, limit=False):
     rm = False
     lim = 1
 
-    for flag in ('-d', '-dm'):
+    for flag in ('-dm', '-pm', '--message'):
         if flag in remaining:
             destination = ctx.author
 
             remaining.remove(flag)
 
-    for flag in ('-r', '-rm', '-remove', '-re', '-repl', '-replace'):
+    for flag in ('-r', '-rm', '--remove'):
         if flag in remaining and ctx.author.permissions_in(ctx.channel).manage_messages:
             rm = True
 
