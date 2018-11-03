@@ -36,10 +36,9 @@ class Bot:
         # loop = self.bot.loop.all_tasks()
         # for task in loop:
         #     task.cancel()
-        await self.bot.logout()
-        u.close(self.bot.loop)
         print('\n< < < < < < < < < < < <\nD I S C O N N E C T E D\n< < < < < < < < < < < <\n')
         # u.notify('D I S C O N N E C T E D')
+        await self.bot.logout()
 
     @cmds.command(name=',restart', aliases=[',res', ',r'], hidden=True)
     @cmds.is_owner()
@@ -58,7 +57,6 @@ class Bot:
         # for task in loop:
         #     task.cancel()
         await self.bot.logout()
-        u.close(self.bot.loop)
         os.execl(sys.executable, 'python3', 'run.py')
 
     # Invite bot to bot owner's server
