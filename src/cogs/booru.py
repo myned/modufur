@@ -28,7 +28,6 @@ class MsG:
         self.bot = bot
         self.LIMIT = 100
         self.HISTORY_LIMIT = 150
-        self.RATE_LIMIT = u.RATE_LIMIT
         self.reversiqueue = asyncio.Queue()
         self.heartqueue = asyncio.Queue()
         self.reversifying = False
@@ -132,16 +131,12 @@ class MsG:
             if isinstance(temp[1], d.Embed):
                 await temp[0].send(embed=temp[1])
 
-                await asyncio.sleep(self.RATE_LIMIT)
             elif isinstance(temp[1], d.Message):
                 for match in re.finditer('(https?:\/\/[^ ]*\.(?:gif|png|jpg|jpeg))', temp[1].content):
                     await temp[0].send(match)
 
-                    await asyncio.sleep(self.RATE_LIMIT)
-
                 for attachment in temp[1].attachments:
                     await temp[0].send(attachment.url)
-                    await asyncio.sleep(self.RATE_LIMIT)
 
         print('STOPPED : hearting')
 
@@ -240,21 +235,17 @@ class MsG:
         await dest.trigger_typing()
 
         for tag in tags:
-            try:
-                tag_request = await u.fetch('https://e621.net/tag/related.json', params={'tags': tag}, json=True)
-                for rel in tag_request.get(tag, []):
-                    related.append(rel[0])
+            tag_request = await u.fetch('https://e621.net/tag/related.json', params={'tags': tag}, json=True)
+            for rel in tag_request.get(tag, []):
+                related.append(rel[0])
 
                 if related:
                     await dest.send('`{}` **related tags:**\n```\n{}```'.format(tag, formatter.tostring(related)))
                 else:
                     await ctx.send(f'**No related tags found for:** `{tag}`', delete_after=7)
 
-                related.clear()
-                c += 1
-
-            finally:
-                await asyncio.sleep(self.RATE_LIMIT)
+            related.clear()
+            c += 1
 
         if not c:
             await ctx.message.add_reaction('\N{CROSS MARK}')
@@ -270,21 +261,17 @@ class MsG:
         await dest.trigger_typing()
 
         for tag in tags:
-            try:
-                alias_request = await u.fetch('https://e621.net/tag_alias/index.json', params={'aliased_to': tag, 'approved': 'true'}, json=True)
-                for dic in alias_request:
-                    aliases.append(dic['name'])
+            alias_request = await u.fetch('https://e621.net/tag_alias/index.json', params={'aliased_to': tag, 'approved': 'true'}, json=True)
+            for dic in alias_request:
+                aliases.append(dic['name'])
 
                 if aliases:
                     await dest.send('`{}` **aliases:**\n```\n{}```'.format(tag, formatter.tostring(aliases)))
                 else:
                     await ctx.send(f'**No aliases found for:** `{tag}`', delete_after=7)
 
-                aliases.clear()
-                c += 1
-
-            finally:
-                await asyncio.sleep(self.RATE_LIMIT)
+            aliases.clear()
+            c += 1
 
         if not c:
             await ctx.message.add_reaction('\N{CROSS MARK}')
@@ -305,10 +292,9 @@ class MsG:
                 raise exc.MissingArgument
 
             for ident in posts:
-                try:
-                    await dest.trigger_typing()
+                await dest.trigger_typing()
 
-                    ident = ident if not ident.isdigit() else re.search(
+                ident = ident if not ident.isdigit() else re.search(
                         'show/([0-9]+)', ident).group(1)
                     post = await u.fetch('https://e621.net/post/show.json', params={'id': ident}, json=True)
 
@@ -317,13 +303,8 @@ class MsG:
                     embed.set_thumbnail(url=post['file_url'])
                     embed.set_author(name=f'{post["width"]} x {post["height"]}',
                                      url=f'https://e621.net/post?tags=ratio:{post["width"]/post["height"]:.2f}', icon_url=ctx.author.avatar_url)
-                    embed.set_footer(text=post['score'],
-                                     icon_url=self._get_score(post['score']))
-
-                # except
-
-                finally:
-                    await asyncio.sleep(self.RATE_LIMIT)
+                embed.set_footer(text=post['score'],
+                                 icon_url=self._get_score(post['score']))
 
         except exc.MissingArgument:
             await ctx.send('**Invalid url**', delete_after=7)
@@ -340,18 +321,14 @@ class MsG:
                 raise exc.MissingArgument
 
             for url in urls:
-                try:
-                    await dest.trigger_typing()
+                await dest.trigger_typing()
 
-                    await dest.send(await scraper.get_image(url))
+                await dest.send(await scraper.get_image(url))
 
                     c += 1
 
                 # except
                     # await ctx.send(f'**No aliases found for:** `{tag}`', delete_after=7)
-
-                finally:
-                    await asyncio.sleep(self.RATE_LIMIT)
 
             if not c:
                 await ctx.message.add_reaction('\N{CROSS MARK}')
@@ -562,8 +539,6 @@ class MsG:
                     await message.channel.send('**Probable match from** {}'.format(message.author.display_name), embed=embed)
 
                     await message.add_reaction('\N{WHITE HEAVY CHECK MARK}')
-
-                    await asyncio.sleep(self.RATE_LIMIT)
 
                     with suppress(err.NotFound):
                         await message.delete()
@@ -878,8 +853,6 @@ class MsG:
 
                 n = 1
                 for embed in hearted.values():
-                    await asyncio.sleep(self.RATE_LIMIT)
-
                     await ctx.author.send(content=f'`{n} / {len(hearted)}`', embed=embed)
                     n += 1
 
@@ -1039,8 +1012,6 @@ class MsG:
 
                 n = 1
                 for embed in hearted.values():
-                    await asyncio.sleep(self.RATE_LIMIT)
-
                     await ctx.author.send(content=f'`{n} / {len(hearted)}`', embed=embed)
                     n += 1
 
@@ -1203,8 +1174,6 @@ class MsG:
 
                 n = 1
                 for embed in hearted.values():
-                    await asyncio.sleep(self.RATE_LIMIT)
-
                     await ctx.author.send(content=f'`{n} / {len(hearted)}`', embed=embed)
                     n += 1
 
