@@ -239,10 +239,10 @@ class MsG:
             for rel in tag_request.get(tag, []):
                 related.append(rel[0])
 
-                if related:
-                    await dest.send('`{}` **related tags:**\n```\n{}```'.format(tag, formatter.tostring(related)))
-                else:
-                    await ctx.send(f'**No related tags found for:** `{tag}`', delete_after=7)
+            if related:
+                await dest.send('`{}` **related tags:**\n```\n{}```'.format(tag, formatter.tostring(related)))
+            else:
+                await ctx.send(f'**No related tags found for:** `{tag}`', delete_after=7)
 
             related.clear()
             c += 1
@@ -265,10 +265,10 @@ class MsG:
             for dic in alias_request:
                 aliases.append(dic['name'])
 
-                if aliases:
-                    await dest.send('`{}` **aliases:**\n```\n{}```'.format(tag, formatter.tostring(aliases)))
-                else:
-                    await ctx.send(f'**No aliases found for:** `{tag}`', delete_after=7)
+            if aliases:
+                await dest.send('`{}` **aliases:**\n```\n{}```'.format(tag, formatter.tostring(aliases)))
+            else:
+                await ctx.send(f'**No aliases found for:** `{tag}`', delete_after=7)
 
             aliases.clear()
             c += 1
@@ -295,14 +295,14 @@ class MsG:
                 await dest.trigger_typing()
 
                 ident = ident if not ident.isdigit() else re.search(
-                        'show/([0-9]+)', ident).group(1)
-                    post = await u.fetch('https://e621.net/post/show.json', params={'id': ident}, json=True)
+                    'show/([0-9]+)', ident).group(1)
+                post = await u.fetch('https://e621.net/post/show.json', params={'id': ident}, json=True)
 
-                    embed = d.Embed(
-                        title=', '.join(post['artist']), url=f'https://e621.net/post/show/{post["id"]}', color=ctx.me.color if isinstance(ctx.channel, d.TextChannel) else u.color)
-                    embed.set_thumbnail(url=post['file_url'])
-                    embed.set_author(name=f'{post["width"]} x {post["height"]}',
-                                     url=f'https://e621.net/post?tags=ratio:{post["width"]/post["height"]:.2f}', icon_url=ctx.author.avatar_url)
+                embed = d.Embed(
+                    title=', '.join(post['artist']), url=f'https://e621.net/post/show/{post["id"]}', color=ctx.me.color if isinstance(ctx.channel, d.TextChannel) else u.color)
+                embed.set_thumbnail(url=post['file_url'])
+                embed.set_author(name=f'{post["width"]} x {post["height"]}',
+                                 url=f'https://e621.net/post?tags=ratio:{post["width"]/post["height"]:.2f}', icon_url=ctx.author.avatar_url)
                 embed.set_footer(text=post['score'],
                                  icon_url=self._get_score(post['score']))
 
@@ -325,7 +325,7 @@ class MsG:
 
                 await dest.send(await scraper.get_image(url))
 
-                    c += 1
+                c += 1
 
                 # except
                     # await ctx.send(f'**No aliases found for:** `{tag}`', delete_after=7)
@@ -388,7 +388,7 @@ class MsG:
     async def reverse(self, ctx, *args):
         try:
             kwargs = u.get_kwargs(ctx, args)
-            dest, urls = kwargs['destination'], kwargs['remaining']
+            dest, urls, remove = kwargs['destination'], kwargs['remaining'], kwargs['remove']
             c = 0
 
             if not urls and not ctx.message.attachments:
@@ -417,6 +417,10 @@ class MsG:
 
                 except exc.MatchError as e:
                     await ctx.send('**No probable match for:** `{}`'.format(e), delete_after=7)
+
+            if remove:
+                with suppress(err.NotFound):
+                    await ctx.message.delete()
 
             if not c:
                 await ctx.message.add_reaction('\N{CROSS MARK}')
