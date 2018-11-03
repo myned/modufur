@@ -87,21 +87,23 @@ async def on_ready():
         print('\n> > > > > > > > >\nC O N N E C T E D : {}\n> > > > > > > > >\n'.format(bot.user.name))
         await bot.get_channel(u.config['info_channel']).send(f'**Started** \N{BLACK SUN WITH RAYS} `{"` or `".join(u.config["prefix"])}`')
         # u.notify('C O N N E C T E D')
+        try:
+            if u.temp['startup']:
+                with suppress(err.NotFound):
+                    if u.temp['startup'][0] == 'guild':
+                        dest = bot.get_channel(u.temp['startup'][1])
+                    else:
+                        dest = bot.get_user(u.temp['startup'][1])
+                    message = await dest.get_message(u.temp['startup'][2])
 
-        if u.temp['startup']:
-            with suppress(err.NotFound):
-                if u.temp['startup'][0] == 'guild':
-                    dest = bot.get_channel(u.temp['startup'][1])
-                else:
-                    dest = bot.get_user(u.temp['startup'][1])
-                message = await dest.get_message(u.temp['startup'][2])
+                    await message.add_reaction('\N{WHITE HEAVY CHECK MARK}')
 
-                await message.add_reaction('\N{WHITE HEAVY CHECK MARK}')
+                u.temp['startup'] = ()
+                u.dump(u.temp, 'temp/temp.pkl')
 
-            u.temp['startup'] = ()
-            u.dump(u.temp, 'temp/temp.pkl')
-
-        checks.ready = True
+            checks.ready = True
+        except KeyError:
+            u.dump({'startup': ()}, 'temp/temp.pkl')
     else:
         print('\n- - - -\nI N F O : reconnected, reinitializing tasks\n- - - -\n')
         reconnect = await bot.get_user(u.config['owner_id']).send('**RECONNECTING**')
