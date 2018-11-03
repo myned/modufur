@@ -87,19 +87,18 @@ temp = setdefault('temp/temp.pkl', default={'startup': ()})
 secrets = setdefault('secrets.json', default={'client_secrets': {'client_id': '', 'client_secret': ''}}, json=True)
 
 cogs = {}
-RATE_LIMIT = 2.2
 color = d.Color(0x1A1A1A)
-session = aiohttp.ClientSession()
 last_commands = {}
 
 
 async def fetch(url, *, params={}, json=False, response=False):
-    async with session.get(url, params=params, headers={'User-Agent': 'Myned/Modufur'}) as r:
-        if response:
-            return r
-        elif json:
-            return await r.json()
-        return await r.read()
+    async with aiohttp.ClientSession() as session:
+        async with session.get(url, params=params, headers={'User-Agent': 'Myned/Modufur'}, ssl=False) as r:
+            if response:
+                return r
+            elif json:
+                return await r.json()
+            return await r.read()
 
 
 # async def clear(obj, interval=10 * 60, replace=None):
@@ -116,22 +115,6 @@ async def fetch(url, *, params={}, json=False, response=False):
 #     while True:
 #         obj = replace
 #         asyncio.sleep(interval)
-
-
-def close(loop):
-    if session:
-        session.close()
-
-    loop.stop()
-    pending = asyncio.Task.all_tasks()
-    for task in pending:
-        task.cancel()
-        # with suppress(asyncio.CancelledError):
-        #     loop.run_until_complete(task)
-    # loop.close()
-
-    print('Finished cancelling tasks.')
-
 
 def generate_embed(ctx, *, title=d.Embed.Empty, kind='rich', description=d.Embed.Empty, url=d.Embed.Empty, timestamp=d.Embed.Empty, colour=color, footer={}, image=d.Embed.Empty, thumbnail=d.Embed.Empty, author={}, fields=[]):
     embed = d.Embed(title=title, type=kind, description=description, url=url, timestamp=timestamp, colour=colour if isinstance(ctx.channel, d.TextChannel) else color)
@@ -155,13 +138,13 @@ def get_kwargs(ctx, args, *, limit=False):
     rm = False
     lim = 1
 
-    for flag in ('-d', '-dm'):
+    for flag in ('-dm', '-pm', '--message'):
         if flag in remaining:
             destination = ctx.author
 
             remaining.remove(flag)
 
-    for flag in ('-r', '-rm', '-remove', '-re', '-repl', '-replace'):
+    for flag in ('-r', '-rm', '--remove'):
         if flag in remaining and ctx.author.permissions_in(ctx.channel).manage_messages:
             rm = True
 

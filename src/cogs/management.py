@@ -17,7 +17,6 @@ class Administration:
 
     def __init__(self, bot):
         self.bot = bot
-        self.RATE_LIMIT = u.RATE_LIMIT
         self.queue = asyncio.Queue()
         self.deleting = False
 
@@ -145,7 +144,6 @@ class Administration:
     async def delete(self):
         while self.deleting:
             message = await self.queue.get()
-            await asyncio.sleep(self.RATE_LIMIT)
             with suppress(err.NotFound):
                 if not message.pinned:
                     await message.delete()
