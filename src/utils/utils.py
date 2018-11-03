@@ -88,17 +88,17 @@ secrets = setdefault('secrets.json', default={'client_secrets': {'client_id': ''
 
 cogs = {}
 color = d.Color(0x1A1A1A)
-session = aiohttp.ClientSession()
 last_commands = {}
 
 
 async def fetch(url, *, params={}, json=False, response=False):
-    async with session.get(url, params=params, headers={'User-Agent': 'Myned/Modufur'}) as r:
-        if response:
-            return r
-        elif json:
-            return await r.json()
-        return await r.read()
+    async with aiohttp.ClientSession() as session:
+        async with session.get(url, params=params, headers={'User-Agent': 'Myned/Modufur'}, ssl=False) as r:
+            if response:
+                return r
+            elif json:
+                return await r.json()
+            return await r.read()
 
 
 # async def clear(obj, interval=10 * 60, replace=None):
