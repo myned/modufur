@@ -6,7 +6,6 @@ import subprocess
 from contextlib import suppress
 from fractions import gcd
 import math
-import gmusicapi as gpm
 
 import aiohttp
 import discord as d
@@ -82,7 +81,7 @@ def dump(obj, filename, *, json=False):
 
 
 settings = setdefault('misc/settings.pkl', default={'del_ctx': [], 'del_resp': [], 'prefixes': {}})
-tasks = setdefault('cogs/tasks.pkl', default={'auto_del': [], 'auto_hrt': [], 'auto_rev': [], 'periodic_gpm': []})
+tasks = setdefault('cogs/tasks.pkl', default={'auto_del': [], 'auto_hrt': [], 'auto_rev': []})
 temp = setdefault('temp/temp.pkl', default={'startup': ()})
 secrets = setdefault('secrets.json', default={'client_secrets': {'client_id': '', 'client_secret': ''}}, json=True)
 
