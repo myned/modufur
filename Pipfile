@@ -1,29 +1,20 @@
 [[source]]
-
 url = "https://pypi.python.org/simple"
 verify_ssl = true
 name = "pypi"
 
 [requires]
-python_version = "3"
 
 [packages]
-
-"beautifulsoup4" = "*"
-lxml = "*"
-google-api-python-client = "*"
-pyrasite = "*"
-"discord.py" = {extras = ["voice"], git = "https://github.com/Rapptz/discord.py", ref = "rewrite"}
 aiohttp = "*"
-"hurry.filesize" = "*"
+beautifulsoup4 = "*"
+"discord.py" = {extras = ["voice"], git = "https://github.com/Rapptz/discord.py", ref = "rewrite"}
 gitpython = "*"
-gmusicapi = "*"
-python-telegram-bot = "*"
-requests = "*"
-requests-oauthlib = "*"
-yarl = "*"
+google-api-python-client = "*"
 hurry = "*"
-pynacl = "*"
-
+"hurry.filesize" = "*"
+lxml = "*"
+pyrasite = "*"
+requests = "*"
 
 [dev-packages]
