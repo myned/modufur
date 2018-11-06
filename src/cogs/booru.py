@@ -1515,8 +1515,11 @@ class MsG:
 
             except exc.Remove:
                 await message.edit(content=f'**Also add aliases?**```\n{formatter.tostring(aliases)}```\nType the tag(s) to remove or `0` to abort:')
-                await message.remove_reaction('\N{HEAVY MINUS SIGN}', self.bot.user)
-                await message.remove_reaction('\N{HEAVY MINUS SIGN}', ctx.author)
+
+                with suppress(err.Forbidden):
+                    await message.remove_reaction('\N{HEAVY MINUS SIGN}', self.bot.user)
+                    await message.remove_reaction('\N{HEAVY MINUS SIGN}', ctx.author)
+                    
                 response = await self.bot.wait_for('message', check=on_message, timeout=7 * 60)
 
                 for tag in response.content.split(' '):
