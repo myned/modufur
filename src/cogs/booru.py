@@ -418,12 +418,11 @@ class MsG:
                 except exc.MatchError as e:
                     await ctx.send('**No probable match for:** `{}`'.format(e))
 
-            if remove:
-                with suppress(err.NotFound):
-                    await ctx.message.delete()
-
             if not c:
                 await ctx.message.add_reaction('\N{CROSS MARK}')
+            else:
+                with suppress(err.NotFound):
+                    await ctx.message.delete()
 
         except exc.MissingArgument:
             await ctx.send('**Invalid url or file.** Be sure the link directs to an image file')
