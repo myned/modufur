@@ -136,7 +136,7 @@ async def on_message(message):
 
 @bot.event
 async def on_error(error, *args, **kwargs):
-    print('\n! ! ! ! !\nE R R O R : {}\n! ! ! ! !\n'.format(error), file=sys.stderr)
+    print('\n! ! ! ! !\nE R R O R : {}\n! ! ! ! !\n'.format(sys.exc_info()[1].text), file=sys.stderr)
     tb.print_exc()
     await bot.get_user(u.config['owner_id']).send('**ERROR** \N{WARNING SIGN}\n```\n{}```'.format(error))
     await bot.get_channel(u.config['info_channel']).send('**ERROR** \N{WARNING SIGN}\n```\n{}```'.format(error))
@@ -235,8 +235,8 @@ async def test(ctx):
     if post['tags']:
         temptags = post['tags'].split(' ')
         cis = []
-        for tag in suggested:
-            pass
+        # for tag in suggested:
+        #     pass
         for tag in temptags:
             tags.append(f'[{tag}](https://e621.net/post?tags={tag})')
         # tags = ' '.join(tags)
