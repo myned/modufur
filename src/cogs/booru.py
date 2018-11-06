@@ -1510,7 +1510,7 @@ class MsG:
                     for dic in alias_request:
                         aliases[tag].add(dic['name'])
 
-            message = await ctx.send(f'**Also add aliases?**\n{formatter.dict_tostring(aliases)}')
+            message = await ctx.send(f'**Also add aliases?**\n{formatter.dict_tostring(aliases, f=False)}')
             await message.add_reaction('\N{THUMBS DOWN SIGN}')
             await message.add_reaction('\N{HEAVY MINUS SIGN}')
             await message.add_reaction('\N{THUMBS UP SIGN}')
@@ -1519,7 +1519,7 @@ class MsG:
                 await self.bot.wait_for('reaction_add', check=on_reaction, timeout=7 * 60)
 
             except exc.Remove:
-                await message.edit(content=f'**Also add aliases?**\n{formatter.dict_tostring(aliases)}\nType the tag(s) to remove or `0` to abort:')
+                await message.edit(content=f'**Also add aliases?**\n{formatter.dict_tostring(aliases, f=False)}\nType the tag(s) to remove or `0` to abort:')
 
                 with suppress(err.Forbidden):
                     await message.remove_reaction('\N{HEAVY MINUS SIGN}', self.bot.user)
@@ -1532,7 +1532,7 @@ class MsG:
                         if tag in v:
                             v.remove(tag)
 
-                await message.edit(content=f'**Also add aliases?**\n{formatter.dict_tostring(aliases)}\nConfirm or deny changes')
+                await message.edit(content=f'**Also add aliases?**\n{formatter.dict_tostring(aliases, f=False)}\nConfirm or deny changes')
                 await self.bot.wait_for('reaction_add', check=on_reaction, timeout=7 * 60)
 
             self.aliases.update(aliases)
