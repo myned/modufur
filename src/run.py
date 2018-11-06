@@ -197,8 +197,8 @@ async def on_command_completion(ctx):
             if ctx.guild.id in u.settings['del_ctx'] and ctx.me.permissions_in(ctx.channel).manage_messages and isinstance(ctx.message.channel, d.TextChannel):
                 await ctx.message.delete()
 
-        with suppress(err.Forbidden):
-            await ctx.message.add_reaction('\N{WHITE HEAVY CHECK MARK}')
+        # with suppress(err.Forbidden):
+        #     await ctx.message.add_reaction('\N{WHITE HEAVY CHECK MARK}')
 
     for command in ('lastcommand', ',restart', ',die'):
         if ctx.command.name == command:

@@ -20,17 +20,21 @@ def tostring_commas(i):
     return ''
 
 
-def dict_tostring(i, f=True):
+def dict_tostring(i, f=True, newline=False):
     o = ''
 
     if f:
         if i:
             for k, v in i.items():
                 o += '**' + k + ':** `' + tostring(v) + '`\n'
+    elif newline is True:
+        if i:
+            for k, v in i.items():
+                o += k + ': ```' + tostring(v, newline=newline) + '```\n'
     else:
         if i:
             for k, v in i.items():
-                o += k + ': ```' + tostring(v, newline=True) + '```\n'
+                o += k + ': ```' + tostring(v) + '```\n'
     return o
 
 
