@@ -663,7 +663,7 @@ class MsG:
         # Creates temp blacklist based on context
         for bl in (self.blacklists['global_blacklist'], self.blacklists['guild_blacklist'].get(guild.id, {}).get(ctx.channel.id, set()), self.blacklists['user_blacklist'].get(ctx.author.id, set())):
             for tag in bl:
-                blacklist.add([tag] + list(self.aliases[tag]))
+                blacklist.update([tag] + list(self.aliases[tag]))
         # Checks for, assigns, and removes first order in tags if possible
         order = [tag for tag in tags if 'order:' in tag]
         if order:
