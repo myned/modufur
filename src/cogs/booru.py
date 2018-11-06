@@ -663,7 +663,7 @@ class MsG:
         # Creates temp blacklist based on context
         for bl in (self.blacklists['global_blacklist'], self.blacklists['guild_blacklist'].get(guild.id, {}).get(ctx.channel.id, set()), self.blacklists['user_blacklist'].get(ctx.author.id, set())):
             for tag in bl:
-                blacklist.add(tag)
+                blacklist.add([tag] + list(self.aliases[tag]))
         # Checks for, assigns, and removes first order in tags if possible
         order = [tag for tag in tags if 'order:' in tag]
         if order:
@@ -1495,17 +1495,19 @@ class MsG:
                 return True
             return False
 
-        aliases = set()
+        aliases = {}
 
         try:
             for tag in tags:
-                aliases.add(tag)
+                blacklist.add(tag)
+                aliases[tag] = set()
+
                 alias_request = await u.fetch('https://e621.net/tag_alias/index.json', params={'aliased_to': tag, 'approved': 'true'}, json=True)
                 if alias_request:
                     for dic in alias_request:
-                        aliases.add(dic['name'])
+                        aliases[tag].add(dic['name'])
 
-            message = await ctx.send(f'**Also add aliases?**```\n{formatter.tostring(aliases)}```')
+            message = await ctx.send(f'**Also add aliases?**\n{formatter.dict_tostring(aliases)}')
             await message.add_reaction('\N{THUMBS DOWN SIGN}')
             await message.add_reaction('\N{HEAVY MINUS SIGN}')
             await message.add_reaction('\N{THUMBS UP SIGN}')
@@ -1514,26 +1516,27 @@ class MsG:
                 await self.bot.wait_for('reaction_add', check=on_reaction, timeout=7 * 60)
 
             except exc.Remove:
-                await message.edit(content=f'**Also add aliases?**```\n{formatter.tostring(aliases)}```\nType the tag(s) to remove or `0` to abort:')
+                await message.edit(content=f'**Also add aliases?**\n{formatter.dict_tostring(aliases)}\nType the tag(s) to remove or `0` to abort:')
 
                 with suppress(err.Forbidden):
                     await message.remove_reaction('\N{HEAVY MINUS SIGN}', self.bot.user)
                     await message.remove_reaction('\N{HEAVY MINUS SIGN}', ctx.author)
-                    
+
                 response = await self.bot.wait_for('message', check=on_message, timeout=7 * 60)
 
                 for tag in response.content.split(' '):
-                    if tag in aliases:
-                        aliases.remove(tag)
+                    for v in aliases.values():
+                        if tag in v:
+                            v.remove(tag)
 
-                await message.edit(content=f'**Also add aliases?**```\n{formatter.tostring(aliases)}```\nConfirm or deny changes')
+                await message.edit(content=f'**Also add aliases?**\n{formatter.dict_tostring(aliases)}\nConfirm or deny changes')
                 await self.bot.wait_for('reaction_add', check=on_reaction, timeout=7 * 60)
 
-            blacklist.update(aliases)
+            self.aliases.update(aliases)
 
             await message.delete()
 
-            return aliases
+            return blacklist
 
         except exc.Continue:
             await message.delete()
