@@ -420,7 +420,7 @@ class MsG:
 
             if not c:
                 await ctx.message.add_reaction('\N{CROSS MARK}')
-            else:
+            elif remove:
                 with suppress(err.NotFound):
                     await ctx.message.delete()
 
