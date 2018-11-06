@@ -161,6 +161,8 @@ async def on_error(error, *args, **kwargs):
 async def on_command_error(ctx, error):
     if isinstance(error, err.NotFound):
         print('NOT FOUND')
+    elif isinstance(error, err.Forbidden):
+        pass
     elif isinstance(error, errext.MissingRequiredArgument):
         await ctx.send('**Missing required argument**')
         await ctx.message.add_reaction('\N{CROSS MARK}')
