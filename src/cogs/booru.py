@@ -1495,6 +1495,9 @@ class MsG:
                 return True
             return False
 
+        if not tags:
+            raise exc.MissingArgument
+
         aliases = {}
 
         try:
@@ -1564,6 +1567,9 @@ class MsG:
 
         except exc.Abort:
             await dest.send('**Aborted**')
+        except exc.MissingArgument:
+            await dest.send('\N{CROSS MARK} **Missing tags**')
+            await ctx.message.add_reaction('\N{CROSS MARK}')
 
     @_add_tags.command(name='channel', aliases=['ch', 'c'], brief='@manage_channel@ Add tag(s) to the current channel blacklist (requires manage_channel)', description='Add tag(s) to the current channel blacklist ')
     @cmds.has_permissions(manage_channels=True)
@@ -1585,6 +1591,9 @@ class MsG:
 
         except exc.Abort:
             await dest.send('**Aborted**')
+        except exc.MissingArgument:
+            await dest.send('\N{CROSS MARK} **Missing tags**')
+            await ctx.message.add_reaction('\N{CROSS MARK}')
 
     @_add_tags.command(name='me', aliases=['m'])
     async def __add_user_tags(self, ctx, *args):
@@ -1602,6 +1611,9 @@ class MsG:
 
         except exc.Abort:
             await dest.send('**Aborted**')
+        except exc.MissingArgument:
+            await dest.send('\N{CROSS MARK} **Missing tags**')
+            await ctx.message.add_reaction('\N{CROSS MARK}')
 
     @blacklist.group(name='remove', aliases=['rm', 'r'])
     async def _remove_tags(self, ctx):
