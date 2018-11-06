@@ -73,7 +73,7 @@ class Bot:
         paginator = cmds.Paginator()
 
         for guild in self.bot.guilds:
-            paginator.add_line(guild.name)
+            paginator.add_line(f'{guild.name} - @{guild.owner}')
 
         for page in paginator.pages:
             await ctx.send(f'**Guilds:**\n{page}')
