@@ -1409,13 +1409,20 @@ class MsG:
         guild = ctx.guild if isinstance(
             ctx.guild, d.Guild) else ctx.channel
 
-        blacklist = set()
-        # Creates temp blacklist based on context
+        aliases = {}
+        # Creates temp aliases based on context
         for bl in (self.blacklists['global_blacklist'], self.blacklists['guild_blacklist'].get(guild.id, {}).get(ctx.channel.id, set()), self.blacklists['user_blacklist'].get(ctx.author.id, set())):
             for tag in bl:
-                blacklist.update([tag] + list(self.aliases[tag]))
+                aliases[tag] = list(self.aliases[tag])
 
-        await ctx.send(f'**Contextual blacklist aliases:**\n```\n{formatter.tostring(blacklist)}```')
+        paginator = cmds.Paginator(prefix='', suffix='')
+
+        for tag, alias_list in aliases.items():
+            paginator.add_line(f'{tag}\n```{" ".join(alias_list)}```')
+
+        for page in paginator.pages:
+            print(page)
+            await ctx.send(f'\N{NO ENTRY SIGN} **Contextual blacklist aliases:**\n{page}')
 
     @_get_blacklist.command(name='global', aliases=['gl', 'g'], brief='Get current global blacklist', description='Get current global blacklist\n\nThis applies to all booru commands, in accordance with Discord\'s ToS agreement\n\nExample:\n\{p\}bl get global')
     async def __get_global_blacklist(self, ctx, *args):
