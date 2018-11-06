@@ -16,5 +16,6 @@ hurry = "*"
 lxml = "*"
 pyrasite = "*"
 requests = "*"
+websockets = "*"
 
 [dev-packages]
