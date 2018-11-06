@@ -14,6 +14,7 @@ from discord.ext import commands as cmds
 from misc import exceptions as exc
 from misc import checks
 from utils import utils as u
+from utils import formatter
 
 
 class Bot:
@@ -77,6 +78,31 @@ class Bot:
 
         for page in paginator.pages:
             await ctx.send(f'**Guilds:**\n{page}')
+
+    @cmds.command(name=',permissions', aliases=[',permission', ',perms', ',perm'])
+    @cmds.is_owner()
+    async def permissions(self, ctx, *args: d.Member):
+        members = list(args)
+        permissions = {}
+
+        if not members:
+            members.append(ctx.guild.me)
+
+        for member in members:
+            permissions[member.mention] = []
+
+            for k, v in dict(ctx.channel.permissions_for(member)).items():
+                if v:
+                    permissions[member.mention].append(k)
+
+        await ctx.send(f'**Permissions:**\n\n{formatter.dict_tostring(permissions, f=False)}')
+
+    @cmds.command(name=',tasks', aliases=[',task'])
+    @cmds.is_owner()
+    async def tasks(self, ctx):
+        tasks = [task for task in asyncio.Task.all_tasks() if not task.done()]
+
+        await ctx.send(f'**Tasks active:** `{int((len(tasks) - 6) / 3)}`')
 
     @cmds.command(name=',status', aliases=[',presence', ',game'], hidden=True)
     @cmds.is_owner()
