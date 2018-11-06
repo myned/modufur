@@ -1532,6 +1532,7 @@ class MsG:
                 await self.bot.wait_for('reaction_add', check=on_reaction, timeout=7 * 60)
 
             self.aliases.update(aliases)
+            u.dump(self.aliases, 'cogs/aliases.pkl')
 
             await message.delete()
 
