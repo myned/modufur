@@ -65,7 +65,7 @@ class Bot:
     async def invite(self, ctx):
         await ctx.message.add_reaction('\N{ENVELOPE}')
 
-        await ctx.send('https://discordapp.com/oauth2/authorize?&client_id={}&scope=bot&permissions={}'.format(u.config['client_id'], u.config['permissions']), delete_after=5)
+        await ctx.send('https://discordapp.com/oauth2/authorize?&client_id={}&scope=bot&permissions={}'.format(u.config['client_id'], u.config['permissions']))
 
     @cmds.command(name=',guilds', aliases=[',glds', ',servers', ',svrs'])
     @cmds.is_owner()
@@ -99,7 +99,7 @@ class Bot:
             await self.bot.user.edit(username=username)
             await ctx.send(f'**Username changed to** `{username}`')
         else:
-            await ctx.send('**Invalid string**', delete_after=7)
+            await ctx.send('**Invalid string**')
             await ctx.message.add_reaction('\N{CROSS MARK}')
 
 

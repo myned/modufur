@@ -82,10 +82,10 @@ class Administration:
             await ctx.send(f'\N{WHITE HEAVY CHECK MARK} **Finished deleting** `{c}` **of** {user.mention}**\'s messages**')
 
         except exc.Abort:
-            await ctx.send('**Deletion aborted**', delete_after=7)
+            await ctx.send('**Deletion aborted**')
             await ctx.message.add_reaction('\N{CROSS MARK}')
         except TimeoutError:
-            await ctx.send('**Deletion timed out**', delete_after=7)
+            await ctx.send('**Deletion timed out**')
             await ctx.message.add_reaction('\N{CROSS MARK}')
 
     @_prune_user.command(name='all', aliases=['a'], brief='Prune a user\'s messages from the guild', description='about flag centers on message 50 of 101 messages\n\npfg \{user id\} [before|after|about] [\{message id\}]\n\nExample:\npfg \{user id\} before \{message id\}', hidden=True)
@@ -131,10 +131,10 @@ class Administration:
             await ctx.send(f'\N{WHITE HEAVY CHECK MARK} **Finished deleting** `{c}` **of** {user.mention}**\'s messages**')
 
         except exc.Abort:
-            await ctx.send('**Deletion aborted**', delete_after=7)
+            await ctx.send('**Deletion aborted**')
             await ctx.message.add_reaction('\N{CROSS MARK}')
         except TimeoutError:
-            await ctx.send('**Deletion timed out**', delete_after=7)
+            await ctx.send('**Deletion timed out**')
             await ctx.message.add_reaction('\N{CROSS MARK}')
 
     @cmds.group(aliases=['task', 'tsk'])
@@ -175,7 +175,7 @@ class Administration:
             if not u.tasks['auto_del']:
                 self.deleting = False
             print('STOPPED : deleting #{}'.format(channel.name))
-            await channel.send('**Stopped queueing messages for deletion in** {}'.format(channel.mention), delete_after=5)
+            await channel.send('**Stopped queueing messages for deletion in** {}'.format(channel.mention))
 
     @cmds.command(name='autodelete', aliases=['autodel'])
     @cmds.has_permissions(administrator=True)
@@ -189,12 +189,12 @@ class Administration:
                     self.bot.loop.create_task(self.delete())
                     self.deleting = True
                 print('STARTED : auto-deleting in #{}'.format(ctx.channel.name))
-                await ctx.send('**Auto-deleting all messages in {}**'.format(ctx.channel.mention), delete_after=5)
+                await ctx.send('**Auto-deleting all messages in {}**'.format(ctx.channel.mention))
             else:
                 raise exc.Exists
 
         except exc.Exists:
-            await ctx.send('**Already auto-deleting in {}.** Type `stop d(eleting)` to stop.'.format(ctx.channel.mention), delete_after=7)
+            await ctx.send('**Already auto-deleting in {}.** Type `stop d(eleting)` to stop.'.format(ctx.channel.mention))
             await ctx.message.add_reaction('\N{CROSS MARK}')
 
     @cmds.group(aliases=['setting', 'set', 's'])
