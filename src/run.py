@@ -136,7 +136,7 @@ async def on_message(message):
 
 @bot.event
 async def on_error(error, *args, **kwargs):
-    print('\n! ! ! ! !\nE R R O R : {}\n! ! ! ! !\n'.format(error), file=sys.stderr)
+    print('\n! ! ! ! !\nE R R O R : {}\n! ! ! ! !\n'.format(sys.exc_info()[1].text), file=sys.stderr)
     tb.print_exc()
     await bot.get_user(u.config['owner_id']).send('**ERROR** \N{WARNING SIGN}\n```\n{}```'.format(error))
     await bot.get_channel(u.config['info_channel']).send('**ERROR** \N{WARNING SIGN}\n```\n{}```'.format(error))
@@ -162,13 +162,13 @@ async def on_command_error(ctx, error):
     if isinstance(error, err.NotFound):
         print('NOT FOUND')
     elif isinstance(error, errext.MissingRequiredArgument):
-        await ctx.send('**Missing required argument**', delete_after=7)
+        await ctx.send('**Missing required argument**')
         await ctx.message.add_reaction('\N{CROSS MARK}')
     elif isinstance(error, errext.BadArgument):
-        await ctx.send(f'**Invalid argument.** {error}', delete_after=7)
+        await ctx.send(f'**Invalid argument.** {error}')
         await ctx.message.add_reaction('\N{CROSS MARK}')
     elif isinstance(error, errext.CheckFailure):
-        await ctx.send('**Insufficient permissions**', delete_after=7)
+        await ctx.send('**Insufficient permissions**')
         await ctx.message.add_reaction('\N{NO ENTRY}')
     elif isinstance(error, errext.CommandNotFound):
         print('INVALID COMMAND : {}'.format(error), file=sys.stderr)
@@ -195,7 +195,8 @@ async def on_command_completion(ctx):
             if ctx.guild.id in u.settings['del_ctx'] and ctx.me.permissions_in(ctx.channel).manage_messages and isinstance(ctx.message.channel, d.TextChannel):
                 await ctx.message.delete()
 
-        await ctx.message.add_reaction('\N{WHITE HEAVY CHECK MARK}')
+        with suppress(err.Forbidden):
+            await ctx.message.add_reaction('\N{WHITE HEAVY CHECK MARK}')
 
     for command in ('lastcommand', ',restart', ',die'):
         if ctx.command.name == command:
@@ -235,8 +236,8 @@ async def test(ctx):
     if post['tags']:
         temptags = post['tags'].split(' ')
         cis = []
-        for tag in suggested:
-            pass
+        # for tag in suggested:
+        #     pass
         for tag in temptags:
             tags.append(f'[{tag}](https://e621.net/post?tags={tag})')
         # tags = ' '.join(tags)

@@ -1,8 +1,8 @@
-def tostring(i, *, order=None):
+def tostring(i, *, order=None, newline=False):
     o = ''
     if i:
         for v in i:
-            o += v + ' '
+            o += v + (' ' if newline is False else '\n')
         o = o[:-1]
     elif order:
         o += order
@@ -20,11 +20,17 @@ def tostring_commas(i):
     return ''
 
 
-def dict_tostring(i):
+def dict_tostring(i, f=True):
     o = ''
-    if i:
-        for k, v in i.items():
-            o += '**' + k + ':** `' + tostring(v) + '`\n'
+
+    if f:
+        if i:
+            for k, v in i.items():
+                o += '**' + k + ':** `' + tostring(v) + '`\n'
+    else:
+        if i:
+            for k, v in i.items():
+                o += k + ': ```' + tostring(v, newline=True) + '```\n'
     return o
 
 

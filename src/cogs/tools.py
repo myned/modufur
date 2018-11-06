@@ -32,19 +32,19 @@ class Utils:
             context = u.last_commands[ctx.author.id]
 
             if arg == 'show' or arg == 'sh' or arg == 's':
-                await ctx.send(f'`{context.prefix}{context.invoked_with} {" ".join(context.args[2:])}`', delete_after=7)
+                await ctx.send(f'`{context.prefix}{context.invoked_with} {" ".join(context.args[2:])}`')
             else:
                 await ctx.invoke(context.command, *context.args[2:], **context.kwargs)
 
         except KeyError:
-            await ctx.send('**No last command**', delete_after=7)
+            await ctx.send('**No last command**')
             await ctx.message.add_reaction('\N{CROSS MARK}')
 
     # Displays latency
     @cmds.command(aliases=['p'], brief='Pong!', description='Returns latency from bot to Discord servers, not to user')
     async def ping(self, ctx):
         await ctx.message.add_reaction('\N{TABLE TENNIS PADDLE AND BALL}')
-        await ctx.send(ctx.author.mention + '  \N{TABLE TENNIS PADDLE AND BALL}  `' + str(round(self.bot.latency * 1000)) + 'ms`', delete_after=5)
+        await ctx.send(ctx.author.mention + '  \N{TABLE TENNIS PADDLE AND BALL}  `' + str(round(self.bot.latency * 1000)) + 'ms`')
 
     @cmds.command(aliases=['pre', 'prefixes'], brief='List bot prefixes', description='Shows all used prefixes')
     async def prefix(self, ctx):
@@ -65,11 +65,11 @@ class Utils:
                 await tempchannel.send(message)
 
             except AttributeError:
-                await ctx.send('**Invalid channel**', delete_after=7)
+                await ctx.send('**Invalid channel**')
                 await ctx.message.add_reaction('\N{CROSS MARK}')
 
         except AttributeError:
-            await ctx.send('**Invalid guild**', delete_after=7)
+            await ctx.send('**Invalid guild**')
             await ctx.message.add_reaction('\N{CROSS MARK}')
 
     @send.command(name='user', aliases=['u', 'member', 'm'])

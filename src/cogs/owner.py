@@ -14,6 +14,7 @@ from discord.ext import commands as cmds
 from misc import exceptions as exc
 from misc import checks
 from utils import utils as u
+from utils import formatter
 
 
 class Bot:
@@ -65,7 +66,7 @@ class Bot:
     async def invite(self, ctx):
         await ctx.message.add_reaction('\N{ENVELOPE}')
 
-        await ctx.send('https://discordapp.com/oauth2/authorize?&client_id={}&scope=bot&permissions={}'.format(u.config['client_id'], u.config['permissions']), delete_after=5)
+        await ctx.send('https://discordapp.com/oauth2/authorize?&client_id={}&scope=bot&permissions={}'.format(u.config['client_id'], u.config['permissions']))
 
     @cmds.command(name=',guilds', aliases=[',glds', ',servers', ',svrs'])
     @cmds.is_owner()
@@ -73,10 +74,35 @@ class Bot:
         paginator = cmds.Paginator()
 
         for guild in self.bot.guilds:
-            paginator.add_line(guild.name)
+            paginator.add_line(f'{guild.name} - @{guild.owner}')
 
         for page in paginator.pages:
             await ctx.send(f'**Guilds:**\n{page}')
+
+    @cmds.command(name=',permissions', aliases=[',permission', ',perms', ',perm'])
+    @cmds.is_owner()
+    async def permissions(self, ctx, *args: d.Member):
+        members = list(args)
+        permissions = {}
+
+        if not members:
+            members.append(ctx.guild.me)
+
+        for member in members:
+            permissions[member.mention] = []
+
+            for k, v in dict(ctx.channel.permissions_for(member)).items():
+                if v:
+                    permissions[member.mention].append(k)
+
+        await ctx.send(f'**Permissions:**\n\n{formatter.dict_tostring(permissions, f=False)}')
+
+    @cmds.command(name=',tasks', aliases=[',task'])
+    @cmds.is_owner()
+    async def tasks(self, ctx):
+        tasks = [task for task in asyncio.Task.all_tasks() if not task.done()]
+
+        await ctx.send(f'**Tasks active:** `{int((len(tasks) - 6) / 3)}`')
 
     @cmds.command(name=',status', aliases=[',presence', ',game'], hidden=True)
     @cmds.is_owner()
@@ -99,7 +125,7 @@ class Bot:
             await self.bot.user.edit(username=username)
             await ctx.send(f'**Username changed to** `{username}`')
         else:
-            await ctx.send('**Invalid string**', delete_after=7)
+            await ctx.send('**Invalid string**')
             await ctx.message.add_reaction('\N{CROSS MARK}')
 
 
