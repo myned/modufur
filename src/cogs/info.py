@@ -24,7 +24,7 @@ class Info:
 
     @cmds.group(name='info', aliases=['i'])
     async def info(self, ctx):
-        if invoked_subcommand is None:
+        if ctx.invoked_subcommand is None:
             await ctx.send('<embed>BOT INFO</embed>')
 
     @info.command(aliases=['g', 'server', 's'], brief='Provides info about a guild', hidden=True)
