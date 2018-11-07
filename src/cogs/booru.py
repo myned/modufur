@@ -674,7 +674,7 @@ class MsG:
         # Checks if tags are in local blacklists
         if tags:
             if (len(tags) > 5 and booru == 'e621') or (len(tags) > 4 and booru == 'e926'):
-                raise exc.TagBoundsError(formatter.tostring(tags[5:]))
+                raise exc.TagBoundsError(' '.join(tags[5:]))
             for tag in tags:
                 if tag == 'swf' or tag == 'webm' or tag in blacklist:
                     raise exc.TagBlacklisted(tag)
@@ -689,7 +689,7 @@ class MsG:
                 raise exc.Timeout
             request = await u.fetch('https://{}.net/post/index.json'.format(booru), params={'tags': ','.join([order] + tags), 'limit': int(self.LIMIT * limit)}, json=True)
             if len(request) == 0:
-                raise exc.NotFound(formatter.tostring(tags))
+                raise exc.NotFound(' '.join(tags))
             if len(request) < limit:
                 limit = len(request)
 
@@ -720,7 +720,7 @@ class MsG:
         if posts:
             return posts, order
         else:
-            raise exc.NotFound(formatter.tostring(tags))
+            raise exc.NotFound(' '.join(tags))
 
     # Creates reaction-based paginator for linked pools
     @cmds.command(name='poolpage', aliases=['poolp', 'pp', 'e621pp', 'e6pp', '6pp'], brief='e621 pool paginator', description='e621 | NSFW\nShow pools in a page format')
@@ -896,7 +896,7 @@ class MsG:
             embed = d.Embed(
                 title=values[c - 1]['artist'], url='https://e621.net/post/show/{}'.format(keys[c - 1]), color=ctx.me.color if isinstance(ctx.channel, d.TextChannel) else u.color)
             embed.set_image(url=values[c - 1]['file_url'])
-            embed.set_author(name=formatter.tostring(tags, order=order),
+            embed.set_author(name=' '.join(tags) if tags else order,
                              url='https://e621.net/post?tags={}'.format(','.join(tags)), icon_url=ctx.author.avatar_url)
             embed.set_footer(text=values[c - 1]['score'],
                              icon_url=self._get_score(values[c - 1]['score']))
@@ -1060,7 +1060,7 @@ class MsG:
             embed = d.Embed(
                 title=values[c - 1]['artist'], url='https://e926.net/post/show/{}'.format(keys[c - 1]), color=ctx.me.color if isinstance(ctx.channel, d.TextChannel) else u.color)
             embed.set_image(url=values[c - 1]['file_url'])
-            embed.set_author(name=formatter.tostring(tags, order=order),
+            embed.set_author(name=' '.join(tags) if tags else order,
                              url='https://e926.net/post?tags={}'.format(','.join(tags)), icon_url=ctx.author.avatar_url)
             embed.set_footer(text=values[c - 1]['score'],
                              icon_url=self._get_score(values[c - 1]['score']))
@@ -1103,7 +1103,7 @@ class MsG:
 
                 except exc.GoTo:
                     await paginator.edit(content=f'`{c} / {len(posts)}`')
-                    number = await self.bot.wait_for('message', check=on_message, timeout=7 * 60)
+                    number = await self.bot.wait_for('message', check=on_message, timeout=8 * 60)
 
                     if int(number.content) != 0:
                         c = int(number.content)
@@ -1198,7 +1198,7 @@ class MsG:
                 embed = d.Embed(title=post['artist'], url='https://e621.net/post/show/{}'.format(ident),
                                 color=ctx.me.color if isinstance(ctx.channel, d.TextChannel) else u.color)
                 embed.set_image(url=post['file_url'])
-                embed.set_author(name=formatter.tostring(tags, order=order),
+                embed.set_author(name=' '.join(tags) if tags else order,
                                  url='https://e621.net/post?tags={}'.format(','.join(tags)), icon_url=ctx.author.avatar_url)
                 embed.set_footer(
                     text=post['score'], icon_url=self._get_score(post['score']))
@@ -1249,7 +1249,7 @@ class MsG:
                 embed = d.Embed(title=post['artist'], url='https://e926.net/post/show/{}'.format(ident),
                                 color=ctx.me.color if isinstance(ctx.channel, d.TextChannel) else u.color)
                 embed.set_image(url=post['file_url'])
-                embed.set_author(name=formatter.tostring(tags, order=order),
+                embed.set_author(name=' '.join(tags) if tags else order,
                                  url='https://e621.net/post?tags={}'.format(','.join(tags)), icon_url=ctx.author.avatar_url)
                 embed.set_footer(
                     text=post['score'], icon_url=self._get_score(post['score']))
@@ -1411,14 +1411,9 @@ class MsG:
             for tag in bl:
                 aliases[tag] = list(self.aliases[tag])
 
-        paginator = cmds.Paginator(prefix='', suffix='')
+            # paginator.add_line(f'{tag}\n```{" ".join(alias_list)}```')
 
-        for tag, alias_list in aliases.items():
-            paginator.add_line(f'{tag}\n```{" ".join(alias_list)}```')
-
-        for page in paginator.pages:
-            print(page)
-            await ctx.send(f'\N{NO ENTRY SIGN} **Contextual blacklist aliases:**\n{page}')
+        await formatter.paginate(ctx, aliases, start='\N{NO ENTRY SIGN} **Contextual blacklist aliases:**\n')
 
     @_get_blacklist.command(name='global', aliases=['gl', 'g'], brief='Get current global blacklist', description='Get current global blacklist\n\nThis applies to all booru commands, in accordance with Discord\'s ToS agreement\n\nExample:\n\{p\}bl get global')
     async def __get_global_blacklist(self, ctx, *args):
@@ -1505,7 +1500,9 @@ class MsG:
                     for dic in alias_request:
                         aliases[tag].add(dic['name'])
 
-            message = await ctx.send(f'**Also add aliases?**\n{formatter.dict_tostring(aliases, f=False)}')
+            messages = await formatter.paginate(ctx, aliases)
+            message = await ctx.send(
+                '**Also add aliases?** React with the minus sign (\N{HEAVY MINUS SIGN}) to remove unwanted aliases')
             await message.add_reaction('\N{THUMBS DOWN SIGN}')
             await message.add_reaction('\N{HEAVY MINUS SIGN}')
             await message.add_reaction('\N{THUMBS UP SIGN}')
