@@ -22,22 +22,9 @@ class Info:
     #
     #     await ctx.send(embed=embed)
 
-    @cmds.command(hidden=True)
-    async def hi(self, ctx, *args):
-        dest = u.get_kwargs(ctx, args)
-
-        hello = 'Hewwo, {}.'.format(ctx.author.mention)
-        if ctx.author.id == checks.owner_id:
-            hello += '.. ***Master.*** uwu'
-        elif ctx.author.guild_permissions.administrator:
-            hello = '{} **Admin** {}'.format(hello[:7], hello[7:])
-        elif ctx.author.guild_permissions.ban_members:
-            hello = '{} **Mod** {}'.format(hello[:7], hello[7:])
-        await dest.send(hello)
-
     @cmds.group(name='info', aliases=['i'])
     async def info(self, ctx):
-        if invoked_subcommand is None:
+        if ctx.invoked_subcommand is None:
             await ctx.send('<embed>BOT INFO</embed>')
 
     @info.command(aliases=['g', 'server', 's'], brief='Provides info about a guild', hidden=True)

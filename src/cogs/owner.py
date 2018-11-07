@@ -95,7 +95,7 @@ class Bot:
                 if v:
                     permissions[member.mention].append(k)
 
-        await ctx.send(f'**Permissions:**\n\n{formatter.dict_tostring(permissions, f=False, newline=True)}')
+        await formatter.paginate(ctx, permissions)
 
     @cmds.command(name=',tasks', aliases=[',task'])
     @cmds.is_owner()
