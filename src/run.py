@@ -91,10 +91,10 @@ async def on_ready():
             if u.temp['startup']:
                 with suppress(err.NotFound):
                     if u.temp['startup'][0] == 'guild':
-                        dest = bot.get_channel(u.temp['startup'][1])
+                        ctx = bot.get_channel(u.temp['startup'][1])
                     else:
-                        dest = bot.get_user(u.temp['startup'][1])
-                    message = await dest.get_message(u.temp['startup'][2])
+                        ctx = bot.get_user(u.temp['startup'][1])
+                    message = await ctx.get_message(u.temp['startup'][2])
 
                     await message.add_reaction('\N{WHITE HEAVY CHECK MARK}')
 
@@ -144,10 +144,10 @@ async def on_error(error, *args, **kwargs):
     if u.temp['startup']:
         with suppress(err.NotFound):
             if u.temp['startup'][0] == 'guild':
-                dest = bot.get_channel(u.temp['startup'][1])
+                ctx = bot.get_channel(u.temp['startup'][1])
             else:
-                dest = bot.get_user(u.temp['startup'][1])
-            message = await dest.get_message(u.temp['startup'][2])
+                ctx = bot.get_user(u.temp['startup'][1])
+            message = await ctx.get_message(u.temp['startup'][2])
 
             await message.add_reaction('\N{WARNING SIGN}')
 

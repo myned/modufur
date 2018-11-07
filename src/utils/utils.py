@@ -132,16 +132,9 @@ def generate_embed(ctx, *, title=d.Embed.Empty, kind='rich', description=d.Embed
     return embed
 
 def get_kwargs(ctx, args, *, limit=False):
-    destination = ctx
     remaining = list(args[:])
     rm = False
     lim = 1
-
-    for flag in ('-dm', '-pm', '--message'):
-        if flag in remaining:
-            destination = ctx.author
-
-            remaining.remove(flag)
 
     for flag in ('-r', '-rm', '--remove'):
         if flag in remaining and ctx.author.permissions_in(ctx.channel).manage_messages:
@@ -159,7 +152,7 @@ def get_kwargs(ctx, args, *, limit=False):
                 else:
                     raise exc.BoundsError(arg)
 
-    return {'destination': destination, 'remaining': remaining, 'remove': rm, 'limit': lim}
+    return {'remaining': remaining, 'remove': rm, 'limit': lim}
 
 
 def get_aspectratio(a, b):
