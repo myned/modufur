@@ -770,8 +770,8 @@ class MsG:
 
             while not self.bot.is_closed():
                 try:
-                    await asyncio.gather(*[self.bot.wait_for('reaction_add', check=on_reaction, timeout=7 * 60),
-                                           self.bot.wait_for('reaction_remove', check=on_reaction, timeout=7 * 60)])
+                    await asyncio.gather(*[self.bot.wait_for('reaction_add', check=on_reaction, timeout=8 * 60),
+                                           self.bot.wait_for('reaction_remove', check=on_reaction, timeout=8 * 60)])
 
                 except exc.Save:
                     if keys[c - 1] not in hearted:
@@ -799,7 +799,7 @@ class MsG:
 
                 except exc.GoTo:
                     await paginator.edit(content='\N{INPUT SYMBOL FOR NUMBERS}')
-                    number = await self.bot.wait_for('message', check=on_message, timeout=7 * 60)
+                    number = await self.bot.wait_for('message', check=on_message, timeout=8 * 60)
 
                     if int(number.content) != 0:
                         c = int(number.content)
@@ -910,8 +910,8 @@ class MsG:
 
             while not self.bot.is_closed():
                 try:
-                    await asyncio.gather(*[self.bot.wait_for('reaction_add', check=on_reaction, timeout=7 * 60),
-                                           self.bot.wait_for('reaction_remove', check=on_reaction, timeout=7 * 60)])
+                    await asyncio.gather(*[self.bot.wait_for('reaction_add', check=on_reaction, timeout=8 * 60),
+                                           self.bot.wait_for('reaction_remove', check=on_reaction, timeout=8 * 60)])
 
                 except exc.Save:
                     if keys[c - 1] not in hearted.keys():
@@ -939,7 +939,7 @@ class MsG:
 
                 except exc.GoTo:
                     await paginator.edit(content=f'`{c} / {len(posts)}`')
-                    number = await self.bot.wait_for('message', check=on_message, timeout=7 * 60)
+                    number = await self.bot.wait_for('message', check=on_message, timeout=8 * 60)
 
                     if int(number.content) != 0:
                         c = int(number.content)
@@ -1074,8 +1074,8 @@ class MsG:
 
             while not self.bot.is_closed():
                 try:
-                    await asyncio.gather(*[self.bot.wait_for('reaction_add', check=on_reaction, timeout=7 * 60),
-                                           self.bot.wait_for('reaction_remove', check=on_reaction, timeout=7 * 60)])
+                    await asyncio.gather(*[self.bot.wait_for('reaction_add', check=on_reaction, timeout=8 * 60),
+                                           self.bot.wait_for('reaction_remove', check=on_reaction, timeout=8 * 60)])
 
                 except exc.Save:
                     if keys[c - 1] not in hearted:
@@ -1508,12 +1508,13 @@ class MsG:
             await message.add_reaction('\N{THUMBS UP SIGN}')
 
             try:
-                await self.bot.wait_for('reaction_add', check=on_reaction, timeout=7 * 60)
+                await self.bot.wait_for('reaction_add', check=on_reaction, timeout=8 * 60)
 
             except exc.Remove:
                 await message.edit(content=f'**Also add aliases?**\n{formatter.dict_tostring(aliases, f=False)}\nType the tag(s) to remove or `0` to abort:')
 
-                response = await self.bot.wait_for('message', check=on_message, timeout=7 * 60)
+                try:
+                        response = await self.bot.wait_for('message', check=on_message, timeout=8 * 60)
 
                 for tag in response.content.split(' '):
                     for v in aliases.values():
@@ -1521,7 +1522,7 @@ class MsG:
                             v.remove(tag)
 
                 await message.edit(content=f'**Also add aliases?**\n{formatter.dict_tostring(aliases, f=False)}\nConfirm or deny changes')
-                await self.bot.wait_for('reaction_add', check=on_reaction, timeout=7 * 60)
+                    await self.bot.wait_for('reaction_add', check=on_reaction, timeout=8 * 60)
 
             self.aliases.update(aliases)
             u.dump(self.aliases, 'cogs/aliases.pkl')
