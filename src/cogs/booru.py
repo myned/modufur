@@ -437,6 +437,7 @@ class MsG:
     @cmds.command(name='reversify', aliases=['revify', 'risify', 'rify'])
     async def reversify(self, ctx, *args):
         try:
+            dest = ctx
             kwargs = u.get_kwargs(ctx, args, limit=self.HISTORY_LIMIT / 5)
             remove, limit = kwargs['remove'], kwargs['limit']
             links = {}
