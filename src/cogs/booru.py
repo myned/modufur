@@ -1437,29 +1437,6 @@ class MsG:
 
         await ctx.send('\N{NO ENTRY SIGN} **__Blacklisted:__**\n\n**Global:**\n```\n{}```\n**{}:**\n```\n{}```'.format(' '.join(self.blacklists['global_blacklist']), ctx.channel.mention, ' '.join(self.blacklists['guild_blacklist'].get(guild.id, {}).get(ctx.channel.id, set()))))
 
-    @_get_blacklist.group(name='all', aliases=['a'], hidden=True)
-    async def __get_all_blacklists(self, ctx):
-        if not ctx.invoked_subcommand:
-            await ctx.send('**Invalid blacklist**')
-            await ctx.message.add_reaction('\N{CROSS MARK}')
-
-    @__get_all_blacklists.command(name='guild', aliases=['g'])
-    @cmds.has_permissions(manage_channels=True)
-    async def ___get_all_guild_blacklists(self, ctx, *args):
-        dest = u.get_kwargs(ctx, args)['destination']
-
-        guild = ctx.guild if isinstance(
-            ctx.guild, d.Guild) else ctx.channel
-
-        await dest.send('\N{NO ENTRY SIGN} **__{} blacklists:__**\n\n{}'.format(guild.name, formatter.dict_tostring(self.blacklists['guild_blacklist'].get(guild.id, {}))))
-
-    @__get_all_blacklists.command(name='user', aliases=['u', 'member', 'm'])
-    @cmds.is_owner()
-    async def ___get_all_user_blacklists(self, ctx, *args):
-        dest = u.get_kwargs(ctx, args)['destination']
-
-        await dest.send('\N{NO ENTRY SIGN} **__User blacklists:__**\n\n{}'.format(formatter.dict_tostring(self.blacklists['user_blacklist'])))
-
     @blacklist.group(name='add', aliases=['a'], brief='(G) Add tag(s) to a blacklist\n\nUsage:\n\{p\}bl add \{blacklist\} \{tags...\}')
     async def _add_tags(self, ctx):
         if not ctx.invoked_subcommand:
