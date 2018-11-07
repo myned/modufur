@@ -1446,19 +1446,18 @@ class MsG:
     async def _aliases(self, ctx, tags, blacklist):
         def on_reaction(reaction, user):
             if user is ctx.author and reaction.message.channel is ctx.message.channel:
-                if reaction.emoji == '\N{HEAVY MINUS SIGN}':
-                    raise exc.Remove
                 if reaction.emoji == '\N{THUMBS DOWN SIGN}':
                     raise exc.Continue
-                elif reaction.emoji == '\N{THUMBS UP SIGN}':
+                if reaction.emoji == '\N{HEAVY MINUS SIGN}':
+                    raise exc.Remove
+                if reaction.emoji == '\N{THUMBS UP SIGN}':
                     return True
-            else:
-                return False
+            return False
 
         def on_message(msg):
             if msg.author is ctx.message.author and msg.channel is ctx.message.channel:
                 if msg.content == '0':
-                    raise exc.Abort
+                    raise exc.Continue
                 return True
             return False
 
@@ -1466,6 +1465,7 @@ class MsG:
             raise exc.MissingArgument
 
         aliases = {}
+        messages = []
 
         try:
             for tag in tags:
@@ -1475,7 +1475,8 @@ class MsG:
                 alias_request = await u.fetch('https://e621.net/tag_alias/index.json', params={'aliased_to': tag, 'approved': 'true'}, json=True)
                 if alias_request:
                     for dic in alias_request:
-                        aliases[tag].add(dic['name'])
+                        if dic['name']:
+                            aliases[tag].add(dic['name'])
 
             messages = await formatter.paginate(ctx, aliases)
             message = await ctx.send(
@@ -1488,34 +1489,45 @@ class MsG:
                 await self.bot.wait_for('reaction_add', check=on_reaction, timeout=8 * 60)
 
             except exc.Remove:
-                await message.edit(content=f'**Also add aliases?**\n{formatter.dict_tostring(aliases, f=False)}\nType the tag(s) to remove or `0` to abort:')
+                await message.edit(content=f'Type the tag(s) to remove or `0` to cancel:')
 
                 try:
+                    while not self.bot.is_closed():
                         response = await self.bot.wait_for('message', check=on_message, timeout=8 * 60)
 
-                for tag in response.content.split(' '):
-                    for v in aliases.values():
-                        if tag in v:
-                            v.remove(tag)
+                        for tag in response.content.split(' '):
+                            try:
+                                for e in aliases.values():
+                                    e.remove(tag)
+                                messages.append(await ctx.send(f'\N{WHITE HEAVY CHECK MARK} `{tag}` **removed**'))
+                            except KeyError:
+                                await ctx.send(f'\N{CROSS MARK} `{tag}` **not in aliases**', delete_after=8)
+                except exc.Continue:
+                    pass
 
-                await message.edit(content=f'**Also add aliases?**\n{formatter.dict_tostring(aliases, f=False)}\nConfirm or deny changes')
+                await message.edit(content=f'Confirm or deny changes')
+
+                while not self.bot.is_closed:
                     await self.bot.wait_for('reaction_add', check=on_reaction, timeout=8 * 60)
 
             self.aliases.update(aliases)
             u.dump(self.aliases, 'cogs/aliases.pkl')
 
-            await message.delete()
-
             return blacklist
 
         except exc.Continue:
-            await message.delete()
-
             return tags
-        except exc.Abort:
-            await message.delete()
-
+        except asyncio.TimeoutError:
+            await ctx.send('\N{CROSS MARK} **Command timed out**')
             raise exc.Abort
+        except exc.Abort:
+            raise exc.Abort
+
+        finally:
+            if messages:
+                for msg in messages:
+                    await msg.delete()
+                await message.delete()
 
     @_add_tags.command(name='global', aliases=['gl', 'g'])
     @cmds.is_owner()
