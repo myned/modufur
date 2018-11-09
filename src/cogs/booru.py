@@ -1490,7 +1490,7 @@ class MsG:
                 await self.bot.wait_for('reaction_add', check=on_reaction, timeout=8 * 60)
 
             except exc.Remove:
-                await message.edit(content=f'Type the tag(s) to remove or `0` to cancel:')
+                await message.edit(content=f'Type the tag(s) to remove or `0` to continue:')
 
                 try:
                     while not self.bot.is_closed():
@@ -1507,9 +1507,7 @@ class MsG:
                     pass
 
                 await message.edit(content=f'Confirm or deny changes')
-
-                while not self.bot.is_closed:
-                    await self.bot.wait_for('reaction_add', check=on_reaction, timeout=8 * 60)
+                await self.bot.wait_for('reaction_add', check=on_reaction, timeout=8 * 60)
 
             self.aliases.update(aliases)
             u.dump(self.aliases, 'cogs/aliases.pkl')
@@ -1526,9 +1524,10 @@ class MsG:
 
         finally:
             if messages:
-                for msg in messages:
-                    await msg.delete()
-                await message.delete()
+                with suppress(err.NotFound):
+                    for msg in messages:
+                        await msg.delete()
+                    await message.delete()
 
     @_add_tags.command(name='global', aliases=['gl', 'g'])
     @cmds.is_owner()
