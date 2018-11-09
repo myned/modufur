@@ -1507,9 +1507,7 @@ class MsG:
                     pass
 
                 await message.edit(content=f'Confirm or deny changes')
-
-                while not self.bot.is_closed:
-                    await self.bot.wait_for('reaction_add', check=on_reaction, timeout=8 * 60)
+                await self.bot.wait_for('reaction_add', check=on_reaction, timeout=8 * 60)
 
             self.aliases.update(aliases)
             u.dump(self.aliases, 'cogs/aliases.pkl')
