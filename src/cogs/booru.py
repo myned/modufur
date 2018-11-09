@@ -1490,7 +1490,7 @@ class MsG:
                 await self.bot.wait_for('reaction_add', check=on_reaction, timeout=8 * 60)
 
             except exc.Remove:
-                await message.edit(content=f'Type the tag(s) to remove or `0` to cancel:')
+                await message.edit(content=f'Type the tag(s) to remove or `0` to continue:')
 
                 try:
                     while not self.bot.is_closed():
