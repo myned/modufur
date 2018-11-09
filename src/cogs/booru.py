@@ -1524,9 +1524,10 @@ class MsG:
 
         finally:
             if messages:
-                for msg in messages:
-                    await msg.delete()
-                await message.delete()
+                with suppress(err.NotFound):
+                    for msg in messages:
+                        await msg.delete()
+                    await message.delete()
 
     @_add_tags.command(name='global', aliases=['gl', 'g'])
     @cmds.is_owner()
