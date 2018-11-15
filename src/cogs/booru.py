@@ -655,9 +655,6 @@ class MsG:
 
     # Messy code that checks image limit and tags in blacklists
     async def _get_posts(self, ctx, *, booru='e621', tags=[], limit=1, previous={}):
-        guild = ctx.guild if isinstance(
-            ctx.guild, d.Guild) else ctx.channel
-
         blacklist = set()
         # Creates temp blacklist based on context
         for bl in (self.blacklists['global_blacklist'], self.blacklists['guild_blacklist'].get(guild.id, {}).get(ctx.channel.id, set()), self.blacklists['user_blacklist'].get(ctx.author.id, set())):
