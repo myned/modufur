@@ -657,9 +657,19 @@ class MsG:
     async def _get_posts(self, ctx, *, booru='e621', tags=[], limit=1, previous={}):
         blacklist = set()
         # Creates temp blacklist based on context
-        for bl in (self.blacklists['global_blacklist'], self.blacklists['guild_blacklist'].get(guild.id, {}).get(ctx.channel.id, set()), self.blacklists['user_blacklist'].get(ctx.author.id, set())):
-            for tag in bl:
-                blacklist.update([tag] + list(self.aliases[tag]))
+        for lst in ('blacklist', 'aliases'):
+            default = set() if lst == 'blacklist' else {}
+
+            for bl in (self.blacklists['global'].get(lst, default),
+                       self.blacklists['channel'].get(ctx.channel.id, {}).get(lst, default),
+                       self.blacklists['user'].get(ctx.author.id, {}).get(lst, default)):
+                if lst == 'aliases':
+                    temp = list(bl.keys()) + [tag for tags in bl.values() for tag in tags]
+                    temp = set(temp)
+                else:
+                    temp = bl
+
+                blacklist.update(temp)
         # Checks for, assigns, and removes first order in tags if possible
         order = [tag for tag in tags if 'order:' in tag]
         if order:
@@ -693,8 +703,9 @@ class MsG:
                 if 'swf' in post['file_ext'] or 'webm' in post['file_ext']:
                     continue
                 try:
+                    post_tags = post['tags'].split(' ')
                     for tag in blacklist:
-                        if tag in post['tags']:
+                        if tag in post_tags:
                             raise exc.Continue
                 except exc.Continue:
                     continue
