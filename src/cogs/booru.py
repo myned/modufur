@@ -1400,6 +1400,8 @@ class MsG:
                 '**Use a flag to manage blacklists.**\n'
                 f'*Type* `{ctx.prefix}help bl` *for more info.*')
             await ctx.message.add_reaction('\N{CROSS MARK}')
+        elif not ctx.args:
+            await ctx.send('\N{CROSS MARK} **Missing arguments**')
 
     @blacklist.group(
         name='get',
