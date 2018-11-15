@@ -131,6 +131,17 @@ def generate_embed(ctx, *, title=d.Embed.Empty, kind='rich', description=d.Embed
 
     return embed
 
+def kwargs(args):
+    params = list(args)
+    lst = 'blacklist'
+
+    for switch in ('-a', '--aliases'):
+        if switch in params:
+            lst = 'aliases'
+            params.remove(switch)
+
+    return params, lst
+
 def get_kwargs(ctx, args, *, limit=False):
     remaining = list(args[:])
     rm = False

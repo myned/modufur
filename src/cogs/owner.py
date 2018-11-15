@@ -8,7 +8,6 @@ import traceback as tb
 from contextlib import redirect_stdout, suppress
 
 import discord as d
-import pyrasite as pyr
 from discord.ext import commands as cmds
 
 from misc import exceptions as exc

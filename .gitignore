@@ -6,6 +6,7 @@
 *.pkl
 *.png
 *.bat
+*.lock
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
