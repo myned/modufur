@@ -9,12 +9,8 @@ name = "pypi"
 aiohttp = "*"
 beautifulsoup4 = "*"
 "discord.py" = {extras = ["voice"], git = "https://github.com/Rapptz/discord.py", ref = "rewrite"}
-gitpython = "*"
-google-api-python-client = "*"
-hurry = "*"
 "hurry.filesize" = "*"
 lxml = "*"
-pyrasite = "*"
 requests = "*"
 websockets = "*"
 
