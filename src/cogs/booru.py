@@ -777,8 +777,8 @@ class MsG:
 
             while not self.bot.is_closed():
                 try:
-                    await asyncio.gather(*[self.bot.wait_for('reaction_add', check=on_reaction, timeout=8 * 60),
-                                           self.bot.wait_for('reaction_remove', check=on_reaction, timeout=8 * 60)])
+                    await asyncio.gather(*[self.bot.wait_for('reaction_add', check=on_reaction, timeout=8*60),
+                                           self.bot.wait_for('reaction_remove', check=on_reaction, timeout=8*60)])
 
                 except exc.Save:
                     if keys[c - 1] not in hearted:
@@ -806,7 +806,7 @@ class MsG:
 
                 except exc.GoTo:
                     await paginator.edit(content='\N{INPUT SYMBOL FOR NUMBERS}')
-                    number = await self.bot.wait_for('message', check=on_message, timeout=8 * 60)
+                    number = await self.bot.wait_for('message', check=on_message, timeout=8*60)
 
                     if int(number.content) != 0:
                         c = int(number.content)
@@ -917,8 +917,8 @@ class MsG:
 
             while not self.bot.is_closed():
                 try:
-                    await asyncio.gather(*[self.bot.wait_for('reaction_add', check=on_reaction, timeout=8 * 60),
-                                           self.bot.wait_for('reaction_remove', check=on_reaction, timeout=8 * 60)])
+                    await asyncio.gather(*[self.bot.wait_for('reaction_add', check=on_reaction, timeout=8*60),
+                                           self.bot.wait_for('reaction_remove', check=on_reaction, timeout=8*60)])
 
                 except exc.Save:
                     if keys[c - 1] not in hearted.keys():
@@ -946,7 +946,7 @@ class MsG:
 
                 except exc.GoTo:
                     await paginator.edit(content=f'`{c} / {len(posts)}`')
-                    number = await self.bot.wait_for('message', check=on_message, timeout=8 * 60)
+                    number = await self.bot.wait_for('message', check=on_message, timeout=8*60)
 
                     if int(number.content) != 0:
                         c = int(number.content)
@@ -1081,8 +1081,8 @@ class MsG:
 
             while not self.bot.is_closed():
                 try:
-                    await asyncio.gather(*[self.bot.wait_for('reaction_add', check=on_reaction, timeout=8 * 60),
-                                           self.bot.wait_for('reaction_remove', check=on_reaction, timeout=8 * 60)])
+                    await asyncio.gather(*[self.bot.wait_for('reaction_add', check=on_reaction, timeout=8*60),
+                                           self.bot.wait_for('reaction_remove', check=on_reaction, timeout=8*60)])
 
                 except exc.Save:
                     if keys[c - 1] not in hearted:
@@ -1110,7 +1110,7 @@ class MsG:
 
                 except exc.GoTo:
                     await paginator.edit(content=f'`{c} / {len(posts)}`')
-                    number = await self.bot.wait_for('message', check=on_message, timeout=8 * 60)
+                    number = await self.bot.wait_for('message', check=on_message, timeout=8*60)
 
                     if int(number.content) != 0:
                         c = int(number.content)
