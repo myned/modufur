@@ -1284,110 +1284,110 @@ class MsG:
             await ctx.send('**Request timed out**')
             await ctx.message.add_reaction('\N{CROSS MARK}')
 
-    @cmds.group(aliases=['fave', 'fav', 'f'])
-    async def favorite(self, ctx):
-        if not ctx.invoked_subcommand:
-            await ctx.send('**Use a flag to manage favorites.**\n*Type* `{}help fav` *for more info.*'.format(ctx.prefix))
-            await ctx.message.add_reaction('\N{CROSS MARK}')
-
-    @favorite.error
-    async def favorite_error(self, ctx, error):
-        pass
-
-    @favorite.group(name='get', aliases=['g'])
-    async def _get_favorite(self, ctx):
-        pass
-
-    @_get_favorite.command(name='tags', aliases=['t'])
-    async def __get_favorite_tags(self, ctx, *args):
-        await ctx.send('\N{WHITE MEDIUM STAR} {}**\'s favorite tags:**\n```\n{}```'.format(ctx.author.mention, ' '.join(self.favorites.get(ctx.author.id, {}).get('tags', set()))))
-
-    @_get_favorite.command(name='posts', aliases=['p'])
-    async def __get_favorite_posts(self, ctx):
-        pass
-
-    @favorite.group(name='add', aliases=['a'])
-    async def _add_favorite(self, ctx):
-        pass
-
-    @_add_favorite.command(name='tags', aliases=['t'])
-    async def __add_favorite_tags(self, ctx, *args):
-        try:
-            kwargs = u.get_kwargs(ctx, args)
-            tags = kwargs['remaining']
-
-            for tag in tags:
-                if tag in self.blacklists['user_blacklist'].get(ctx.author.id, set()):
-                    raise exc.TagBlacklisted(tag)
-            with suppress(KeyError):
-                if len(self.favorites[ctx.author.id]['tags']) + len(tags) > 5:
-                    raise exc.BoundsError
-
-            self.favorites.setdefault(ctx.author.id, {}).setdefault(
-                'tags', set()).update(tags)
-            u.dump(self.favorites, 'cogs/favorites.pkl')
-
-            await ctx.send('{} **added to their favorites:**\n```\n{}```'.format(ctx.author.mention, ' '.join(tags)))
-
-        except exc.BoundsError:
-            await ctx.send('**Favorites list currently limited to:** `5`')
-            await ctx.message.add_reaction('\N{CROSS MARK}')
-        except exc.TagBlacklisted as e:
-            await ctx.send('\N{NO ENTRY SIGN} `{}` **blacklisted**')
-            await ctx.message.add_reaction('\N{NO ENTRY SIGN}')
-
-    @_add_favorite.command(name='posts', aliases=['p'])
-    async def __add_favorite_posts(self, ctx, *posts):
-        pass
-
-    @favorite.group(name='remove', aliases=['r'])
-    async def _remove_favorite(self, ctx):
-        pass
-
-    @_remove_favorite.command(name='tags', aliases=['t'])
-    async def __remove_favorite_tags(self, ctx, *args):
-        try:
-            kwargs = u.get_kwargs(ctx, args)
-            tags = kwargs['remaining']
-
-            for tag in tags:
-                try:
-                    self.favorites[ctx.author.id].get(
-                        'tags', set()).remove(tag)
-
-                except KeyError:
-                    raise exc.TagError(tag)
-
-            u.dump(self.favorites, 'cogs/favorites.pkl')
-
-            await ctx.send('{} **removed from their favorites:**\n```\n{}```'.format(ctx.author.mention, ' '.join(tags)))
-
-        except KeyError:
-            await ctx.send('**You do not have any favorites**')
-            await ctx.message.add_reaction('\N{CROSS MARK}')
-        except exc.TagError as e:
-            await ctx.send('`{}` **not in favorites**'.format(e))
-            await ctx.message.add_reaction('\N{CROSS MARK}')
-
-    @_remove_favorite.command(name='posts', aliases=['p'])
-    async def __remove_favorite_posts(self, ctx):
-        pass
-
-    @favorite.group(name='clear', aliases=['c'])
-    async def _clear_favorite(self, ctx):
-        pass
-
-    @_clear_favorite.command(name='tags', aliases=['t'])
-    async def __clear_favorite_tags(self, ctx, *args):
-        with suppress(KeyError):
-            del self.favorites[ctx.author.id]
-            u.dump(self.favorites, 'cogs/favorites.pkl')
-
-        await ctx.send('{}**\'s favorites cleared**'.format(ctx.author.mention))
-
-    @_clear_favorite.command(name='posts', aliases=['p'])
-    async def __clear_favorite_posts(self, ctx):
-        pass
+    # @cmds.group(aliases=['fave', 'fav', 'f'])
+    # async def favorite(self, ctx):
+    #     if not ctx.invoked_subcommand:
+    #         await ctx.send('**Use a flag to manage favorites.**\n*Type* `{}help fav` *for more info.*'.format(ctx.prefix))
+    #         await ctx.message.add_reaction('\N{CROSS MARK}')
+    #
+    # @favorite.error
+    # async def favorite_error(self, ctx, error):
+    #     pass
+    #
+    # @favorite.group(name='get', aliases=['g'])
+    # async def _get_favorite(self, ctx):
+    #     pass
+    #
+    # @_get_favorite.command(name='tags', aliases=['t'])
+    # async def __get_favorite_tags(self, ctx, *args):
+    #     await ctx.send('\N{WHITE MEDIUM STAR} {}**\'s favorite tags:**\n```\n{}```'.format(ctx.author.mention, ' '.join(self.favorites.get(ctx.author.id, {}).get('tags', set()))))
+    #
+    # @_get_favorite.command(name='posts', aliases=['p'])
+    # async def __get_favorite_posts(self, ctx):
+    #     pass
+    #
+    # @favorite.group(name='add', aliases=['a'])
+    # async def _add_favorite(self, ctx):
+    #     pass
+    #
+    # @_add_favorite.command(name='tags', aliases=['t'])
+    # async def __add_favorite_tags(self, ctx, *args):
+    #     try:
+    #         kwargs = u.get_kwargs(ctx, args)
+    #         tags = kwargs['remaining']
+    #
+    #         for tag in tags:
+    #             if tag in self.blacklists['user']['blacklist'].get(ctx.author.id, set()):
+    #                 raise exc.TagBlacklisted(tag)
+    #         with suppress(KeyError):
+    #             if len(self.favorites[ctx.author.id]['tags']) + len(tags) > 5:
+    #                 raise exc.BoundsError
+    #
+    #         self.favorites.setdefault(ctx.author.id, {}).setdefault(
+    #             'tags', set()).update(tags)
+    #         u.dump(self.favorites, 'cogs/favorites.pkl')
+    #
+    #         await ctx.send('{} **added to their favorites:**\n```\n{}```'.format(ctx.author.mention, ' '.join(tags)))
+    #
+    #     except exc.BoundsError:
+    #         await ctx.send('**Favorites list currently limited to:** `5`')
+    #         await ctx.message.add_reaction('\N{CROSS MARK}')
+    #     except exc.TagBlacklisted as e:
+    #         await ctx.send('\N{NO ENTRY SIGN} `{}` **blacklisted**')
+    #         await ctx.message.add_reaction('\N{NO ENTRY SIGN}')
+    #
+    # @_add_favorite.command(name='posts', aliases=['p'])
+    # async def __add_favorite_posts(self, ctx, *posts):
+    #     pass
+    #
+    # @favorite.group(name='remove', aliases=['r'])
+    # async def _remove_favorite(self, ctx):
+    #     pass
+    #
+    # @_remove_favorite.command(name='tags', aliases=['t'])
+    # async def __remove_favorite_tags(self, ctx, *args):
+    #     try:
+    #         kwargs = u.get_kwargs(ctx, args)
+    #         tags = kwargs['remaining']
+    #
+    #         for tag in tags:
+    #             try:
+    #                 self.favorites[ctx.author.id].get(
+    #                     'tags', set()).remove(tag)
+    #
+    #             except KeyError:
+    #                 raise exc.TagError(tag)
+    #
+    #         u.dump(self.favorites, 'cogs/favorites.pkl')
+    #
+    #         await ctx.send('{} **removed from their favorites:**\n```\n{}```'.format(ctx.author.mention, ' '.join(tags)))
+    #
+    #     except KeyError:
+    #         await ctx.send('**You do not have any favorites**')
+    #         await ctx.message.add_reaction('\N{CROSS MARK}')
+    #     except exc.TagError as e:
+    #         await ctx.send('`{}` **not in favorites**'.format(e))
+    #         await ctx.message.add_reaction('\N{CROSS MARK}')
+    #
+    # @_remove_favorite.command(name='posts', aliases=['p'])
+    # async def __remove_favorite_posts(self, ctx):
+    #     pass
+    #
+    # @favorite.group(name='clear', aliases=['c'])
+    # async def _clear_favorite(self, ctx):
+    #     pass
+    #
+    # @_clear_favorite.command(name='tags', aliases=['t'])
+    # async def __clear_favorite_tags(self, ctx, *args):
+    #     with suppress(KeyError):
+    #         del self.favorites[ctx.author.id]
+    #         u.dump(self.favorites, 'cogs/favorites.pkl')
+    #
+    #     await ctx.send('{}**\'s favorites cleared**'.format(ctx.author.mention))
+    #
+    # @_clear_favorite.command(name='posts', aliases=['p'])
+    # async def __clear_favorite_posts(self, ctx):
+    #     pass
 
     # Umbrella command structure to manage global, channel, and user blacklists
     @cmds.group(aliases=['bl', 'b'], brief='(G) Manage blacklists', description='Manage channel or personal blacklists\n\nUsage:\n{p}bl get {blacklist} to show a blacklist\n{p}bl clear {blacklist} to clear a blacklist\n{p}bl add {blacklist} {tags...} to add tag(s) to a blacklist\n{p}bl remove {blacklist} {tags...} to remove tags from a blacklist')
