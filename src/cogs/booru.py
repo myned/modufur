@@ -1389,324 +1389,337 @@ class MsG:
     # async def __clear_favorite_posts(self, ctx):
     #     pass
 
-    # Umbrella command structure to manage global, channel, and user blacklists
-    @cmds.group(aliases=['bl', 'b'], brief='(G) Manage blacklists', description='Manage channel or personal blacklists\n\nUsage:\n{p}bl get {blacklist} to show a blacklist\n{p}bl clear {blacklist} to clear a blacklist\n{p}bl add {blacklist} {tags...} to add tag(s) to a blacklist\n{p}bl remove {blacklist} {tags...} to remove tags from a blacklist')
+    @cmds.group(
+        aliases=['bl', 'b'],
+        brief='(G) Manage blacklists',
+        description='Manage global, guild (WIP), channel, and personal blacklists',
+        usage='[option] [blacklist] [--aliases|-a] [tags...]')
     async def blacklist(self, ctx):
         if not ctx.invoked_subcommand:
-            await ctx.send('**Use a flag to manage blacklists.**\n*Type* `{}help bl` *for more info.*'.format(ctx.prefix))
+            await ctx.send(
+                '**Use a flag to manage blacklists.**\n'
+                f'*Type* `{ctx.prefix}help bl` *for more info.*')
             await ctx.message.add_reaction('\N{CROSS MARK}')
 
-    # @blacklist.error
-    # async def blacklist_error(self, ctx, error):
-        # if isinstance(error, KeyError):
-        #     return await ctx.send('**Blacklist does not exist**')
-
-    @blacklist.group(name='get', aliases=['g'], brief='(G) Get a blacklist\n\nUsage:\n\{p\}bl get \{blacklist\}')
-    async def _get_blacklist(self, ctx):
+    @blacklist.group(
+        name='get',
+        aliases=['g'],
+        brief='Get a blacklist',
+        description='Get global, channel, or personal blacklists',
+        usage='[blacklist]')
+    async def get_blacklist(self, ctx):
         if not ctx.invoked_subcommand:
             await ctx.send('**Invalid blacklist**')
             await ctx.message.add_reaction('\N{CROSS MARK}')
 
-    @_get_blacklist.command(name='alias', aliases=['aliases'])
-    async def __get_blacklist_aliases(self, ctx, *args):
-        guild = ctx.guild if isinstance(
-            ctx.guild, d.Guild) else ctx.channel
+    @get_blacklist.command(
+        name='global',
+        aliases=['gl', 'g'],
+        brief='Get global blacklist',
+        description='Get global blacklist\n\n'
+                    'In accordance with Discord\'s ToS: cub, related tags, and their aliases are blacklisted')
+    async def get_global_blacklist(self, ctx, *args):
         args, lst = u.kwargs(args)
 
-        aliases = {}
-        # Creates temp aliases based on context
-        for bl in (self.blacklists['global_blacklist'], self.blacklists['guild_blacklist'].get(guild.id, {}).get(ctx.channel.id, set()), self.blacklists['user_blacklist'].get(ctx.author.id, set())):
-            for tag in bl:
-                aliases[tag] = list(self.aliases[tag])
+        await formatter.paginate(
+            ctx,
+            self.blacklists['global'].get(lst, set()),
+            start=f'\N{NO ENTRY SIGN} **Global {lst}:**\n')
 
-            # paginator.add_line(f'{tag}\n```{" ".join(alias_list)}```')
+    @get_blacklist.command(
+        name='channel',
+        aliases=['chan', 'ch', 'c'],
+        brief='Get channel blacklist',
+        description='Get channel blacklist')
+    async def get_channel_blacklist(self, ctx, *args):
         args, lst = u.kwargs(args)
 
-        await formatter.paginate(ctx, aliases, start='\N{NO ENTRY SIGN} **Contextual blacklist aliases:**\n')
+        await formatter.paginate(
+            ctx,
+            self.blacklists['channel'].get(ctx.channel.id, {}).get(lst, set()),
+            start=f'\N{NO ENTRY SIGN} {ctx.channel.mention} **{lst}:**\n')
 
-    @_get_blacklist.command(name='global', aliases=['gl', 'g'], brief='Get current global blacklist', description='Get current global blacklist\n\nThis applies to all booru commands, in accordance with Discord\'s ToS agreement\n\nExample:\n\{p\}bl get global')
-    async def __get_global_blacklist(self, ctx, *args):
-        await ctx.send('\N{NO ENTRY SIGN} **Global blacklist:**\n```\n{}```'.format(' '.join(self.blacklists['global_blacklist'])))
+    @get_blacklist.command(
+        name='me',
+        aliases=['m'],
+        brief='Get your personal blacklist',
+        description='Get your personal blacklist')
+    async def get_user_blacklist(self, ctx, *args):
         args, lst = u.kwargs(args)
 
-    @_get_blacklist.command(name='channel', aliases=['ch', 'c'], brief='Get current channel blacklist', description='Get current channel blacklist\n\nThis is based on context - the channel where the command was executed\n\nExample:\{p\}bl get channel')
-    async def __get_channel_blacklist(self, ctx, *args):
-        guild = ctx.guild if isinstance(
-            ctx.guild, d.Guild) else ctx.channel
+        await formatter.paginate(
+            ctx,
+            self.blacklists['user'].get(ctx.author.id, {}).get(lst, set()),
+            start=f'\N{NO ENTRY SIGN} {ctx.author.mention}**\'s {lst}:**\n')
 
-        await ctx.send('\N{NO ENTRY SIGN} {} **blacklist:**\n```\n{}```'.format(ctx.channel.mention, ' '.join(self.blacklists['guild_blacklist'].get(guild.id, {}).get(ctx.channel.id, set()))))
-
-    @_get_blacklist.command(name='me', aliases=['m'], brief='Get your personal blacklist', description='Get your personal blacklist\n\nYour blacklist is not viewable by anyone but you, except if you call this command in a public channel. The blacklist will be deleted soon after for your privacy\n\nExample:\n\{p\}bl get me')
-    async def __get_user_blacklist(self, ctx, *args):
-        await ctx.send('\N{NO ENTRY SIGN} {}**\'s blacklist:**\n```\n{}```'.format(ctx.author.mention, ' '.join(self.blacklists['user_blacklist'].get(ctx.author.id, set()))))
-
-    @_get_blacklist.command(name='here', aliases=['h'], brief='Get current global and channel blacklists', description='Get current global and channel blacklists in a single message\n\nExample:\{p\}bl get here')
-    async def __get_here_blacklists(self, ctx, *args):
-        guild = ctx.guild if isinstance(
-            ctx.guild, d.Guild) else ctx.channel
-
-        await ctx.send('\N{NO ENTRY SIGN} **__Blacklisted:__**\n\n**Global:**\n```\n{}```\n**{}:**\n```\n{}```'.format(' '.join(self.blacklists['global_blacklist']), ctx.channel.mention, ' '.join(self.blacklists['guild_blacklist'].get(guild.id, {}).get(ctx.channel.id, set()))))
-
-    @blacklist.group(name='add', aliases=['a'], brief='(G) Add tag(s) to a blacklist\n\nUsage:\n\{p\}bl add \{blacklist\} \{tags...\}')
-    async def _add_tags(self, ctx):
+    @blacklist.group(
+        name='add',
+        aliases=['a'],
+        brief='Add tags to a blacklist',
+        description='Add tags to global, channel, or personal blacklists',
+        usage='[blacklist] [tags...]')
+    async def add_tags(self, ctx):
         if not ctx.invoked_subcommand:
             await ctx.send('**Invalid blacklist**')
             await ctx.message.add_reaction('\N{CROSS MARK}')
 
-    async def _aliases(self, ctx, tags, blacklist):
-        def on_reaction(reaction, user):
-            if user is ctx.author and reaction.message.channel is ctx.message.channel:
-                if reaction.emoji == '\N{THUMBS DOWN SIGN}':
-                    raise exc.Continue
-                if reaction.emoji == '\N{HEAVY MINUS SIGN}':
-                    raise exc.Remove
-                if reaction.emoji == '\N{THUMBS UP SIGN}':
-                    return True
-            return False
+    async def _add(self, tags, lst, alias=False):
+        if not alias:
+            if tags:
+                lst.update(tags)
+                u.dump(self.blacklists, 'cogs/blacklists.pkl')
 
-        def on_message(msg):
-            if msg.author is ctx.message.author and msg.channel is ctx.message.channel:
-                if msg.content == '0':
-                    raise exc.Continue
-                return True
-            return False
-
-        if not tags:
-            raise exc.MissingArgument
-
-        aliases = {}
-        messages = []
-
-        try:
-            for tag in tags:
-                blacklist.add(tag)
-                aliases[tag] = set()
-
-                alias_request = await u.fetch('https://e621.net/tag_alias/index.json', params={'aliased_to': tag, 'approved': 'true'}, json=True)
-                if alias_request:
-                    for dic in alias_request:
-                        if dic['name']:
-                            aliases[tag].add(dic['name'])
-
-            messages = await formatter.paginate(ctx, aliases)
-            message = await ctx.send(
-                '**Also add aliases?** React with the minus sign (\N{HEAVY MINUS SIGN}) to remove unwanted aliases')
-            await message.add_reaction('\N{THUMBS DOWN SIGN}')
-            await message.add_reaction('\N{HEAVY MINUS SIGN}')
-            await message.add_reaction('\N{THUMBS UP SIGN}')
-
-            try:
-                await self.bot.wait_for('reaction_add', check=on_reaction, timeout=8 * 60)
-
-            except exc.Remove:
-                await message.edit(content=f'Type the tag(s) to remove or `0` to continue:')
-
-                try:
-                    while not self.bot.is_closed():
-                        response = await self.bot.wait_for('message', check=on_message, timeout=8 * 60)
-
-                        for tag in response.content.split(' '):
-                            try:
-                                for e in aliases.values():
-                                    e.remove(tag)
-                                messages.append(await ctx.send(f'\N{WHITE HEAVY CHECK MARK} `{tag}` **removed**'))
-                            except KeyError:
-                                await ctx.send(f'\N{CROSS MARK} `{tag}` **not in aliases**', delete_after=8)
-                except exc.Continue:
-                    pass
-
-                await message.edit(content=f'Confirm or deny changes')
-                await self.bot.wait_for('reaction_add', check=on_reaction, timeout=8 * 60)
-
-            self.aliases.update(aliases)
-            u.dump(self.aliases, 'cogs/aliases.pkl')
-
-            return blacklist
-
-        except exc.Continue:
             return tags
-        except asyncio.TimeoutError:
-            await ctx.send('\N{CROSS MARK} **Command timed out**')
-            raise exc.Abort
-        except exc.Abort:
-            raise exc.Abort
+        else:
+            aliases = {}
 
-        finally:
-            if messages:
-                with suppress(err.NotFound):
-                    for msg in messages:
-                        await msg.delete()
-                    await message.delete()
+            if tags:
+                for tag in tags:
+                    request = await u.fetch(
+                        'https://e621.net/tag_alias/index.json',
+                        params={'aliased_to': tag, 'approved': 'true'},
+                        json=True)
 
-    @_add_tags.command(name='global', aliases=['gl', 'g'])
+                    for elem in request:
+                        if elem['name']:
+                            aliases.setdefault(tag, set()).add(elem['name'])
+
+                if aliases:
+                    lst.update(aliases)
+                    u.dump(self.blacklists, 'cogs/blacklists.pkl')
+
+            return list(aliases.keys())
+
+    @add_tags.command(
+        name='global',
+        aliases=['gl', 'g'],
+        brief='Add tags to global blacklist',
+        description='Add tags to global blacklist',
+        usage='[tags...]')
     @cmds.is_owner()
-    async def __add_global_tags(self, ctx, *args):
+    async def add_global_tags(self, ctx, *args):
         tags, lst = u.kwargs(args)
 
-        try:
-            async with ctx.channel.typing():
-                tags = await self._aliases(ctx, tags, self.blacklists['global_blacklist'])
+        async with ctx.channel.typing():
+            added = await self._add(
+                tags,
+                self.blacklists['global'].setdefault(lst, set() if lst == 'blacklist' else {}),
+                alias=True if lst == 'aliases' else False)
 
-                u.dump(self.blacklists, 'cogs/blacklists.pkl')
+        await formatter.paginate(
+            ctx,
+            added,
+            start=f'\N{WHITE HEAVY CHECK MARK} **Added to global {lst}:**\n')
 
-                await ctx.send('\N{WHITE HEAVY CHECK MARK} **Added to global blacklist:**\n```\n{}```'.format(' '.join(tags)))
-
-        except exc.Abort:
-            await ctx.send('**Aborted**')
-        except exc.MissingArgument:
-            await ctx.send('\N{CROSS MARK} **Missing tags**')
-            await ctx.message.add_reaction('\N{CROSS MARK}')
-
-    @_add_tags.command(name='channel', aliases=['ch', 'c'], brief='@manage_channel@ Add tag(s) to the current channel blacklist (requires manage_channel)', description='Add tag(s) to the current channel blacklist ')
+    @add_tags.command(
+        name='channel',
+        aliases=['chan', 'ch', 'c'],
+        brief='Add tags to channel blacklist',
+        description='Add tags to channel blacklist',
+        usage='[tags...]')
     @cmds.has_permissions(manage_channels=True)
-    async def __add_channel_tags(self, ctx, *args):
+    async def add_channel_tags(self, ctx, *args):
         tags, lst = u.kwargs(args)
 
-        guild = ctx.guild if isinstance(
-            ctx.guild, d.Guild) else ctx.channel
+        async with ctx.channel.typing():
+            added = await self._add(
+                tags,
+                self.blacklists['channel'].setdefault(ctx.channel.id, {}).setdefault(lst, set() if lst == 'blacklist' else {}),
+                alias=True if lst == 'aliases' else False)
 
-        try:
-            async with ctx.channel.typing():
-                tags = await self._aliases(ctx, tags, self.blacklists['guild_blacklist'].setdefault(guild.id, {}).setdefault(ctx.channel.id, set()))
+        await formatter.paginate(
+            ctx,
+            added,
+            start=f'\N{WHITE HEAVY CHECK MARK} **Added to {ctx.channel.mention} {lst}:**\n')
 
-                u.dump(self.blacklists, 'cogs/blacklists.pkl')
-
-                await ctx.send('\N{WHITE HEAVY CHECK MARK} **Added to** {} **blacklist:**\n```\n{}```'.format(ctx.channel.mention, ' '.join(tags)))
-
-        except exc.Abort:
-            await ctx.send('**Aborted**')
-        except exc.MissingArgument:
-            await ctx.send('\N{CROSS MARK} **Missing tags**')
-            await ctx.message.add_reaction('\N{CROSS MARK}')
-
-    @_add_tags.command(name='me', aliases=['m'])
-    async def __add_user_tags(self, ctx, *args):
-        kwargs = u.get_kwargs(ctx, args)
-        tags = kwargs['remaining']
+    @add_tags.command(
+        name='me',
+        aliases=['m'],
+        brief='Add tags to personal blacklist',
+        description='Add tags to personal blacklist',
+        usage='[tags...]')
+    async def add_user_tags(self, ctx, *args):
         tags, lst = u.kwargs(args)
 
-        try:
-            async with ctx.channel.typing():
-                tags = await self._aliases(ctx, tags, self.blacklists['user_blacklist'].setdefault(ctx.author.id, set()))
+        async with ctx.channel.typing():
+            added = await self._add(
+                tags,
+                self.blacklists['user'].setdefault(ctx.author.id, {}).setdefault(lst, set() if lst == 'blacklist' else {}),
+                alias=True if lst == 'aliases' else False)
 
-                u.dump(self.blacklists, 'cogs/blacklists.pkl')
+        await formatter.paginate(
+            ctx,
+            added,
+            start=f'\N{WHITE HEAVY CHECK MARK} **Added to {ctx.author.mention}\'s {lst}:**\n')
 
-                await ctx.send('\N{WHITE HEAVY CHECK MARK} {} **added to their blacklist:**\n```\n{}```'.format(ctx.author.mention, ' '.join(tags)))
-
-        except exc.Abort:
-            await ctx.send('**Aborted**')
-        except exc.MissingArgument:
-            await ctx.send('\N{CROSS MARK} **Missing tags**')
-            await ctx.message.add_reaction('\N{CROSS MARK}')
-
-    @blacklist.group(name='remove', aliases=['rm', 'r'])
-    async def _remove_tags(self, ctx):
+    @blacklist.group(
+        name='remove',
+        aliases=['rm', 'r'],
+        brief='Remove tags from a blacklist',
+        description='Remove tags from global, channel, or personal blacklists',
+        usage='[blacklist] [tags...]')
+    async def remove_tags(self, ctx):
         if not ctx.invoked_subcommand:
             await ctx.send('**Invalid blacklist**')
             await ctx.message.add_reaction('\N{CROSS MARK}')
 
-    @_remove_tags.command(name='global', aliases=['gl', 'g'])
-    @cmds.is_owner()
-    async def __remove_global_tags(self, ctx, *args):
-        try:
-            kwargs = u.get_kwargs(ctx, args)
-            tags = kwargs['remaining']
+    def _remove(self, tags, lst):
+        removed = []
+        skipped = []
 
-            for tag in tags:
-                try:
-                    self.blacklists['global_blacklist'].remove(tag)
-
-                except KeyError:
-                    raise exc.TagError(tag)
-
+        if tags:
+            if type(lst) is set:
+                temp = set()
+                for tag in tags:
+                    if tag not in tags:
+                        temp.add(tag)
+                    else:
+                        removed.append(tag)
+            else:
+                temp = {}
+                for k, v in lst.items():
+                    temp[k] = set()
+                    for tag in v:
+                        if tag not in tags:
+                            temp[k].add(tag)
+                        else:
+                            removed.append(tag)
+            lst.update(temp)
             u.dump(self.blacklists, 'cogs/blacklists.pkl')
+
+        return removed, skipped
+
+    @remove_tags.command(
+        name='global',
+        aliases=['gl', 'g'],
+        brief='Remove tags from global blacklist',
+        description='Remove tags from global blacklist',
+        usage='[tags...]')
+    @cmds.is_owner()
+    async def remove_global_tags(self, ctx, *args):
         tags, lst = u.kwargs(args)
 
-            await ctx.send('**Removed from global blacklist:**\n```\n{}```'.format(' '.join(tags)))
+        async with ctx.channel.typing():
+            removed, skipped = self._remove(
+                tags,
+                self.blacklists['global'].get(lst, set()))
 
-        except exc.TagError as e:
-            await ctx.send('`{}` **not in blacklist**'.format(e))
-            await ctx.message.add_reaction('\N{CROSS MARK}')
+        await formatter.paginate(
+            ctx,
+            removed,
+            start=f'\N{WHITE HEAVY CHECK MARK} **Removed from global {lst}:**\n')
+        if skipped:
+            await formatter.paginate(
+                ctx,
+                skipped,
+                start=f'\N{CROSS MARK} **Not in global {lst}:**\n')
 
-    @_remove_tags.command(name='channel', aliases=['ch', 'c'])
+    @remove_tags.command(
+        name='channel',
+        aliases=['ch', 'c'],
+        brief='Remove tags from channel blacklist',
+        description='Remove tags from channel blacklist',
+        usage='[tags...]')
     @cmds.has_permissions(manage_channels=True)
-    async def __remove_channel_tags(self, ctx, *args):
-        try:
-            kwargs = u.get_kwargs(ctx, args)
-            tags = kwargs['remaining']
+    async def remove_channel_tags(self, ctx, *args):
+        tags, lst = u.kwargs(args)
 
-            guild = ctx.guild if isinstance(
-                ctx.guild, d.Guild) else ctx.channel
+        async with ctx.channel.typing():
+            removed, skipped = self._remove(
+                tags,
+                self.blacklists['channel'].get(ctx.channel.id, {}).get(lst, set()))
 
-            for tag in tags:
-                try:
-                    self.blacklists['guild_blacklist'][guild.id][ctx.channel.id].remove(
-                        tag)
+        await formatter.paginate(
+            ctx,
+            removed,
+            start=f'\N{WHITE HEAVY CHECK MARK} **Removed from {ctx.channel.mention} {lst}:**\n')
+        if skipped:
+            await formatter.paginate(
+                ctx,
+                skipped,
+                start=f'\N{CROSS MARK} **Not in {ctx.channel.mention} {lst}:**\n')
 
-                except KeyError:
-                    raise exc.TagError(tag)
+    @remove_tags.command(
+        name='me',
+        aliases=['m'],
+        brief='Remove tags from personal blacklist',
+        description='Remove tags from personal blacklist',
+        usage='[tags...]')
+    async def remove_user_tags(self, ctx, *args):
+        tags, lst = u.kwargs(args)
 
-            u.dump(self.blacklists, 'cogs/blacklists.pkl')
+        async with ctx.channel.typing():
+            removed, skipped = self._remove(
+                tags,
+                self.blacklists['user'].get(ctx.author.id, {}).get(lst, set()))
 
-            await ctx.send('**Removed from** {} **blacklist:**\n```\n{}```'.format(ctx.channel.mention, ' '.join(tags)))
+        await formatter.paginate(
+            ctx,
+            removed,
+            start=f'\N{WHITE HEAVY CHECK MARK} **Removed from {ctx.author.mention}\'s {lst}:**\n')
+        if skipped:
+            await formatter.paginate(
+                ctx,
+                skipped,
+                start=f'\N{CROSS MARK} **Not in {ctx.author.mention}\'s {lst}:**\n')
 
-        except exc.TagError as e:
-            await ctx.send('`{}` **not in blacklist**'.format(e))
-            await ctx.message.add_reaction('\N{CROSS MARK}')
-
-    @_remove_tags.command(name='me', aliases=['m'])
-    async def __remove_user_tags(self, ctx, *args):
-        try:
-            kwargs = u.get_kwargs(ctx, args)
-            tags = kwargs['remaining']
-
-            for tag in tags:
-                try:
-                    self.blacklists['user_blacklist'][ctx.author.id].remove(
-                        tag)
-
-                except KeyError:
-                    raise exc.TagError(tag)
-
-            u.dump(self.blacklists, 'cogs/blacklists.pkl')
-
-            await ctx.send('{} **removed from their blacklist:**\n```\n{}```'.format(ctx.author.mention, ' '.join(tags)))
-
-        except exc.TagError as e:
-            await ctx.send('`{}` **not in blacklist**'.format(e))
-            await ctx.message.add_reaction('\N{CROSS MARK}')
-
-    @blacklist.group(name='clear', aliases=['cl', 'c'])
-    async def _clear_blacklist(self, ctx):
+    @blacklist.group(
+        name='clear',
+        aliases=['cl', 'c'],
+        brief='Delete a blacklist',
+        description='Delete global, channel, or personal blacklists',
+        usage='[blacklist]')
+    async def clear_blacklist(self, ctx):
         if not ctx.invoked_subcommand:
             await ctx.send('**Invalid blacklist**')
             await ctx.message.add_reaction('\N{CROSS MARK}')
 
-    @_clear_blacklist.command(name='global', aliases=['gl', 'g'])
+    @clear_blacklist.command(
+        name='global',
+        aliases=['gl', 'g'],
+        brief='Delete global blacklist',
+        description='Delete global blacklist')
     @cmds.is_owner()
-    async def __clear_global_blacklist(self, ctx, *args):
+    async def clear_global_blacklist(self, ctx, *args):
         args, lst = u.kwargs(args)
-        u.dump(self.blacklists, 'cogs/blacklists.pkl')
 
-        await ctx.send('**Global blacklist cleared**')
+        async with ctx.channel.typing():
+            with suppress(KeyError):
+                del self.blacklists['global'][lst]
 
-    @_clear_blacklist.command(name='channel', aliases=['ch', 'c'])
+            u.dump(self.blacklists, 'cogs/blacklists.pkl')
+
+        await ctx.send(f'\N{WHITE HEAVY CHECK MARK} **Global {lst} cleared**')
+
+    @clear_blacklist.command(
+        name='channel',
+        aliases=['ch', 'c'],
+        brief='Delete channel blacklist',
+        description='Delete channel blacklist')
     @cmds.has_permissions(manage_channels=True)
-    async def __clear_channel_blacklist(self, ctx, *args):
-        args, lst = u.kwargs(args)
-            ctx.guild, d.Guild) else ctx.channel
-
-        with suppress(KeyError):
-            del self.blacklists['guild_blacklist'][guild.id][ctx.channel.id]
-            u.dump(self.blacklists, 'cogs/blacklists.pkl')
-
-        await ctx.send('{} **blacklist cleared**'.format(ctx.channel.mention))
+    async def clear_channel_blacklist(self, ctx, *args):
         args, lst = u.kwargs(args)
 
-    @_clear_blacklist.command(name='me', aliases=['m'])
-    async def __clear_user_blacklist(self, ctx, *args):
-        with suppress(KeyError):
-            del self.blacklists['user_blacklist'][ctx.author.id]
+        async with ctx.channel.typing():
+            with suppress(KeyError):
+                del self.blacklists['channel'][ctx.channel.id][lst]
+
             u.dump(self.blacklists, 'cogs/blacklists.pkl')
 
-        await ctx.send('{}**\'s blacklist cleared**'.format(ctx.author.mention))
+        await ctx.send(f'\N{WHITE HEAVY CHECK MARK} **{ctx.channel.mention} {lst} cleared**')
+
+    @clear_blacklist.command(
+        name='me',
+        aliases=['m'],
+        brief='Delete your personal blacklist',
+        description='Delete your personal blacklist')
+    async def clear_user_blacklist(self, ctx, *args):
+        args, lst = u.kwargs(args)
+
+        async with ctx.channel.typing():
+            with suppress(KeyError):
+                del self.blacklists['user'][ctx.author.id][lst]
+
+            u.dump(self.blacklists, 'cogs/blacklists.pkl')
+
+        await ctx.send(f'\N{WHITE HEAVY CHECK MARK} **{ctx.author.mention}\'s {lst} cleared**')
