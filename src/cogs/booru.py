@@ -1405,6 +1405,7 @@ class MsG:
     async def __get_blacklist_aliases(self, ctx, *args):
         guild = ctx.guild if isinstance(
             ctx.guild, d.Guild) else ctx.channel
+        args, lst = u.kwargs(args)
 
         aliases = {}
         # Creates temp aliases based on context
@@ -1413,12 +1414,14 @@ class MsG:
                 aliases[tag] = list(self.aliases[tag])
 
             # paginator.add_line(f'{tag}\n```{" ".join(alias_list)}```')
+        args, lst = u.kwargs(args)
 
         await formatter.paginate(ctx, aliases, start='\N{NO ENTRY SIGN} **Contextual blacklist aliases:**\n')
 
     @_get_blacklist.command(name='global', aliases=['gl', 'g'], brief='Get current global blacklist', description='Get current global blacklist\n\nThis applies to all booru commands, in accordance with Discord\'s ToS agreement\n\nExample:\n\{p\}bl get global')
     async def __get_global_blacklist(self, ctx, *args):
         await ctx.send('\N{NO ENTRY SIGN} **Global blacklist:**\n```\n{}```'.format(' '.join(self.blacklists['global_blacklist'])))
+        args, lst = u.kwargs(args)
 
     @_get_blacklist.command(name='channel', aliases=['ch', 'c'], brief='Get current channel blacklist', description='Get current channel blacklist\n\nThis is based on context - the channel where the command was executed\n\nExample:\{p\}bl get channel')
     async def __get_channel_blacklist(self, ctx, *args):
@@ -1532,8 +1535,7 @@ class MsG:
     @_add_tags.command(name='global', aliases=['gl', 'g'])
     @cmds.is_owner()
     async def __add_global_tags(self, ctx, *args):
-        kwargs = u.get_kwargs(ctx, args)
-        tags = kwargs['remaining']
+        tags, lst = u.kwargs(args)
 
         try:
             async with ctx.channel.typing():
@@ -1552,8 +1554,7 @@ class MsG:
     @_add_tags.command(name='channel', aliases=['ch', 'c'], brief='@manage_channel@ Add tag(s) to the current channel blacklist (requires manage_channel)', description='Add tag(s) to the current channel blacklist ')
     @cmds.has_permissions(manage_channels=True)
     async def __add_channel_tags(self, ctx, *args):
-        kwargs = u.get_kwargs(ctx, args)
-        tags = kwargs['remaining']
+        tags, lst = u.kwargs(args)
 
         guild = ctx.guild if isinstance(
             ctx.guild, d.Guild) else ctx.channel
@@ -1576,6 +1577,7 @@ class MsG:
     async def __add_user_tags(self, ctx, *args):
         kwargs = u.get_kwargs(ctx, args)
         tags = kwargs['remaining']
+        tags, lst = u.kwargs(args)
 
         try:
             async with ctx.channel.typing():
@@ -1612,6 +1614,7 @@ class MsG:
                     raise exc.TagError(tag)
 
             u.dump(self.blacklists, 'cogs/blacklists.pkl')
+        tags, lst = u.kwargs(args)
 
             await ctx.send('**Removed from global blacklist:**\n```\n{}```'.format(' '.join(tags)))
 
@@ -1676,7 +1679,7 @@ class MsG:
     @_clear_blacklist.command(name='global', aliases=['gl', 'g'])
     @cmds.is_owner()
     async def __clear_global_blacklist(self, ctx, *args):
-        self.blacklists['global_blacklist'].clear()
+        args, lst = u.kwargs(args)
         u.dump(self.blacklists, 'cogs/blacklists.pkl')
 
         await ctx.send('**Global blacklist cleared**')
@@ -1684,7 +1687,7 @@ class MsG:
     @_clear_blacklist.command(name='channel', aliases=['ch', 'c'])
     @cmds.has_permissions(manage_channels=True)
     async def __clear_channel_blacklist(self, ctx, *args):
-        guild = ctx.guild if isinstance(
+        args, lst = u.kwargs(args)
             ctx.guild, d.Guild) else ctx.channel
 
         with suppress(KeyError):
@@ -1692,6 +1695,7 @@ class MsG:
             u.dump(self.blacklists, 'cogs/blacklists.pkl')
 
         await ctx.send('{} **blacklist cleared**'.format(ctx.channel.mention))
+        args, lst = u.kwargs(args)
 
     @_clear_blacklist.command(name='me', aliases=['m'])
     async def __clear_user_blacklist(self, ctx, *args):
