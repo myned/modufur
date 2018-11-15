@@ -39,9 +39,7 @@ class MsG:
         # self.suggested = u.setdefault('cogs/suggested.pkl', {'last_update': 'test', 'tags': {}, 'total': 1})
         print(self.suggested)
         self.favorites = u.setdefault('cogs/favorites.pkl', {})
-        self.blacklists = u.setdefault(
-            'cogs/blacklists.pkl', {'global_blacklist': set(), 'guild_blacklist': {}, 'user_blacklist': {}})
-        self.aliases = u.setdefault('cogs/aliases.pkl', {})
+        self.blacklists = u.setdefault('cogs/blacklists.pkl', {'global': {}, 'channel': {}, 'user': {}})
 
         if not self.hearting:
             self.hearting = True
