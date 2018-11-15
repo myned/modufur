@@ -1,3 +1,5 @@
+import copy
+
 from discord.ext.commands import Paginator
 
 
@@ -28,8 +30,8 @@ async def paginate(
         i,
         start='',
         prefix='',
-        kprefix='',
-        ksuffix='\n',
+        kprefix='`',
+        ksuffix='`\n',
         eprefix='```\n',
         ejoin=' ',
         esuffix='\n```',
@@ -37,17 +39,21 @@ async def paginate(
         end=''):
     paginator = Paginator(prefix=prefix, suffix=suffix)
     messages = []
+    i = copy.deepcopy(i)
 
     if start:
         paginator.add_line(start)
 
     if type(i) in (tuple, list, set):
+        if not i:
+            i = (' ')
         paginator.add_line(eprefix + f'{ejoin}'.join(i) + esuffix)
 
     elif type(i) is dict:
+        if not i:
+            i = {'': ' '}
         for k, e in sorted(i.items()):
-            if e and (k not in e) and (len(e) >= 1):
-                paginator.add_line(kprefix + k + ksuffix + eprefix + f'{ejoin}'.join(e) + esuffix)
+            paginator.add_line(kprefix if k else '' + k + ksuffix if k else '' + eprefix + f'{ejoin}'.join(e) + esuffix)
 
     if end:
         paginator.add_line(end)
