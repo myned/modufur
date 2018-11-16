@@ -1515,7 +1515,7 @@ class MsG:
         await formatter.paginate(
             ctx,
             added,
-            start=f'\N{WHITE HEAVY CHECK MARK} **Added to global {lst}:**\n')
+            start=f'\N{WHITE HEAVY CHECK MARK} **Added to global {lst}:**')
 
     @add_tags.command(
         name='channel',
@@ -1537,7 +1537,7 @@ class MsG:
         await formatter.paginate(
             ctx,
             added,
-            start=f'\N{WHITE HEAVY CHECK MARK} **Added to {ctx.channel.mention} {lst}:**\n')
+            start=f'\N{WHITE HEAVY CHECK MARK} **Added to {ctx.channel.mention} {lst}:**')
 
     @add_tags.command(
         name='me',
@@ -1558,7 +1558,7 @@ class MsG:
         await formatter.paginate(
             ctx,
             added,
-            start=f'\N{WHITE HEAVY CHECK MARK} **Added to {ctx.author.mention}\'s {lst}:**\n')
+            start=f'\N{WHITE HEAVY CHECK MARK} **Added to {ctx.author.mention}\'s {lst}:**')
 
     @blacklist.group(
         name='remove',
@@ -1616,12 +1616,7 @@ class MsG:
         await formatter.paginate(
             ctx,
             removed,
-            start=f'\N{WHITE HEAVY CHECK MARK} **Removed from global {lst}:**\n')
-        if skipped:
-            await formatter.paginate(
-                ctx,
-                skipped,
-                start=f'\N{CROSS MARK} **Not in global {lst}:**\n')
+            start=f'\N{WHITE HEAVY CHECK MARK} **Removed from global {lst}:**')
 
     @remove_tags.command(
         name='channel',
@@ -1642,12 +1637,7 @@ class MsG:
         await formatter.paginate(
             ctx,
             removed,
-            start=f'\N{WHITE HEAVY CHECK MARK} **Removed from {ctx.channel.mention} {lst}:**\n')
-        if skipped:
-            await formatter.paginate(
-                ctx,
-                skipped,
-                start=f'\N{CROSS MARK} **Not in {ctx.channel.mention} {lst}:**\n')
+            start=f'\N{WHITE HEAVY CHECK MARK} **Removed from {ctx.channel.mention} {lst}:**')
 
     @remove_tags.command(
         name='me',
@@ -1667,12 +1657,7 @@ class MsG:
         await formatter.paginate(
             ctx,
             removed,
-            start=f'\N{WHITE HEAVY CHECK MARK} **Removed from {ctx.author.mention}\'s {lst}:**\n')
-        if skipped:
-            await formatter.paginate(
-                ctx,
-                skipped,
-                start=f'\N{CROSS MARK} **Not in {ctx.author.mention}\'s {lst}:**\n')
+            start=f'\N{WHITE HEAVY CHECK MARK} **Removed from {ctx.author.mention}\'s {lst}:**')
 
     @blacklist.group(
         name='clear',
