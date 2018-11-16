@@ -1400,6 +1400,8 @@ class MsG:
                 '**Use a flag to manage blacklists.**\n'
                 f'*Type* `{ctx.prefix}help bl` *for more info.*')
             await ctx.message.add_reaction('\N{CROSS MARK}')
+        elif not ctx.args:
+            await ctx.send('\N{CROSS MARK} **Missing arguments**')
 
     @blacklist.group(
         name='get',
@@ -1420,11 +1422,12 @@ class MsG:
                     'In accordance with Discord\'s ToS: cub, related tags, and their aliases are blacklisted')
     async def get_global_blacklist(self, ctx, *args):
         args, lst = u.kwargs(args)
+        default = set() if lst == 'blacklist' else {}
 
         await formatter.paginate(
             ctx,
-            self.blacklists['global'].get(lst, set()),
-            start=f'\N{NO ENTRY SIGN} **Global {lst}:**\n')
+            self.blacklists['global'].get(lst, default),
+            start=f'\N{NO ENTRY SIGN} **Global {lst}:**')
 
     @get_blacklist.command(
         name='channel',
@@ -1433,11 +1436,12 @@ class MsG:
         description='Get channel blacklist')
     async def get_channel_blacklist(self, ctx, *args):
         args, lst = u.kwargs(args)
+        default = set() if lst == 'blacklist' else {}
 
         await formatter.paginate(
             ctx,
-            self.blacklists['channel'].get(ctx.channel.id, {}).get(lst, set()),
-            start=f'\N{NO ENTRY SIGN} {ctx.channel.mention} **{lst}:**\n')
+            self.blacklists['channel'].get(ctx.channel.id, {}).get(lst, default),
+            start=f'\N{NO ENTRY SIGN} {ctx.channel.mention} **{lst}:**')
 
     @get_blacklist.command(
         name='me',
@@ -1446,11 +1450,12 @@ class MsG:
         description='Get your personal blacklist')
     async def get_user_blacklist(self, ctx, *args):
         args, lst = u.kwargs(args)
+        default = set() if lst == 'blacklist' else {}
 
         await formatter.paginate(
             ctx,
-            self.blacklists['user'].get(ctx.author.id, {}).get(lst, set()),
-            start=f'\N{NO ENTRY SIGN} {ctx.author.mention}**\'s {lst}:**\n')
+            self.blacklists['user'].get(ctx.author.id, {}).get(lst, default),
+            start=f'\N{NO ENTRY SIGN} {ctx.author.mention}**\'s {lst}:**')
 
     @blacklist.group(
         name='add',
@@ -1499,17 +1504,18 @@ class MsG:
     @cmds.is_owner()
     async def add_global_tags(self, ctx, *args):
         tags, lst = u.kwargs(args)
+        default = set() if lst == 'blacklist' else {}
 
         async with ctx.channel.typing():
             added = await self._add(
                 tags,
-                self.blacklists['global'].setdefault(lst, set() if lst == 'blacklist' else {}),
+                self.blacklists['global'].setdefault(lst, default),
                 alias=True if lst == 'aliases' else False)
 
         await formatter.paginate(
             ctx,
             added,
-            start=f'\N{WHITE HEAVY CHECK MARK} **Added to global {lst}:**\n')
+            start=f'\N{WHITE HEAVY CHECK MARK} **Added to global {lst}:**')
 
     @add_tags.command(
         name='channel',
@@ -1520,17 +1526,18 @@ class MsG:
     @cmds.has_permissions(manage_channels=True)
     async def add_channel_tags(self, ctx, *args):
         tags, lst = u.kwargs(args)
+        default = set() if lst == 'blacklist' else {}
 
         async with ctx.channel.typing():
             added = await self._add(
                 tags,
-                self.blacklists['channel'].setdefault(ctx.channel.id, {}).setdefault(lst, set() if lst == 'blacklist' else {}),
+                self.blacklists['channel'].setdefault(ctx.channel.id, {}).setdefault(lst, default),
                 alias=True if lst == 'aliases' else False)
 
         await formatter.paginate(
             ctx,
             added,
-            start=f'\N{WHITE HEAVY CHECK MARK} **Added to {ctx.channel.mention} {lst}:**\n')
+            start=f'\N{WHITE HEAVY CHECK MARK} **Added to {ctx.channel.mention} {lst}:**')
 
     @add_tags.command(
         name='me',
@@ -1540,17 +1547,18 @@ class MsG:
         usage='[tags...]')
     async def add_user_tags(self, ctx, *args):
         tags, lst = u.kwargs(args)
+        default = set() if lst == 'blacklist' else {}
 
         async with ctx.channel.typing():
             added = await self._add(
                 tags,
-                self.blacklists['user'].setdefault(ctx.author.id, {}).setdefault(lst, set() if lst == 'blacklist' else {}),
+                self.blacklists['user'].setdefault(ctx.author.id, {}).setdefault(lst, default),
                 alias=True if lst == 'aliases' else False)
 
         await formatter.paginate(
             ctx,
             added,
-            start=f'\N{WHITE HEAVY CHECK MARK} **Added to {ctx.author.mention}\'s {lst}:**\n')
+            start=f'\N{WHITE HEAVY CHECK MARK} **Added to {ctx.author.mention}\'s {lst}:**')
 
     @blacklist.group(
         name='remove',
@@ -1563,31 +1571,30 @@ class MsG:
             await ctx.send('**Invalid blacklist**')
             await ctx.message.add_reaction('\N{CROSS MARK}')
 
-    def _remove(self, tags, lst):
-        removed = []
-        skipped = []
+    def _remove(self, remove, lst):
+        removed = set()
 
-        if tags:
+        if remove:
             if type(lst) is set:
-                temp = set()
-                for tag in tags:
-                    if tag not in tags:
-                        temp.add(tag)
-                    else:
-                        removed.append(tag)
+                for tag in remove:
+                    with suppress(KeyError):
+                        lst.remove(tag)
+                        removed.add(tag)
             else:
-                temp = {}
-                for k, v in lst.items():
-                    temp[k] = set()
-                    for tag in v:
-                        if tag not in tags:
-                            temp[k].add(tag)
-                        else:
-                            removed.append(tag)
-            lst.update(temp)
+                temp = copy.deepcopy(lst)
+                for k in temp.keys():
+                    if k in remove:
+                        with suppress(KeyError):
+                            del lst[k]
+                            removed.add(k)
+                    else:
+                        lst[k] = set([tag for tag in lst[k] if tag not in remove])
+                lst = temp
+                removed.update([tag for k, v in lst.items() for tag in v if tag in remove])
+
             u.dump(self.blacklists, 'cogs/blacklists.pkl')
 
-        return removed, skipped
+        return removed
 
     @remove_tags.command(
         name='global',
@@ -1598,21 +1605,17 @@ class MsG:
     @cmds.is_owner()
     async def remove_global_tags(self, ctx, *args):
         tags, lst = u.kwargs(args)
+        default = set() if lst == 'blacklist' else {}
 
         async with ctx.channel.typing():
-            removed, skipped = self._remove(
+            removed = self._remove(
                 tags,
-                self.blacklists['global'].get(lst, set()))
+                self.blacklists['global'].get(lst, default))
 
         await formatter.paginate(
             ctx,
             removed,
-            start=f'\N{WHITE HEAVY CHECK MARK} **Removed from global {lst}:**\n')
-        if skipped:
-            await formatter.paginate(
-                ctx,
-                skipped,
-                start=f'\N{CROSS MARK} **Not in global {lst}:**\n')
+            start=f'\N{WHITE HEAVY CHECK MARK} **Removed from global {lst}:**')
 
     @remove_tags.command(
         name='channel',
@@ -1623,21 +1626,17 @@ class MsG:
     @cmds.has_permissions(manage_channels=True)
     async def remove_channel_tags(self, ctx, *args):
         tags, lst = u.kwargs(args)
+        default = set() if lst == 'blacklist' else {}
 
         async with ctx.channel.typing():
-            removed, skipped = self._remove(
+            removed = self._remove(
                 tags,
-                self.blacklists['channel'].get(ctx.channel.id, {}).get(lst, set()))
+                self.blacklists['channel'].get(ctx.channel.id, {}).get(lst, default))
 
         await formatter.paginate(
             ctx,
             removed,
-            start=f'\N{WHITE HEAVY CHECK MARK} **Removed from {ctx.channel.mention} {lst}:**\n')
-        if skipped:
-            await formatter.paginate(
-                ctx,
-                skipped,
-                start=f'\N{CROSS MARK} **Not in {ctx.channel.mention} {lst}:**\n')
+            start=f'\N{WHITE HEAVY CHECK MARK} **Removed from {ctx.channel.mention} {lst}:**')
 
     @remove_tags.command(
         name='me',
@@ -1647,21 +1646,17 @@ class MsG:
         usage='[tags...]')
     async def remove_user_tags(self, ctx, *args):
         tags, lst = u.kwargs(args)
+        default = set() if lst == 'blacklist' else {}
 
         async with ctx.channel.typing():
-            removed, skipped = self._remove(
+            removed = self._remove(
                 tags,
-                self.blacklists['user'].get(ctx.author.id, {}).get(lst, set()))
+                self.blacklists['user'].get(ctx.author.id, {}).get(lst, default))
 
         await formatter.paginate(
             ctx,
             removed,
-            start=f'\N{WHITE HEAVY CHECK MARK} **Removed from {ctx.author.mention}\'s {lst}:**\n')
-        if skipped:
-            await formatter.paginate(
-                ctx,
-                skipped,
-                start=f'\N{CROSS MARK} **Not in {ctx.author.mention}\'s {lst}:**\n')
+            start=f'\N{WHITE HEAVY CHECK MARK} **Removed from {ctx.author.mention}\'s {lst}:**')
 
     @blacklist.group(
         name='clear',
