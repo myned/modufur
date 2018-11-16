@@ -159,7 +159,11 @@ async def on_error(error, *args, **kwargs):
 
 @bot.event
 async def on_command_error(ctx, error):
-    if isinstance(error, err.NotFound):
+    if isinstance(error, errext.CommandOnCooldown):
+        await ctx.message.add_reaction('\N{HOURGLASS}')
+        await asyncio.sleep(error.retry_after)
+        await ctx.message.add_reaction('\N{WHITE HEAVY CHECK MARK}')
+    elif isinstance(error, err.NotFound):
         print('NOT FOUND')
     elif isinstance(error, err.Forbidden):
         pass
