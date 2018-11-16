@@ -51,9 +51,9 @@ async def paginate(
 
     elif type(i) is dict:
         if not i:
-            i = {'': ' '}
+            i = {' ': ' '}
         for k, e in sorted(i.items()):
-            paginator.add_line(kprefix if k else '' + k + ksuffix if k else '' + eprefix + f'{ejoin}'.join(e) + esuffix)
+            paginator.add_line(kprefix + k + ksuffix + eprefix + f'{ejoin}'.join(e) + esuffix)
 
     if end:
         paginator.add_line(end)

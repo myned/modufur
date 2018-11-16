@@ -1423,11 +1423,15 @@ class MsG:
     async def get_global_blacklist(self, ctx, *args):
         args, lst = u.kwargs(args)
         default = set() if lst == 'blacklist' else {}
+        blacklist = self.blacklists['global'].get(lst, default)
 
-        await formatter.paginate(
-            ctx,
-            self.blacklists['global'].get(lst, default),
-            start=f'\N{NO ENTRY SIGN} **Global {lst}:**')
+        if blacklist:
+            await formatter.paginate(
+                ctx,
+                blacklist,
+                start=f'\N{NO ENTRY SIGN} **Global {lst}:**')
+        else:
+            await ctx.send(f'\N{CROSS MARK} **No global {lst} found**')
 
     @get_blacklist.command(
         name='channel',
@@ -1437,11 +1441,15 @@ class MsG:
     async def get_channel_blacklist(self, ctx, *args):
         args, lst = u.kwargs(args)
         default = set() if lst == 'blacklist' else {}
+        blacklist = self.blacklists['channel'].get(ctx.channel.id, {}).get(lst, default)
 
-        await formatter.paginate(
-            ctx,
-            self.blacklists['channel'].get(ctx.channel.id, {}).get(lst, default),
-            start=f'\N{NO ENTRY SIGN} {ctx.channel.mention} **{lst}:**')
+        if blacklist:
+            await formatter.paginate(
+                ctx,
+                blacklist,
+                start=f'\N{NO ENTRY SIGN} {ctx.channel.mention} **{lst}:**')
+        else:
+            await ctx.send(f'\N{CROSS MARK} **No {lst} found for {ctx.channel.mention}**')
 
     @get_blacklist.command(
         name='me',
@@ -1451,11 +1459,15 @@ class MsG:
     async def get_user_blacklist(self, ctx, *args):
         args, lst = u.kwargs(args)
         default = set() if lst == 'blacklist' else {}
+        blacklist = self.blacklists['user'].get(ctx.author.id, {}).get(lst, default)
 
-        await formatter.paginate(
-            ctx,
-            self.blacklists['user'].get(ctx.author.id, {}).get(lst, default),
-            start=f'\N{NO ENTRY SIGN} {ctx.author.mention}**\'s {lst}:**')
+        if blacklist:
+            await formatter.paginate(
+                ctx,
+                blacklist,
+                start=f'\N{NO ENTRY SIGN} {ctx.author.mention}**\'s {lst}:**')
+        else:
+            await ctx.send(f'\N{CROSS MARK} **No {lst} found for {ctx.author.mention}**')
 
     @blacklist.group(
         name='add',
