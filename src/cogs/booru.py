@@ -11,7 +11,6 @@ import copy
 
 import discord as d
 from discord import errors as err
-from discord import reaction
 from discord.ext import commands as cmds
 from discord.ext.commands import errors as errext
 
@@ -382,6 +381,7 @@ class MsG:
             await e.message.edit(content='\N{NO ENTRY SIGN}')
 
     # Reverse image searches a linked image using the public iqdb
+    @cmds.cooldown(1, 5, cmds.BucketType.member)
     @cmds.command(name='reverse', aliases=['rev', 'ris'], brief='Reverse image search from e621', description='NSFW\nReverse-search an image with given URL')
     async def reverse(self, ctx, *args):
         try:
@@ -433,6 +433,7 @@ class MsG:
             await ctx.message.add_reaction('\N{CROSS MARK}')
 
     @cmds.command(name='reversify', aliases=['revify', 'risify', 'rify'])
+    @cmds.cooldown(1, 5, cmds.BucketType.member)
     async def reversify(self, ctx, *args):
         try:
             dest = ctx
@@ -731,6 +732,7 @@ class MsG:
 
     # Creates reaction-based paginator for linked pools
     @cmds.command(name='poolpage', aliases=['poolp', 'pp', 'e621pp', 'e6pp', '6pp'], brief='e621 pool paginator', description='e621 | NSFW\nShow pools in a page format')
+    @cmds.cooldown(1, 5, cmds.BucketType.member)
     async def pool_paginator(self, ctx, *args):
         def on_reaction(reaction, user):
             if reaction.emoji == '\N{OCTAGONAL SIGN}' and reaction.message.id == ctx.message.id and (user is ctx.author or user.permissions_in(reaction.message.channel).manage_messages):
@@ -868,6 +870,7 @@ class MsG:
 
     @cmds.command(name='e621page', aliases=['e621p', 'e6p', '6p'])
     @checks.is_nsfw()
+    @cmds.cooldown(1, 5, cmds.BucketType.member)
     async def e621_paginator(self, ctx, *args):
         def on_reaction(reaction, user):
             if reaction.emoji == '\N{OCTAGONAL SIGN}' and reaction.message.id == ctx.message.id and (user is ctx.author or user.permissions_in(reaction.message.channel).manage_messages):
@@ -1032,6 +1035,7 @@ class MsG:
     #         await ctx.message.add_reaction('\N{NO ENTRY}')
 
     @cmds.command(name='e926page', aliases=['e926p', 'e9p', '9p'])
+    @cmds.cooldown(1, 5, cmds.BucketType.member)
     async def e926_paginator(self, ctx, *args):
         def on_reaction(reaction, user):
             if reaction.emoji == '\N{OCTAGONAL SIGN}' and reaction.message.id == ctx.message.id and (user is ctx.author or user.permissions_in(reaction.message.channel).manage_messages):
@@ -1190,6 +1194,7 @@ class MsG:
     # Searches for and returns images from e621.net given tags when not blacklisted
     @cmds.command(aliases=['e6', '6'], brief='e621 | NSFW', description='e621 | NSFW\nTag-based search for e621.net\n\nYou can only search 5 tags and 6 images at once for now.\ne6 [tags...] ([# of images])')
     @checks.is_nsfw()
+    @cmds.cooldown(1, 5, cmds.BucketType.member)
     async def e621(self, ctx, *args):
         try:
             kwargs = u.get_kwargs(ctx, args, limit=3)
@@ -1241,6 +1246,7 @@ class MsG:
 
     # Searches for and returns images from e926.net given tags when not blacklisted
     @cmds.command(aliases=['e9', '9'], brief='e926 | SFW', description='e926 | SFW\nTag-based search for e926.net\n\nYou can only search 5 tags and 6 images at once for now.\ne9 [tags...] ([# of images])')
+    @cmds.cooldown(1, 5, cmds.BucketType.member)
     async def e926(self, ctx, *args):
         try:
             kwargs = u.get_kwargs(ctx, args, limit=3)
