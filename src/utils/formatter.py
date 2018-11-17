@@ -39,7 +39,7 @@ async def paginate(
         end=''):
     paginator = Paginator(prefix=prefix, suffix=suffix)
     messages = []
-    i = copy.deepcopy(i)
+    i = sorted(copy.deepcopy(i))
 
     if start:
         paginator.add_line(start)
