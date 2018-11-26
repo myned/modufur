@@ -304,7 +304,7 @@ class MsG:
                                  icon_url=self._get_score(post['score']))
 
         except exc.MissingArgument:
-            await ctx.send('**Invalid url**')
+            await ctx.send('\N{CROSS MARK} **Invalid url**')
             await ctx.message.add_reaction('\N{CROSS MARK}')
 
     @get.command(name='image', aliases=['img'], brief='(get) Get direct image from post', description='Return direct image URL for given post\n\nExample:\n\{p\}get image 1145042')
@@ -331,7 +331,7 @@ class MsG:
                 await ctx.message.add_reaction('\N{CROSS MARK}')
 
         except exc.MissingArgument:
-            await ctx.send('**Invalid url or file**')
+            await ctx.send('\N{CROSS MARK} **Invalid url or file**')
             await ctx.message.add_reaction('\N{CROSS MARK}')
 
     @get.command(name='pool', aliases=['p'], brief='(get) Get pool from query', description='Return pool info for given query\n\nExample:\n\{p\}get pool 1145042')
@@ -423,7 +423,7 @@ class MsG:
                     await ctx.message.delete()
 
         except exc.MissingArgument:
-            await ctx.send('**Invalid url or file.** Be sure the link directs to an image file')
+            await ctx.send('\N{CROSS MARK} **Invalid url or file.** Be sure the link directs to an image file')
             await ctx.message.add_reaction('\N{CROSS MARK}')
         except exc.SizeError as e:
             await ctx.send(f'`{e}` **too large.** Maximum is 8 MB')
@@ -1417,7 +1417,7 @@ class MsG:
         usage='[blacklist]')
     async def get_blacklist(self, ctx):
         if not ctx.invoked_subcommand:
-            await ctx.send('**Invalid blacklist**')
+            await ctx.send('\N{CROSS MARK} **Invalid blacklist**')
             await ctx.message.add_reaction('\N{CROSS MARK}')
 
     @get_blacklist.command(
@@ -1483,7 +1483,7 @@ class MsG:
         usage='[blacklist] [tags...]')
     async def add_tags(self, ctx):
         if not ctx.invoked_subcommand:
-            await ctx.send('**Invalid blacklist**')
+            await ctx.send('\N{CROSS MARK} **Invalid blacklist**')
             await ctx.message.add_reaction('\N{CROSS MARK}')
 
     async def _add(self, tags, lst, alias=False):
@@ -1586,7 +1586,7 @@ class MsG:
         usage='[blacklist] [tags...]')
     async def remove_tags(self, ctx):
         if not ctx.invoked_subcommand:
-            await ctx.send('**Invalid blacklist**')
+            await ctx.send('\N{CROSS MARK} **Invalid blacklist**')
             await ctx.message.add_reaction('\N{CROSS MARK}')
 
     def _remove(self, remove, lst):
@@ -1684,7 +1684,7 @@ class MsG:
         usage='[blacklist]')
     async def clear_blacklist(self, ctx):
         if not ctx.invoked_subcommand:
-            await ctx.send('**Invalid blacklist**')
+            await ctx.send('\N{CROSS MARK} **Invalid blacklist**')
             await ctx.message.add_reaction('\N{CROSS MARK}')
 
     @clear_blacklist.command(
