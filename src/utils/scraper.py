@@ -16,7 +16,7 @@ async def get_post(url):
         if filesize > 8192 * 1024:
             raise exc.SizeError(size(filesize, system=alternative))
 
-    except ValueError:
+    except (ValueError, KeyError):
         raise exc.MissingArgument
 
     content = await u.fetch('http://iqdb.harry.lu', params={'url': url})
