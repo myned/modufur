@@ -159,35 +159,36 @@ async def on_error(error, *args, **kwargs):
 
 @bot.event
 async def on_command_error(ctx, error):
-    if isinstance(error, errext.CommandOnCooldown):
-        await ctx.message.add_reaction('\N{HOURGLASS}')
-        await asyncio.sleep(error.retry_after)
-        await ctx.message.add_reaction('\N{WHITE HEAVY CHECK MARK}')
-    elif isinstance(error, err.NotFound):
-        print('NOT FOUND')
-    elif isinstance(error, err.Forbidden):
-        pass
-    elif isinstance(error, errext.MissingRequiredArgument):
-        await ctx.send('**Missing required argument**')
-        await ctx.message.add_reaction('\N{CROSS MARK}')
-    elif isinstance(error, errext.BadArgument):
-        await ctx.send(f'**Invalid argument.** {error}')
-        await ctx.message.add_reaction('\N{CROSS MARK}')
-    elif isinstance(error, errext.CheckFailure):
-        await ctx.send('**Insufficient permissions**')
-        await ctx.message.add_reaction('\N{NO ENTRY}')
-    elif isinstance(error, errext.CommandNotFound):
-        print('INVALID COMMAND : {}'.format(error), file=sys.stderr)
-        await ctx.message.add_reaction('\N{BLACK QUESTION MARK ORNAMENT}')
-    else:
-        print('\n! ! ! ! ! ! !  ! ! ! ! !\nC O M M A N D  E R R O R : {}\n! ! ! ! ! ! !  ! ! ! ! !\n'.format(
-            error), file=sys.stderr)
-        tb.print_exception(type(error), error, error.__traceback__, file=sys.stderr)
-        await bot.get_user(u.config['owner_id']).send('**COMMAND ERROR** \N{WARNING SIGN} `{}` from {} in {}\n```\n{}```'.format(ctx.message.content, ctx.author.mention, ctx.channel.mention if isinstance(ctx.channel, d.channel.TextChannel) else 'DMs', error))
-        await bot.get_channel(u.config['info_channel']).send('**COMMAND ERROR** \N{WARNING SIGN} `{}` from {} in {}\n```\n{}```'.format(ctx.message.content, ctx.author.name, ctx.channel.mention if isinstance(ctx.channel, d.channel.TextChannel) else 'DMs', error))
-        await exc.send_error(ctx, error)
-        await ctx.message.add_reaction('\N{WARNING SIGN}')
-        # u.notify('C O M M A N D  E R R O R')
+    with suppress(err.NotFound):
+        if isinstance(error, errext.CommandOnCooldown):
+            await ctx.message.add_reaction('\N{HOURGLASS}')
+            await asyncio.sleep(error.retry_after)
+            await ctx.message.add_reaction('\N{WHITE HEAVY CHECK MARK}')
+        elif isinstance(error, err.NotFound):
+            print('NOT FOUND')
+        elif isinstance(error, err.Forbidden):
+            pass
+        elif isinstance(error, errext.MissingRequiredArgument):
+            await ctx.send('**Missing required argument**')
+            await ctx.message.add_reaction('\N{CROSS MARK}')
+        elif isinstance(error, errext.BadArgument):
+            await ctx.send(f'**Invalid argument.** {error}')
+            await ctx.message.add_reaction('\N{CROSS MARK}')
+        elif isinstance(error, errext.CheckFailure):
+            await ctx.send('**Insufficient permissions**')
+            await ctx.message.add_reaction('\N{NO ENTRY}')
+        elif isinstance(error, errext.CommandNotFound):
+            print('INVALID COMMAND : {}'.format(error), file=sys.stderr)
+            await ctx.message.add_reaction('\N{BLACK QUESTION MARK ORNAMENT}')
+        else:
+            print('\n! ! ! ! ! ! !  ! ! ! ! !\nC O M M A N D  E R R O R : {}\n! ! ! ! ! ! !  ! ! ! ! !\n'.format(
+                error), file=sys.stderr)
+            tb.print_exception(type(error), error, error.__traceback__, file=sys.stderr)
+            await bot.get_user(u.config['owner_id']).send('**COMMAND ERROR** \N{WARNING SIGN} `{}` from {} in {}\n```\n{}```'.format(ctx.message.content, ctx.author.mention, ctx.channel.mention if isinstance(ctx.channel, d.channel.TextChannel) else 'DMs', error))
+            await bot.get_channel(u.config['info_channel']).send('**COMMAND ERROR** \N{WARNING SIGN} `{}` from {} in {}\n```\n{}```'.format(ctx.message.content, ctx.author.name, ctx.channel.mention if isinstance(ctx.channel, d.channel.TextChannel) else 'DMs', error))
+            await exc.send_error(ctx, error)
+            await ctx.message.add_reaction('\N{WARNING SIGN}')
+            # u.notify('C O M M A N D  E R R O R')
 
 # @bot.event
 # async def on_command(ctx):
