@@ -25,7 +25,7 @@ class Bot:
     @cmds.command(name=',die', aliases=[',d'], brief='Kills the bot', description='BOT OWNER ONLY\nCloses the connection to Discord', hidden=True)
     @cmds.is_owner()
     async def die(self, ctx):
-        await ctx.message.add_reaction('\N{CRESCENT MOON}')
+        await u.add_reaction(ctx.message, '\N{CRESCENT MOON}')
 
         await self.bot.get_channel(u.config['info_channel']).send('**Shutting down** \N{CRESCENT MOON} . . .')
 
@@ -43,7 +43,7 @@ class Bot:
     @cmds.command(name=',restart', aliases=[',res', ',r'], hidden=True)
     @cmds.is_owner()
     async def restart(self, ctx):
-        await ctx.message.add_reaction('\N{SLEEPING SYMBOL}')
+        await u.add_reaction(ctx.message, '\N{SLEEPING SYMBOL}')
 
         print('\n^ ^ ^ ^ ^ ^ ^ ^ ^ ^\nR E S T A R T I N G\n^ ^ ^ ^ ^ ^ ^ ^ ^ ^\n')
         await self.bot.get_channel(u.config['info_channel']).send('**Restarting** \N{SLEEPING SYMBOL} . . .')
@@ -63,7 +63,7 @@ class Bot:
     @cmds.command(name=',invite', aliases=[',inv', ',link'], brief='Invite the bot', description='BOT OWNER ONLY\nInvite the bot to a server (Requires admin)', hidden=True)
     @cmds.is_owner()
     async def invite(self, ctx):
-        await ctx.message.add_reaction('\N{ENVELOPE}')
+        await u.add_reaction(ctx.message, '\N{ENVELOPE}')
 
         await ctx.send('https://discordapp.com/oauth2/authorize?&client_id={}&scope=bot&permissions={}'.format(u.config['client_id'], u.config['permissions']))
 
@@ -125,7 +125,7 @@ class Bot:
             await ctx.send(f'**Username changed to** `{username}`')
         else:
             await ctx.send('**Invalid string**')
-            await ctx.message.add_reaction('\N{CROSS MARK}')
+            await u.add_reaction(ctx.message, '\N{CROSS MARK}')
 
 
 class Tools:
@@ -179,7 +179,7 @@ class Tools:
             console = await self.generate(ctx)
             exception = await self.generate_err(ctx)
 
-            await ctx.message.add_reaction('\N{OCTAGONAL SIGN}')
+            await u.add_reaction(ctx.message, '\N{OCTAGONAL SIGN}')
 
             while not self.bot.is_closed():
                 try:
