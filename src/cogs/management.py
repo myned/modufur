@@ -83,10 +83,10 @@ class Administration:
 
         except exc.Abort:
             await ctx.send('**Deletion aborted**')
-            await ctx.message.add_reaction('\N{CROSS MARK}')
+            await u.add_reaction(ctx.message, '\N{CROSS MARK}')
         except TimeoutError:
             await ctx.send('**Deletion timed out**')
-            await ctx.message.add_reaction('\N{CROSS MARK}')
+            await u.add_reaction(ctx.message, '\N{CROSS MARK}')
 
     @_prune_user.command(name='all', aliases=['a'], brief='Prune a user\'s messages from the guild', description='about flag centers on message 50 of 101 messages\n\npfg \{user id\} [before|after|about] [\{message id\}]\n\nExample:\npfg \{user id\} before \{message id\}', hidden=True)
     @cmds.is_owner()
@@ -132,10 +132,10 @@ class Administration:
 
         except exc.Abort:
             await ctx.send('**Deletion aborted**')
-            await ctx.message.add_reaction('\N{CROSS MARK}')
+            await u.add_reaction(ctx.message, '\N{CROSS MARK}')
         except TimeoutError:
             await ctx.send('**Deletion timed out**')
-            await ctx.message.add_reaction('\N{CROSS MARK}')
+            await u.add_reaction(ctx.message, '\N{CROSS MARK}')
 
     @cmds.group(aliases=['task', 'tsk'])
     async def tasks(self):
@@ -195,7 +195,7 @@ class Administration:
 
         except exc.Exists:
             await ctx.send('**Already auto-deleting in {}.** Type `stop d(eleting)` to stop.'.format(ctx.channel.mention))
-            await ctx.message.add_reaction('\N{CROSS MARK}')
+            await u.add_reaction(ctx.message, '\N{CROSS MARK}')
 
     @cmds.group(aliases=['setting', 'set', 's'])
     @cmds.has_permissions(administrator=True)

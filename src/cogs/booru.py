@@ -215,7 +215,7 @@ class MsG:
     #
     #     except exc.Exists:
     #         await ctx.send('**Already auto-posting in {}.** Type `stop` to stop.'.format(ctx.channel.mention))
-    #         await ctx.message.add_reaction('\N{CROSS MARK}')
+    #         await u.add_reaction(ctx.message, '\N{CROSS MARK}')
 
     @cmds.group(aliases=['tag', 't'], brief='(G) Get info on tags', description='Group command for obtaining info on tags\n\nUsage:\n\{p\}tag \{flag\} \{tag(s)\}')
     async def tags(self, ctx):
@@ -245,7 +245,7 @@ class MsG:
             c += 1
 
         if not c:
-            await ctx.message.add_reaction('\N{CROSS MARK}')
+            await u.add_reaction(ctx.message, '\N{CROSS MARK}')
 
     # Tag aliases
     @tags.command(name='aliases', aliases=['alias', 'als', 'a'], brief='(tags) Search for tag aliases', description='Return aliases for given tag(s)\n\nExample:\n\{p\}tag alias wolf')
@@ -271,13 +271,13 @@ class MsG:
             c += 1
 
         if not c:
-            await ctx.message.add_reaction('\N{CROSS MARK}')
+            await u.add_reaction(ctx.message, '\N{CROSS MARK}')
 
     @cmds.group(aliases=['g'], brief='(G) Get e621 elements', description='Group command for obtaining various elements like post info\n\nUsage:\n\{p\}get \{flag\} \{args\}')
     async def get(self, ctx):
         if not ctx.invoked_subcommand:
             await ctx.send('**Use a flag to get items.**\n*Type* `{}help get` *for more info.*'.format(ctx.prefix))
-            await ctx.message.add_reaction('\N{CROSS MARK}')
+            await u.add_reaction(ctx.message, '\N{CROSS MARK}')
 
     @get.command(name='info', aliases=['i'], brief='(get) Get info from post', description='Return info for given post URL or ID\n\nExample:\n\{p\}get info 1145042')
     async def _get_info(self, ctx, *args):
@@ -305,7 +305,7 @@ class MsG:
 
         except exc.MissingArgument:
             await ctx.send('\N{CROSS MARK} **Invalid url**')
-            await ctx.message.add_reaction('\N{CROSS MARK}')
+            await u.add_reaction(ctx.message, '\N{CROSS MARK}')
 
     @get.command(name='image', aliases=['img'], brief='(get) Get direct image from post', description='Return direct image URL for given post\n\nExample:\n\{p\}get image 1145042')
     async def _get_image(self, ctx, *args):
@@ -328,11 +328,11 @@ class MsG:
                     # await ctx.send(f'**No aliases found for:** `{tag}`')
 
             if not c:
-                await ctx.message.add_reaction('\N{CROSS MARK}')
+                await u.add_reaction(ctx.message, '\N{CROSS MARK}')
 
         except exc.MissingArgument:
             await ctx.send('\N{CROSS MARK} **Invalid url or file**')
-            await ctx.message.add_reaction('\N{CROSS MARK}')
+            await u.add_reaction(ctx.message, '\N{CROSS MARK}')
 
     @get.command(name='pool', aliases=['p'], brief='(get) Get pool from query', description='Return pool info for given query\n\nExample:\n\{p\}get pool 1145042')
     async def _get_pool(self, ctx, *args):
@@ -358,7 +358,7 @@ class MsG:
                     pools.append(pool['name'])
                 match = await ctx.send('**Multiple pools found for `{}`.** Type the number of the correct match\n```\n{}```'.format(' '.join(query), '\n'.join(['{} {}'.format(c, elem) for c, elem in enumerate(pools, 1)])))
 
-                await ctx.message.add_reaction('\N{OCTAGONAL SIGN}')
+                await u.add_reaction(ctx.message, '\N{OCTAGONAL SIGN}')
                 done, pending = await asyncio.wait([self.bot.wait_for('reaction_add', check=on_reaction, timeout=60),
                                                     self.bot.wait_for('reaction_remove', check=on_reaction, timeout=60), self.bot.wait_for('message', check=on_message, timeout=60)], return_when=asyncio.FIRST_COMPLETED)
                 for future in done:
@@ -417,20 +417,20 @@ class MsG:
                     await ctx.send('**No probable match for:** `{}`'.format(e))
 
             if not c:
-                await ctx.message.add_reaction('\N{CROSS MARK}')
+                await u.add_reaction(ctx.message, '\N{CROSS MARK}')
             elif remove:
                 with suppress(err.NotFound):
                     await ctx.message.delete()
 
         except exc.MissingArgument:
             await ctx.send('\N{CROSS MARK} **Invalid url or file.** Be sure the link directs to an image file')
-            await ctx.message.add_reaction('\N{CROSS MARK}')
+            await u.add_reaction(ctx.message, '\N{CROSS MARK}')
         except exc.SizeError as e:
             await ctx.send(f'`{e}` **too large.** Maximum is 8 MB')
-            await ctx.message.add_reaction('\N{CROSS MARK}')
+            await u.add_reaction(ctx.message, '\N{CROSS MARK}')
         except err.HTTPException:
             await ctx.send('\N{CROSS MARK} **The image database returned an unexpected result.** It may be offline')
-            await ctx.message.add_reaction('\N{CROSS MARK}')
+            await u.add_reaction(ctx.message, '\N{CROSS MARK}')
 
     @cmds.command(name='reversify', aliases=['revify', 'risify', 'rify'])
     @cmds.cooldown(1, 5, cmds.BucketType.member)
@@ -500,17 +500,17 @@ class MsG:
                         n += 1
 
             if c <= 0:
-                await ctx.message.add_reaction('\N{CROSS MARK}')
+                await u.add_reaction(ctx.message, '\N{CROSS MARK}')
 
         except exc.NotFound:
             await dest.send('**No matches found**')
-            await ctx.message.add_reaction('\N{CROSS MARK}')
+            await u.add_reaction(ctx.message, '\N{CROSS MARK}')
         except exc.BoundsError as e:
             await dest.send('`{}` **invalid limit.** Query limited to 30'.format(e))
-            await ctx.message.add_reaction('\N{CROSS MARK}')
+            await u.add_reaction(ctx.message, '\N{CROSS MARK}')
         except err.HTTPException:
             await dest.send('\N{CROSS MARK} **The image database returned an unexpected result.** It may be offline')
-            await ctx.message.add_reaction('\N{CROSS MARK}')
+            await u.add_reaction(ctx.message, '\N{CROSS MARK}')
 
     async def _reversify(self):
         while self.reversifying:
@@ -596,7 +596,7 @@ class MsG:
             await ctx.send('**Auto-reversifying all images in** {}'.format(ctx.channel.mention))
         else:
             await ctx.send('**Already auto-reversifying in {}.** Type `stop r(eversifying)` to stop.'.format(ctx.channel.mention))
-            await ctx.message.add_reaction('\N{CROSS MARK}')
+            await u.add_reaction(ctx.message, '\N{CROSS MARK}')
 
     async def _get_pool(self, ctx, *, booru='e621', query=[]):
         def on_reaction(reaction, user):
@@ -618,7 +618,7 @@ class MsG:
                     pools.append(pool['name'])
                 match = await ctx.send('**Multiple pools found for `{}`.** Type the number of the correct match.\n```\n{}```'.format(' '.join(query), '\n'.join(['{} {}'.format(c, elem) for c, elem in enumerate(pools, 1)])))
 
-                await ctx.message.add_reaction('\N{OCTAGONAL SIGN}')
+                await u.add_reaction(ctx.message, '\N{OCTAGONAL SIGN}')
                 done, pending = await asyncio.wait([self.bot.wait_for('reaction_add', check=on_reaction, timeout=60),
                                                     self.bot.wait_for('reaction_remove', check=on_reaction, timeout=60), self.bot.wait_for('message', check=on_message, timeout=60)], return_when=asyncio.FIRST_COMPLETED)
                 for future in done:
@@ -651,7 +651,7 @@ class MsG:
             return pool, posts
 
         except exc.Abort as e:
-            await e.message.edit(content='\N{NO ENTRY SIGN}')
+            await e.message.delete()
             raise exc.Continue
 
     # Messy code that checks image limit and tags in blacklists
@@ -774,7 +774,7 @@ class MsG:
 
             for emoji in ('\N{HEAVY BLACK HEART}', '\N{LEFTWARDS BLACK ARROW}', '\N{NUMBER SIGN}\N{COMBINING ENCLOSING KEYCAP}', '\N{BLACK RIGHTWARDS ARROW}'):
                 await paginator.add_reaction(emoji)
-            await ctx.message.add_reaction('\N{OCTAGONAL SIGN}')
+            await u.add_reaction(ctx.message, '\N{OCTAGONAL SIGN}')
             await asyncio.sleep(1)
 
             while not self.bot.is_closed():
@@ -852,16 +852,16 @@ class MsG:
                 await ctx.send('\N{HOURGLASS}')
         except exc.NotFound:
             await ctx.send('**Pool not found**')
-            await ctx.message.add_reaction('\N{CROSS MARK}')
+            await u.add_reaction(ctx.message, '\N{CROSS MARK}')
         except exc.Timeout:
             await ctx.send('**Request timed out**')
-            await ctx.message.add_reaction('\N{CROSS MARK}')
+            await u.add_reaction(ctx.message, '\N{CROSS MARK}')
         except exc.Continue:
             pass
 
         finally:
             if hearted:
-                await ctx.message.add_reaction('\N{HOURGLASS WITH FLOWING SAND}')
+                await u.add_reaction(ctx.message, '\N{HOURGLASS WITH FLOWING SAND}')
 
                 n = 1
                 for embed in hearted.values():
@@ -915,7 +915,7 @@ class MsG:
 
             for emoji in ('\N{HEAVY BLACK HEART}', '\N{LEFTWARDS BLACK ARROW}', '\N{NUMBER SIGN}\N{COMBINING ENCLOSING KEYCAP}', '\N{BLACK RIGHTWARDS ARROW}'):
                 await paginator.add_reaction(emoji)
-            await ctx.message.add_reaction('\N{OCTAGONAL SIGN}')
+            await u.add_reaction(ctx.message, '\N{OCTAGONAL SIGN}')
             await asyncio.sleep(1)
 
             while not self.bot.is_closed():
@@ -1005,23 +1005,23 @@ class MsG:
                 await ctx.send('\N{HOURGLASS}')
         except exc.NotFound as e:
             await ctx.send('`{}` **not found**'.format(e))
-            await ctx.message.add_reaction('\N{CROSS MARK}')
+            await u.add_reaction(ctx.message, '\N{CROSS MARK}')
         except exc.TagBlacklisted as e:
             await ctx.send('\N{NO ENTRY SIGN} `{}` **blacklisted**'.format(e))
-            await ctx.message.add_reaction('\N{NO ENTRY SIGN}')
+            await u.add_reaction(ctx.message, '\N{NO ENTRY SIGN}')
         except exc.TagBoundsError as e:
             await ctx.send('`{}` **out of bounds.** Tags limited to 5.'.format(e))
-            await ctx.message.add_reaction('\N{CROSS MARK}')
+            await u.add_reaction(ctx.message, '\N{CROSS MARK}')
         except exc.FavoritesNotFound:
             await ctx.send('**You have no favorite tags**')
-            await ctx.message.add_reaction('\N{CROSS MARK}')
+            await u.add_reaction(ctx.message, '\N{CROSS MARK}')
         except exc.Timeout:
             await ctx.send('**Request timed out**')
-            await ctx.message.add_reaction('\N{CROSS MARK}')
+            await u.add_reaction(ctx.message, '\N{CROSS MARK}')
 
         finally:
             if hearted:
-                await ctx.message.add_reaction('\N{HOURGLASS WITH FLOWING SAND}')
+                await u.add_reaction(ctx.message, '\N{HOURGLASS WITH FLOWING SAND}')
 
                 n = 1
                 for embed in hearted.values():
@@ -1032,7 +1032,7 @@ class MsG:
     # async def e621_paginator_error(self, ctx, error):
     #     if isinstance(error, exc.NSFW):
     #         await ctx.send('\N{NO ENTRY} {} **is not an NSFW channel**'.format(ctx.channel.mention))
-    #         await ctx.message.add_reaction('\N{NO ENTRY}')
+    #         await u.add_reaction(ctx.message, '\N{NO ENTRY}')
 
     @cmds.command(name='e926page', aliases=['e926p', 'e9p', '9p'])
     @cmds.cooldown(1, 5, cmds.BucketType.member)
@@ -1080,7 +1080,7 @@ class MsG:
 
             for emoji in ('\N{HEAVY BLACK HEART}', '\N{LEFTWARDS BLACK ARROW}', '\N{NUMBER SIGN}\N{COMBINING ENCLOSING KEYCAP}', '\N{BLACK RIGHTWARDS ARROW}'):
                 await paginator.add_reaction(emoji)
-            await ctx.message.add_reaction('\N{OCTAGONAL SIGN}')
+            await u.add_reaction(ctx.message, '\N{OCTAGONAL SIGN}')
             await asyncio.sleep(1)
 
             while not self.bot.is_closed():
@@ -1168,23 +1168,23 @@ class MsG:
                 await ctx.send('\N{HOURGLASS}')
         except exc.NotFound as e:
             await ctx.send('`{}` **not found**'.format(e))
-            await ctx.message.add_reaction('\N{CROSS MARK}')
+            await u.add_reaction(ctx.message, '\N{CROSS MARK}')
         except exc.TagBlacklisted as e:
             await ctx.send('\N{NO ENTRY SIGN} `{}` **blacklisted**'.format(e))
-            await ctx.message.add_reaction('\N{NO ENTRY SIGN}')
+            await u.add_reaction(ctx.message, '\N{NO ENTRY SIGN}')
         except exc.TagBoundsError as e:
             await ctx.send('`{}` **out of bounds.** Tags limited to 5.'.format(e))
-            await ctx.message.add_reaction('\N{CROSS MARK}')
+            await u.add_reaction(ctx.message, '\N{CROSS MARK}')
         except exc.FavoritesNotFound:
             await ctx.send('**You have no favorite tags**')
-            await ctx.message.add_reaction('\N{CROSS MARK}')
+            await u.add_reaction(ctx.message, '\N{CROSS MARK}')
         except exc.Timeout:
             await ctx.send('**Request timed out**')
-            await ctx.message.add_reaction('\N{CROSS MARK}')
+            await u.add_reaction(ctx.message, '\N{CROSS MARK}')
 
         finally:
             if hearted:
-                await ctx.message.add_reaction('\N{HOURGLASS WITH FLOWING SAND}')
+                await u.add_reaction(ctx.message, '\N{HOURGLASS WITH FLOWING SAND}')
 
                 n = 1
                 for embed in hearted.values():
@@ -1221,28 +1221,28 @@ class MsG:
 
         except exc.TagBlacklisted as e:
             await ctx.send('`{}` **blacklisted**'.format(e))
-            await ctx.message.add_reaction('\N{CROSS MARK}')
+            await u.add_reaction(ctx.message, '\N{CROSS MARK}')
         except exc.BoundsError as e:
             await ctx.send('`{}` **out of bounds.** Images limited to 3.'.format(e))
-            await ctx.message.add_reaction('\N{CROSS MARK}')
+            await u.add_reaction(ctx.message, '\N{CROSS MARK}')
         except exc.TagBoundsError as e:
             await ctx.send('`{}` **out of bounds.** Tags limited to 5.'.format(e))
-            await ctx.message.add_reaction('\N{CROSS MARK}')
+            await u.add_reaction(ctx.message, '\N{CROSS MARK}')
         except exc.NotFound as e:
             await ctx.send('`{}` **not found**'.format(e))
-            await ctx.message.add_reaction('\N{CROSS MARK}')
+            await u.add_reaction(ctx.message, '\N{CROSS MARK}')
         except exc.FavoritesNotFound:
             await ctx.send('**You have no favorite tags**')
-            await ctx.message.add_reaction('\N{CROSS MARK}')
+            await u.add_reaction(ctx.message, '\N{CROSS MARK}')
         except exc.Timeout:
             await ctx.send('**Request timed out**')
-            await ctx.message.add_reaction('\N{CROSS MARK}')
+            await u.add_reaction(ctx.message, '\N{CROSS MARK}')
 
     # @e621.error
     # async def e621_error(self, ctx, error):
     #     if isinstance(error, exc.NSFW):
     #         await ctx.send('\N{NO ENTRY} {} **is not an NSFW channel**'.format(ctx.channel.mention))
-    #         await ctx.message.add_reaction('\N{NO ENTRY}')
+    #         await u.add_reaction(ctx.message, '\N{NO ENTRY}')
 
     # Searches for and returns images from e926.net given tags when not blacklisted
     @cmds.command(aliases=['e9', '9'], brief='e926 | SFW', description='e926 | SFW\nTag-based search for e926.net\n\nYou can only search 5 tags and 6 images at once for now.\ne9 [tags...] ([# of images])')
@@ -1273,28 +1273,28 @@ class MsG:
 
         except exc.TagBlacklisted as e:
             await ctx.send('`{}` **blacklisted**'.format(e))
-            await ctx.message.add_reaction('\N{CROSS MARK}')
+            await u.add_reaction(ctx.message, '\N{CROSS MARK}')
         except exc.BoundsError as e:
             await ctx.send('`{}` **out of bounds.** Images limited to 3.'.format(e))
-            await ctx.message.add_reaction('\N{CROSS MARK}')
+            await u.add_reaction(ctx.message, '\N{CROSS MARK}')
         except exc.TagBoundsError as e:
             await ctx.send('`{}` **out of bounds.** Tags limited to 5.'.format(e))
-            await ctx.message.add_reaction('\N{CROSS MARK}')
+            await u.add_reaction(ctx.message, '\N{CROSS MARK}')
         except exc.NotFound as e:
             await ctx.send('`{}` **not found**'.format(e))
-            await ctx.message.add_reaction('\N{CROSS MARK}')
+            await u.add_reaction(ctx.message, '\N{CROSS MARK}')
         except exc.FavoritesNotFound:
             await ctx.send('**You have no favorite tags**')
-            await ctx.message.add_reaction('\N{CROSS MARK}')
+            await u.add_reaction(ctx.message, '\N{CROSS MARK}')
         except exc.Timeout:
             await ctx.send('**Request timed out**')
-            await ctx.message.add_reaction('\N{CROSS MARK}')
+            await u.add_reaction(ctx.message, '\N{CROSS MARK}')
 
     # @cmds.group(aliases=['fave', 'fav', 'f'])
     # async def favorite(self, ctx):
     #     if not ctx.invoked_subcommand:
     #         await ctx.send('**Use a flag to manage favorites.**\n*Type* `{}help fav` *for more info.*'.format(ctx.prefix))
-    #         await ctx.message.add_reaction('\N{CROSS MARK}')
+    #         await u.add_reaction(ctx.message, '\N{CROSS MARK}')
     #
     # @favorite.error
     # async def favorite_error(self, ctx, error):
@@ -1337,10 +1337,10 @@ class MsG:
     #
     #     except exc.BoundsError:
     #         await ctx.send('**Favorites list currently limited to:** `5`')
-    #         await ctx.message.add_reaction('\N{CROSS MARK}')
+    #         await u.add_reaction(ctx.message, '\N{CROSS MARK}')
     #     except exc.TagBlacklisted as e:
     #         await ctx.send('\N{NO ENTRY SIGN} `{}` **blacklisted**')
-    #         await ctx.message.add_reaction('\N{NO ENTRY SIGN}')
+    #         await u.add_reaction(ctx.message, '\N{NO ENTRY SIGN}')
     #
     # @_add_favorite.command(name='posts', aliases=['p'])
     # async def __add_favorite_posts(self, ctx, *posts):
@@ -1370,10 +1370,10 @@ class MsG:
     #
     #     except KeyError:
     #         await ctx.send('**You do not have any favorites**')
-    #         await ctx.message.add_reaction('\N{CROSS MARK}')
+    #         await u.add_reaction(ctx.message, '\N{CROSS MARK}')
     #     except exc.TagError as e:
     #         await ctx.send('`{}` **not in favorites**'.format(e))
-    #         await ctx.message.add_reaction('\N{CROSS MARK}')
+    #         await u.add_reaction(ctx.message, '\N{CROSS MARK}')
     #
     # @_remove_favorite.command(name='posts', aliases=['p'])
     # async def __remove_favorite_posts(self, ctx):
@@ -1405,7 +1405,7 @@ class MsG:
             await ctx.send(
                 '**Use a flag to manage blacklists.**\n'
                 f'*Type* `{ctx.prefix}help bl` *for more info.*')
-            await ctx.message.add_reaction('\N{CROSS MARK}')
+            await u.add_reaction(ctx.message, '\N{CROSS MARK}')
         elif not ctx.args:
             await ctx.send('\N{CROSS MARK} **Missing arguments**')
 
@@ -1418,7 +1418,7 @@ class MsG:
     async def get_blacklist(self, ctx):
         if not ctx.invoked_subcommand:
             await ctx.send('\N{CROSS MARK} **Invalid blacklist**')
-            await ctx.message.add_reaction('\N{CROSS MARK}')
+            await u.add_reaction(ctx.message, '\N{CROSS MARK}')
 
     @get_blacklist.command(
         name='global',
@@ -1484,7 +1484,7 @@ class MsG:
     async def add_tags(self, ctx):
         if not ctx.invoked_subcommand:
             await ctx.send('\N{CROSS MARK} **Invalid blacklist**')
-            await ctx.message.add_reaction('\N{CROSS MARK}')
+            await u.add_reaction(ctx.message, '\N{CROSS MARK}')
 
     async def _add(self, tags, lst, alias=False):
         if not alias:
@@ -1587,7 +1587,7 @@ class MsG:
     async def remove_tags(self, ctx):
         if not ctx.invoked_subcommand:
             await ctx.send('\N{CROSS MARK} **Invalid blacklist**')
-            await ctx.message.add_reaction('\N{CROSS MARK}')
+            await u.add_reaction(ctx.message, '\N{CROSS MARK}')
 
     def _remove(self, remove, lst):
         removed = set()
@@ -1685,7 +1685,7 @@ class MsG:
     async def clear_blacklist(self, ctx):
         if not ctx.invoked_subcommand:
             await ctx.send('\N{CROSS MARK} **Invalid blacklist**')
-            await ctx.message.add_reaction('\N{CROSS MARK}')
+            await u.add_reaction(ctx.message, '\N{CROSS MARK}')
 
     @clear_blacklist.command(
         name='global',

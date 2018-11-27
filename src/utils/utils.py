@@ -10,6 +10,7 @@ from pprint import pprint
 
 import aiohttp
 import discord as d
+from discord import errors as err
 
 from misc import exceptions as exc
 
@@ -176,3 +177,13 @@ def ci(pos, n):
     phat = float(pos) / n
 
     return (phat + z*z/(2*n) - z * math.sqrt((phat*(1-phat)+z*z/(4*n))/n))/(1+z*z/n)
+
+
+async def add_reaction(message, reaction, error=err.NotFound):
+    sent = False
+
+    with suppress(error):
+        await message.add_reaction(reaction)
+        sent = True
+
+    return sent

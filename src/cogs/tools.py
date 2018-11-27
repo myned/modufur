@@ -38,12 +38,12 @@ class Utils:
 
         except KeyError:
             await ctx.send('**No last command**')
-            await ctx.message.add_reaction('\N{CROSS MARK}')
+            await u.add_reaction(ctx.message, '\N{CROSS MARK}')
 
     # Displays latency
     @cmds.command(aliases=['p'], brief='Pong!', description='Returns latency from bot to Discord servers, not to user')
     async def ping(self, ctx):
-        await ctx.message.add_reaction('\N{TABLE TENNIS PADDLE AND BALL}')
+        await u.add_reaction(ctx.message, '\N{TABLE TENNIS PADDLE AND BALL}')
         await ctx.send(ctx.author.mention + '  \N{TABLE TENNIS PADDLE AND BALL}  `' + str(round(self.bot.latency * 1000)) + 'ms`')
 
     @cmds.command(aliases=['pre', 'prefixes'], brief='List bot prefixes', description='Shows all used prefixes')
@@ -66,11 +66,11 @@ class Utils:
 
             except AttributeError:
                 await ctx.send('**Invalid channel**')
-                await ctx.message.add_reaction('\N{CROSS MARK}')
+                await u.add_reaction(ctx.message, '\N{CROSS MARK}')
 
         except AttributeError:
             await ctx.send('**Invalid guild**')
-            await ctx.message.add_reaction('\N{CROSS MARK}')
+            await u.add_reaction(ctx.message, '\N{CROSS MARK}')
 
     @send.command(name='user', aliases=['u', 'member', 'm'])
     async def send_user(self, ctx, user, *, message):
