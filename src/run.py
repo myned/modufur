@@ -160,14 +160,16 @@ async def on_error(error, *args, **kwargs):
 @bot.event
 async def on_command_error(ctx, error):
     with suppress(err.NotFound):
-        if isinstance(error, errext.CommandOnCooldown):
-            await ctx.message.add_reaction('\N{HOURGLASS}')
-            await asyncio.sleep(error.retry_after)
-            await ctx.message.add_reaction('\N{WHITE HEAVY CHECK MARK}')
-        elif isinstance(error, err.NotFound):
+        if isinstance(error, err.NotFound):
             print('NOT FOUND')
         elif isinstance(error, err.Forbidden):
             pass
+        elif isinstance(error, errext.CommandInvokeError):
+            print('INVOCATION ERROR')
+        elif isinstance(error, errext.CommandOnCooldown):
+                await u.add_reaction(ctx.message, '\N{HOURGLASS}')
+                await asyncio.sleep(error.retry_after)
+                await u.add_reaction(ctx.message, '\N{WHITE HEAVY CHECK MARK}')
         elif isinstance(error, errext.MissingRequiredArgument):
             await ctx.send('**Missing required argument**')
             await u.add_reaction(ctx.message, '\N{CROSS MARK}')
