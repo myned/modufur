@@ -3,15 +3,24 @@ url = "https://pypi.python.org/simple"
 verify_ssl = true
 name = "pypi"
 
+[[source]]
+url = "https://pypi.org/simple"
+name = "pypi"
+verify_ssl = true
+
+[[source]]
+url = "https://www.piwheels.org/simple"
+name = "piwheels"
+verify_ssl = true
+
 [requires]
 
 [packages]
-aiohttp = "*"
 beautifulsoup4 = "*"
-"discord.py" = {extras = ["voice"], git = "https://github.com/Rapptz/discord.py", ref = "rewrite"}
+"discord.py" = {extras = ["voice"],git = "https://github.com/Rapptz/discord.py",ref = "rewrite"}
 "hurry.filesize" = "*"
-lxml = "*"
 requests = "*"
-websockets = "*"
 
 [dev-packages]
+lxml = "*"
+
