@@ -85,6 +85,7 @@ def dump(obj, filename, *, json=False):
 settings = setdefault('misc/settings.pkl', default={'del_ctx': [], 'del_resp': [], 'prefixes': {}})
 tasks = setdefault('cogs/tasks.pkl', default={'auto_del': [], 'auto_hrt': [], 'auto_rev': []})
 temp = setdefault('temp/temp.pkl', default={'startup': ()})
+block = setdefault('cogs/block.json', default={'guild_ids': [], 'user_ids': []}, json=True)
 
 cogs = {}
 color = d.Color(0x1A1A1A)

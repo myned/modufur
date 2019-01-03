@@ -67,16 +67,75 @@ class Bot:
 
         await ctx.send('https://discordapp.com/oauth2/authorize?&client_id={}&scope=bot&permissions={}'.format(u.config['client_id'], u.config['permissions']))
 
-    @cmds.command(name=',guilds', aliases=[',glds', ',servers', ',svrs'])
+    @cmds.command(name=',guilds', aliases=[',gs'])
     @cmds.is_owner()
     async def guilds(self, ctx):
         paginator = cmds.Paginator()
 
         for guild in self.bot.guilds:
-            paginator.add_line(f'{guild.name} - @{guild.owner}')
+            paginator.add_line(f'{guild.name}: {guild.id}\n'
+                               f'  @{guild.owner}: {guild.owner.id}')
 
         for page in paginator.pages:
             await ctx.send(f'**Guilds:**\n{page}')
+
+    @cmds.group(name=',block', aliases=[',bl', ',b'])
+    @cmds.is_owner()
+    async def block(self, ctx):
+        pass
+
+    @block.group(name='list', aliases=['l'])
+    async def block_list(self, ctx):
+        pass
+
+    @block_list.command(name='guilds', aliases=['g'])
+    async def block_list_guilds(self, ctx):
+        await formatter.paginate(ctx, u.block['guild_ids'])
+
+    @block.command(name='user', aliases=['u'])
+    async def block_user(self, ctx, *users: d.User):
+        for user in users:
+            u.block['user_ids'].append(user.id)
+
+        u.dump(u.block, 'cogs/block.json', json=True)
+
+    @block.command(name='guild', aliases=['g'])
+    async def block_guild(self, ctx, *guilds):
+        for guild in guilds:
+            u.block['guild_ids'].append(guild)
+
+        u.dump(u.block, 'cogs/block.json', json=True)
+
+    @cmds.group(name=',unblock', aliases=[',unbl', ',unb'])
+    @cmds.is_owner()
+    async def unblock(self, ctx):
+        pass
+
+    @unblock.command(name='user', aliases=['u'])
+    async def unblock_user(self, ctx, *users: d.User):
+        for user in users:
+            u.block['user_ids'].remove(user.id)
+
+        u.dump(u.block, 'cogs/block.json', json=True)
+
+        await ctx.send('\N{WHITE HEAVY CHECK MARK} **Unblocked users**')
+
+    @unblock.command(name='guild', aliases=['g'])
+    async def unblock_guild(self, ctx, *guilds):
+        for guild in guilds:
+            u.block['guild_ids'].remove(guild)
+
+        u.dump(u.block, 'cogs/block.json', json=True)
+
+        await ctx.send('\N{WHITE HEAVY CHECK MARK} **Unblocked guilds**')
+
+    @cmds.command(name=',leave', aliases=[',l'])
+    @cmds.is_owner()
+    async def leave(self, ctx, *guilds):
+        for guild in guilds:
+            temp = d.utils.get(self.bot.guilds, id=int(guild))
+
+            await temp.leave()
 
     @cmds.command(name=',permissions', aliases=[',permission', ',perms', ',perm'])
     @cmds.is_owner()

@@ -85,9 +85,10 @@ async def on_ready():
             await bot.change_presence(activity=d.Game(u.config['playing']))
 
         print('\n> > > > > > > > >\nC O N N E C T E D : {}\n> > > > > > > > >\n'.format(bot.user.name))
-        await bot.get_channel(u.config['info_channel']).send(f'**Started** \N{BLACK SUN WITH RAYS} `{"` or `".join(u.config["prefix"])}`')
-        # u.notify('C O N N E C T E D')
+
         try:
+            await bot.get_channel(u.config['info_channel']).send(f'**Started** \N{BLACK SUN WITH RAYS} `{"` or `".join(u.config["prefix"])}`')
+
             if u.temp['startup']:
                 with suppress(err.NotFound):
                     if u.temp['startup'][0] == 'guild':
@@ -104,6 +105,8 @@ async def on_ready():
             checks.ready = True
         except KeyError:
             u.dump({'startup': ()}, 'temp/temp.pkl')
+        except AttributeError:
+            pass
     else:
         print('\n- - - -\nI N F O : reconnected, reinitializing tasks\n- - - -\n')
         reconnect = await bot.get_user(u.config['owner_id']).send('**RECONNECTING**')
@@ -127,7 +130,7 @@ async def on_ready():
 @bot.event
 async def on_message(message):
     if not u.config['selfbot']:
-        if message.author is not bot.user and not message.author.bot:
+        if message.author is not bot.user and not message.author.bot and message.author.id not in u.block['user_ids']:
             await bot.process_commands(message)
     else:
         if not message.author.bot:
@@ -164,8 +167,6 @@ async def on_command_error(ctx, error):
             print('NOT FOUND')
         elif isinstance(error, err.Forbidden):
             pass
-        elif isinstance(error, errext.CommandInvokeError):
-            print('INVOCATION ERROR')
         elif isinstance(error, errext.CommandOnCooldown):
                 await u.add_reaction(ctx.message, '\N{HOURGLASS}')
                 await asyncio.sleep(error.retry_after)
@@ -212,6 +213,12 @@ async def on_command_completion(ctx):
             return
 
     u.last_commands[ctx.author.id] = ctx
+
+@bot.event
+async def on_guild_join(guild):
+    if str(guild.id) in u.block['guild_ids']:
+        print(f'LEAVING : {guild.name}')
+        await guild.leave()
 
 @bot.event
 async def on_guild_remove(guild):

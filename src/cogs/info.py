@@ -22,15 +22,20 @@ class Info:
     #
     #     await ctx.send(embed=embed)
 
-    @cmds.group(name='info', aliases=['i'])
+    @cmds.group(name='info', aliases=['i'], hidden=True)
     async def info(self, ctx):
         if ctx.invoked_subcommand is None:
             await ctx.send('<embed>BOT INFO</embed>')
 
-    @info.command(aliases=['g', 'server', 's'], brief='Provides info about a guild', hidden=True)
-    async def guild(self, ctx):
-        pass
+    @info.command(aliases=['g'], brief='Provides info about a guild')
+    async def guild(self, ctx, guild_id: int):
+        guild = d.utils.get(self.bot.guilds, id=guild_id)
 
-    @info.command(aliases=['u', 'member', 'm'], brief='Provides info about a user', hidden=True)
-    async def user(self, ctx):
+        if guild:
+            await ctx.send(guild.name)
+        else:
+            await ctx.send(f'**Not in any guilds by the id of: ** `{guild_id}`')
+
+    @info.command(aliases=['u'], brief='Provides info about a user')
+    async def user(self, ctx, user: d.User):
         pass
