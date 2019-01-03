@@ -167,8 +167,6 @@ async def on_command_error(ctx, error):
             print('NOT FOUND')
         elif isinstance(error, err.Forbidden):
             pass
-        elif isinstance(error, errext.CommandInvokeError):
-            print('INVOCATION ERROR')
         elif isinstance(error, errext.CommandOnCooldown):
                 await u.add_reaction(ctx.message, '\N{HOURGLASS}')
                 await asyncio.sleep(error.retry_after)
