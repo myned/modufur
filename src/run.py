@@ -127,7 +127,7 @@ async def on_ready():
 @bot.event
 async def on_message(message):
     if not u.config['selfbot']:
-        if message.author is not bot.user and not message.author.bot:
+        if message.author is not bot.user and not message.author.bot and message.author.id not in u.block['user_ids']:
             await bot.process_commands(message)
     else:
         if not message.author.bot:
@@ -212,6 +212,12 @@ async def on_command_completion(ctx):
             return
 
     u.last_commands[ctx.author.id] = ctx
+
+@bot.event
+async def on_guild_join(guild):
+    if str(guild.id) in u.block['guild_ids']:
+        print(f'LEAVING : {guild.name}')
+        await guild.leave()
 
 @bot.event
 async def on_guild_remove(guild):
