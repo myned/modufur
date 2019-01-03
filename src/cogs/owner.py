@@ -67,13 +67,14 @@ class Bot:
 
         await ctx.send('https://discordapp.com/oauth2/authorize?&client_id={}&scope=bot&permissions={}'.format(u.config['client_id'], u.config['permissions']))
 
-    @cmds.command(name=',guilds', aliases=[',glds', ',servers', ',svrs'])
+    @cmds.command(name=',guilds', aliases=[',gs'])
     @cmds.is_owner()
     async def guilds(self, ctx):
         paginator = cmds.Paginator()
 
         for guild in self.bot.guilds:
-            paginator.add_line(f'{guild.name} - @{guild.owner}')
+            paginator.add_line(f'{guild.name}: {guild.id}\n'
+                               f'  @{guild.owner}: {guild.owner.id}')
 
         for page in paginator.pages:
             await ctx.send(f'**Guilds:**\n{page}')
