@@ -127,6 +127,15 @@ class Bot:
         u.dump(u.block, 'cogs/block.json', json=True)
 
         await ctx.send('\N{WHITE HEAVY CHECK MARK} **Unblocked guilds**')
+
+    @cmds.command(name=',leave', aliases=[',l'])
+    @cmds.is_owner()
+    async def leave(self, ctx, *guilds):
+        for guild in guilds:
+            temp = d.utils.get(self.bot.guilds, id=int(guild))
+
+            await temp.leave()
+
     @cmds.command(name=',permissions', aliases=[',permission', ',perms', ',perm'])
     @cmds.is_owner()
     async def permissions(self, ctx, *args: d.Member):
