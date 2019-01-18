@@ -39,16 +39,15 @@ async def paginate(
         end=''):
     paginator = Paginator(prefix=prefix, suffix=suffix)
     messages = []
-    i = sorted(copy.deepcopy(i))
+    i = copy.deepcopy(i)
 
     if start:
-        paginator.add_line(start)
+        paginator.add_line(start + ('' if type(i) is not dict else '\n'))
 
     if type(i) in (tuple, list, set):
         if not i:
             i = (' ')
-        paginator.add_line(eprefix + f'{ejoin}'.join(i) + esuffix)
-
+        paginator.add_line(eprefix + f'{ejoin}'.join(sorted(i)) + esuffix)
     elif type(i) is dict:
         if not i:
             i = {' ': ' '}

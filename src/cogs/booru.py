@@ -36,7 +36,7 @@ class MsG:
         time = (dt.utcnow() - td(days=29)).strftime('%d/%m/%Y/%H:%M:%S')
         self.suggested = u.setdefault('cogs/suggested.pkl', 7)
         # self.suggested = u.setdefault('cogs/suggested.pkl', {'last_update': 'test', 'tags': {}, 'total': 1})
-        print(self.suggested)
+        # print(self.suggested)
         self.favorites = u.setdefault('cogs/favorites.pkl', {})
         self.blacklists = u.setdefault('cogs/blacklists.pkl', {'global': {}, 'channel': {}, 'user': {}})
 
