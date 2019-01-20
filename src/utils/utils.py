@@ -180,10 +180,10 @@ def ci(pos, n):
     return (phat + z*z/(2*n) - z * math.sqrt((phat*(1-phat)+z*z/(4*n))/n))/(1+z*z/n)
 
 
-async def add_reaction(message, reaction, error=err.NotFound):
+async def add_reaction(message, reaction, errors=(err.NotFound, err.Forbidden)):
     sent = False
 
-    with suppress(error):
+    with suppress(errors):
         await message.add_reaction(reaction)
         sent = True
 
