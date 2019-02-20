@@ -156,7 +156,7 @@ async def on_error(error, *args, **kwargs):
 
         u.temp.clear()
         u.dump(u.temp, 'temp/temp.pkl')
-    # u.notify('E R R O R')
+
     await bot.logout()
 
 
@@ -191,7 +191,6 @@ async def on_command_error(ctx, error):
             await bot.get_channel(u.config['info_channel']).send('**COMMAND ERROR** \N{WARNING SIGN} `{}` from {} in {}\n```\n{}```'.format(ctx.message.content, ctx.author.name, ctx.channel.mention if isinstance(ctx.channel, d.channel.TextChannel) else 'DMs', error))
             await exc.send_error(ctx, error)
             await u.add_reaction(ctx.message, '\N{WARNING SIGN}')
-            # u.notify('C O M M A N D  E R R O R')
 
 # @bot.event
 # async def on_command(ctx):

@@ -20,11 +20,6 @@ from misc import exceptions as exc
 print('\nPID : {}\n'.format(os.getpid()))
 
 
-# def notify(message):
-#     subprocess.run(['terminal-notifier', '-message', message, '-title',
-#                     'Modumind', '-activate', 'com.apple.Terminal', '-appIcon', 'icon.png', '-sound', 'Ping'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-
-
 try:
     with open('config.json') as infile:
         config = jsn.load(infile)
