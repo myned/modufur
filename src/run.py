@@ -142,15 +142,6 @@ async def on_error(error, *args, **kwargs):
     await bot.get_user(u.config['owner_id']).send('**ERROR** \N{WARNING SIGN}\n```\n{}```'.format(error))
 
     if u.temp['startup']:
-        with suppress(err.NotFound):
-            if u.temp['startup'][0] == 'guild':
-                ctx = bot.get_channel(u.temp['startup'][1])
-            else:
-                ctx = bot.get_user(u.temp['startup'][1])
-            message = await ctx.get_message(u.temp['startup'][2])
-
-            await message.add_reaction('\N{WARNING SIGN}')
-
         u.temp.clear()
         u.dump(u.temp, 'temp/temp.pkl')
 
