@@ -153,6 +153,8 @@ async def on_command_error(ctx, error):
     with suppress(err.NotFound):
         if isinstance(error, err.NotFound):
             print('NOT FOUND')
+        elif isinstance(error, errext.CommandInvokeError):
+            print(f'ERROR : {error}')
         elif isinstance(error, err.Forbidden):
             pass
         elif isinstance(error, errext.CommandOnCooldown):
