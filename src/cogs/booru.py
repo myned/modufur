@@ -137,7 +137,7 @@ class MsG:
 
         print('STOPPED : hearting')
 
-    async def queue_for_hearts(self, *, message=None, send=None, channel=None, reaction=True, timeout=60 * 60):
+    async def queue_for_hearts(self, *, message=None, send=None, channel=None, reaction=True, timeout=60 * 60 * 24):
         def on_reaction(reaction, user):
             if reaction.emoji == '\N{HEAVY BLACK HEART}' and reaction.message.id == message.id and not user.bot:
                 raise exc.Save(user)
