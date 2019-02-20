@@ -158,9 +158,9 @@ async def on_command_error(ctx, error):
         elif isinstance(error, err.Forbidden):
             pass
         elif isinstance(error, errext.CommandOnCooldown):
-                await u.add_reaction(ctx.message, '\N{HOURGLASS}')
-                await asyncio.sleep(error.retry_after)
-                await u.add_reaction(ctx.message, '\N{WHITE HEAVY CHECK MARK}')
+            await u.add_reaction(ctx.message, '\N{HOURGLASS}')
+            await asyncio.sleep(error.retry_after)
+            await u.add_reaction(ctx.message, '\N{WHITE HEAVY CHECK MARK}')
         elif isinstance(error, errext.MissingRequiredArgument):
             await ctx.send('**Missing required argument**')
             await u.add_reaction(ctx.message, '\N{CROSS MARK}')
@@ -174,8 +174,7 @@ async def on_command_error(ctx, error):
             print('INVALID COMMAND : {}'.format(error), file=sys.stderr)
             await u.add_reaction(ctx.message, '\N{BLACK QUESTION MARK ORNAMENT}')
         else:
-            print('\n! ! ! ! ! ! !  ! ! ! ! !\nC O M M A N D  E R R O R : {}\n! ! ! ! ! ! !  ! ! ! ! !\n'.format(
-                error), file=sys.stderr)
+            print('\n! ! ! ! ! ! !  ! ! ! ! !\nC O M M A N D  E R R O R : {}\n! ! ! ! ! ! !  ! ! ! ! !\n'.format(error), file=sys.stderr)
             tb.print_exception(type(error), error, error.__traceback__, file=sys.stderr)
             await bot.get_user(u.config['owner_id']).send('**COMMAND ERROR** \N{WARNING SIGN} `{}` from {} in {}\n```\n{}```'.format(ctx.message.content, ctx.author.mention, ctx.channel.mention if isinstance(ctx.channel, d.channel.TextChannel) else 'DMs', error))
             await exc.send_error(ctx, error)
