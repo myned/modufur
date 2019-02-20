@@ -87,8 +87,6 @@ async def on_ready():
         print('\n> > > > > > > > >\nC O N N E C T E D : {}\n> > > > > > > > >\n'.format(bot.user.name))
 
         try:
-            await bot.get_channel(u.config['info_channel']).send(f'**Started** \N{BLACK SUN WITH RAYS} `{"` or `".join(u.config["prefix"])}`')
-
             if u.temp['startup']:
                 with suppress(err.NotFound):
                     if u.temp['startup'][0] == 'guild':
@@ -142,7 +140,6 @@ async def on_error(error, *args, **kwargs):
     print('\n! ! ! ! !\nE R R O R : {}\n! ! ! ! !\n'.format(sys.exc_info()[1].text), file=sys.stderr)
     tb.print_exc()
     await bot.get_user(u.config['owner_id']).send('**ERROR** \N{WARNING SIGN}\n```\n{}```'.format(error))
-    await bot.get_channel(u.config['info_channel']).send('**ERROR** \N{WARNING SIGN}\n```\n{}```'.format(error))
 
     if u.temp['startup']:
         with suppress(err.NotFound):
@@ -188,7 +185,6 @@ async def on_command_error(ctx, error):
                 error), file=sys.stderr)
             tb.print_exception(type(error), error, error.__traceback__, file=sys.stderr)
             await bot.get_user(u.config['owner_id']).send('**COMMAND ERROR** \N{WARNING SIGN} `{}` from {} in {}\n```\n{}```'.format(ctx.message.content, ctx.author.mention, ctx.channel.mention if isinstance(ctx.channel, d.channel.TextChannel) else 'DMs', error))
-            await bot.get_channel(u.config['info_channel']).send('**COMMAND ERROR** \N{WARNING SIGN} `{}` from {} in {}\n```\n{}```'.format(ctx.message.content, ctx.author.name, ctx.channel.mention if isinstance(ctx.channel, d.channel.TextChannel) else 'DMs', error))
             await exc.send_error(ctx, error)
             await u.add_reaction(ctx.message, '\N{WARNING SIGN}')
 
