@@ -868,10 +868,7 @@ class MsG:
                     await ctx.author.send(content=f'`{n} / {len(hearted)}`', embed=embed)
                     n += 1
 
-    @cmds.command(name='e621page', aliases=['e621p', 'e6p', '6p'])
-    @checks.is_nsfw()
-    @cmds.cooldown(1, 5, cmds.BucketType.member)
-    async def e621_paginator(self, ctx, *args):
+    async def _get_paginator(self, ctx, args, booru='e621'):
         def on_reaction(reaction, user):
             if reaction.emoji == '\N{OCTAGONAL SIGN}' and reaction.message.id == ctx.message.id and (user is ctx.author or user.permissions_in(reaction.message.channel).manage_messages):
                 raise exc.Abort
@@ -879,8 +876,6 @@ class MsG:
                 raise exc.Save
             elif reaction.emoji == '\N{LEFTWARDS BLACK ARROW}' and reaction.message.id == paginator.id and user is ctx.author:
                 raise exc.Left
-            elif reaction.emoji == '\N{NUMBER SIGN}\N{COMBINING ENCLOSING KEYCAP}' and reaction.message.id == paginator.id and user is ctx.author:
-                raise exc.GoTo
             elif reaction.emoji == '\N{BLACK RIGHTWARDS ARROW}' and reaction.message.id == paginator.id and user is ctx.author:
                 raise exc.Right
             return False
@@ -899,21 +894,21 @@ class MsG:
 
             await ctx.trigger_typing()
 
-            posts, order = await self._get_posts(ctx, booru='e621', tags=tags, limit=limit)
+            posts, order = await self._get_posts(ctx, booru=booru, tags=tags, limit=limit)
             keys = list(posts.keys())
             values = list(posts.values())
 
             embed = d.Embed(
-                title=values[c - 1]['artist'], url='https://e621.net/post/show/{}'.format(keys[c - 1]), color=ctx.me.color if isinstance(ctx.channel, d.TextChannel) else u.color)
+                title=values[c - 1]['artist'], url='https://{}.net/post/show/{}'.format(booru, keys[c - 1]), color=ctx.me.color if isinstance(ctx.channel, d.TextChannel) else u.color)
             embed.set_image(url=values[c - 1]['file_url'])
             embed.set_author(name=' '.join(tags) if tags else order,
-                             url='https://e621.net/post?tags={}'.format(','.join(tags)), icon_url=ctx.author.avatar_url)
+                             url='https://{}.net/post?tags={}'.format(booru, ','.join(tags)), icon_url=ctx.author.avatar_url)
             embed.set_footer(text=values[c - 1]['score'],
                              icon_url=self._get_score(values[c - 1]['score']))
 
             paginator = await ctx.send(embed=embed)
 
-            for emoji in ('\N{HEAVY BLACK HEART}', '\N{LEFTWARDS BLACK ARROW}', '\N{NUMBER SIGN}\N{COMBINING ENCLOSING KEYCAP}', '\N{BLACK RIGHTWARDS ARROW}'):
+            for emoji in ('\N{HEAVY BLACK HEART}', '\N{LEFTWARDS BLACK ARROW}', '\N{BLACK RIGHTWARDS ARROW}'):
                 await paginator.add_reaction(emoji)
             await u.add_reaction(ctx.message, '\N{OCTAGONAL SIGN}')
             await asyncio.sleep(1)
@@ -937,7 +932,8 @@ class MsG:
                     if c > 1:
                         c -= 1
                         embed.title = values[c - 1]['artist']
-                        embed.url = 'https://e621.net/post/show/{}'.format(
+                        embed.url = 'https://{}.net/post/show/{}'.format(
+                            booru,
                             keys[c - 1])
                         embed.set_footer(text=values[c - 1]['score'],
                                          icon_url=self._get_score(values[c - 1]['score']))
@@ -947,31 +943,11 @@ class MsG:
                     else:
                         await paginator.edit(content='\N{BLACK RIGHTWARDS ARROW}')
 
-                except exc.GoTo:
-                    await paginator.edit(content=f'`{c} / {len(posts)}`')
-                    number = await self.bot.wait_for('message', check=on_message, timeout=8*60)
-
-                    if int(number.content) != 0:
-                        c = int(number.content)
-
-                        embed.title = values[c - 1]['artist']
-                        embed.url = 'https://e621.net/post/show/{}'.format(
-                            keys[c - 1])
-                        embed.set_footer(text=values[c - 1]['score'],
-                                         icon_url=self._get_score(values[c - 1]['score']))
-                        embed.set_image(url=values[c - 1]['file_url'])
-
-                    if ctx.channel is d.TextChannel:
-                        with suppress(errext.CheckFailure):
-                            await number.delete()
-
-                    await paginator.edit(content='\N{HEAVY BLACK HEART}' if keys[c - 1] in hearted.keys() else None, embed=embed)
-
                 except exc.Right:
                     try:
                         if c % limit == 0:
                             await ctx.trigger_typing()
-                            temposts, order = await self._get_posts(ctx, booru='e621', tags=tags, limit=limit, previous=posts)
+                            temposts, order = await self._get_posts(ctx, booru=booru, tags=tags, limit=limit, previous=posts)
                             posts.update(temposts)
 
                             keys = list(posts.keys())
@@ -980,7 +956,8 @@ class MsG:
                         if c < len(keys):
                             c += 1
                             embed.title = values[c - 1]['artist']
-                            embed.url = 'https://e621.net/post/show/{}'.format(
+                            embed.url = 'https://{}.net/post/show/{}'.format(
+                                booru,
                                 keys[c - 1])
                             embed.set_footer(text=values[c - 1]['score'],
                                              icon_url=self._get_score(values[c - 1]['score']))
@@ -1028,152 +1005,53 @@ class MsG:
                     await ctx.author.send(content=f'`{n} / {len(hearted)}`', embed=embed)
                     n += 1
 
-    # @e621_paginator.error
-    # async def e621_paginator_error(self, ctx, error):
-    #     if isinstance(error, exc.NSFW):
-    #         await ctx.send('\N{NO ENTRY} {} **is not an NSFW channel**'.format(ctx.channel.mention))
-    #         await u.add_reaction(ctx.message, '\N{NO ENTRY}')
+    @cmds.command(name='e621page', aliases=['e621p', 'e6p', '6p'])
+    @checks.is_nsfw()
+    @cmds.cooldown(1, 5, cmds.BucketType.member)
+    async def e621_paginator(self, ctx, *args):
+        await self._get_paginator(ctx, args, booru='e621')
+
 
     @cmds.command(name='e926page', aliases=['e926p', 'e9p', '9p'])
     @cmds.cooldown(1, 5, cmds.BucketType.member)
     async def e926_paginator(self, ctx, *args):
-        def on_reaction(reaction, user):
-            if reaction.emoji == '\N{OCTAGONAL SIGN}' and reaction.message.id == ctx.message.id and (user is ctx.author or user.permissions_in(reaction.message.channel).manage_messages):
-                raise exc.Abort
-            elif reaction.emoji == '\N{HEAVY BLACK HEART}' and reaction.message.id == paginator.id and user is ctx.author:
-                raise exc.Save
-            elif reaction.emoji == '\N{LEFTWARDS BLACK ARROW}' and reaction.message.id == paginator.id and user is ctx.author:
-                raise exc.Left
-            elif reaction.emoji == '\N{NUMBER SIGN}\N{COMBINING ENCLOSING KEYCAP}' and reaction.message.id == paginator.id and user is ctx.author:
-                raise exc.GoTo
-            elif reaction.emoji == '\N{BLACK RIGHTWARDS ARROW}' and reaction.message.id == paginator.id and user is ctx.author:
-                raise exc.Right
-            return False
+        await self._get_paginator(ctx, args, booru='e926')
 
-        def on_message(msg):
-            return msg.content.isdigit() and 0 <= int(msg.content) <= len(posts) and msg.author is ctx.author and msg.channel is ctx.channel
-
+    async def _get_images(self, ctx, args, booru='e621'):
         try:
-            kwargs = u.get_kwargs(ctx, args)
-            tags = kwargs['remaining']
-            limit = self.LIMIT / 5
-            hearted = {}
-            c = 1
+            kwargs = u.get_kwargs(ctx, args, limit=3)
+            args, limit = kwargs['remaining'], kwargs['limit']
 
-            tags = self._get_favorites(ctx, tags)
+            tags = self._get_favorites(ctx, args)
 
             await ctx.trigger_typing()
 
-            posts, order = await self._get_posts(ctx, booru='e926', tags=tags, limit=limit)
-            keys = list(posts.keys())
-            values = list(posts.values())
+            posts, order = await self._get_posts(ctx, booru=booru, tags=tags, limit=limit)
 
-            embed = d.Embed(
-                title=values[c - 1]['artist'], url='https://e926.net/post/show/{}'.format(keys[c - 1]), color=ctx.me.color if isinstance(ctx.channel, d.TextChannel) else u.color)
-            embed.set_image(url=values[c - 1]['file_url'])
-            embed.set_author(name=' '.join(tags) if tags else order,
-                             url='https://e926.net/post?tags={}'.format(','.join(tags)), icon_url=ctx.author.avatar_url)
-            embed.set_footer(text=values[c - 1]['score'],
-                             icon_url=self._get_score(values[c - 1]['score']))
+            for ident, post in posts.items():
+                embed = d.Embed(title=post['artist'], url='https://{}.net/post/show/{}'.format(booru, ident),
+                                color=ctx.me.color if isinstance(ctx.channel, d.TextChannel) else u.color)
+                embed.set_image(url=post['file_url'])
+                embed.set_author(name=' '.join(tags) if tags else order,
+                                 url='https://{}.net/post?tags={}'.format(booru, ','.join(tags)), icon_url=ctx.author.avatar_url)
+                embed.set_footer(
+                    text=post['score'], icon_url=self._get_score(post['score']))
 
-            paginator = await ctx.send(embed=embed)
+                message = await ctx.send(embed=embed)
 
-            for emoji in ('\N{HEAVY BLACK HEART}', '\N{LEFTWARDS BLACK ARROW}', '\N{NUMBER SIGN}\N{COMBINING ENCLOSING KEYCAP}', '\N{BLACK RIGHTWARDS ARROW}'):
-                await paginator.add_reaction(emoji)
-            await u.add_reaction(ctx.message, '\N{OCTAGONAL SIGN}')
-            await asyncio.sleep(1)
+                self.bot.loop.create_task(self.queue_for_hearts(message=message, send=embed))
 
-            while not self.bot.is_closed():
-                try:
-                    await asyncio.gather(*[self.bot.wait_for('reaction_add', check=on_reaction, timeout=8*60),
-                                           self.bot.wait_for('reaction_remove', check=on_reaction, timeout=8*60)])
-
-                except exc.Save:
-                    if keys[c - 1] not in hearted:
-                        hearted[keys[c - 1]] = copy.deepcopy(embed)
-
-                        await paginator.edit(content='\N{HEAVY BLACK HEART}')
-                    else:
-                        del hearted[keys[c - 1]]
-
-                        await paginator.edit(content='\N{BROKEN HEART}')
-
-                except exc.Left:
-                    if c > 1:
-                        c -= 1
-                        embed.title = values[c - 1]['artist']
-                        embed.url = 'https://e926.net/post/show/{}'.format(
-                            keys[c - 1])
-                        embed.set_footer(text=values[c - 1]['score'],
-                                         icon_url=self._get_score(values[c - 1]['score']))
-                        embed.set_image(url=values[c - 1]['file_url'])
-
-                        await paginator.edit(content='\N{HEAVY BLACK HEART}' if keys[c - 1] in hearted.keys() else None, embed=embed)
-                    else:
-                        await paginator.edit(content='\N{BLACK RIGHTWARDS ARROW}')
-
-                except exc.GoTo:
-                    await paginator.edit(content=f'`{c} / {len(posts)}`')
-                    number = await self.bot.wait_for('message', check=on_message, timeout=8*60)
-
-                    if int(number.content) != 0:
-                        c = int(number.content)
-
-                        embed.title = values[c - 1]['artist']
-                        embed.url = 'https://e926.net/post/show/{}'.format(
-                            keys[c - 1])
-                        embed.set_footer(text=values[c - 1]['score'],
-                                         icon_url=self._get_score(values[c - 1]['score']))
-                        embed.set_image(url=values[c - 1]['file_url'])
-
-                    await number.delete()
-
-                    await paginator.edit(content='\N{HEAVY BLACK HEART}' if keys[c - 1] in hearted.keys() else None, embed=embed)
-
-                except exc.Right:
-                    try:
-                        if c % limit == 0:
-                            await ctx.trigger_typing()
-                            temposts, order = await self._get_posts(ctx, booru='e926', tags=tags, limit=limit, previous=posts)
-                            posts.update(temposts)
-
-                            keys = list(posts.keys())
-                            values = list(posts.values())
-
-                        if c < len(keys):
-                            c += 1
-                            embed.title = values[c - 1]['artist']
-                            embed.url = 'https://e926.net/post/show/{}'.format(
-                                keys[c - 1])
-                            embed.set_footer(text=values[c - 1]['score'],
-                                             icon_url=self._get_score(values[c - 1]['score']))
-                            embed.set_image(url=values[c - 1]['file_url'])
-
-                            await paginator.edit(content='\N{HEAVY BLACK HEART}' if keys[c - 1] in hearted.keys() else None, embed=embed)
-                        else:
-                            await paginator.edit(content='\N{LEFTWARDS BLACK ARROW}')
-
-                    except exc.NotFound:
-                        await paginator.edit(content='\N{LEFTWARDS BLACK ARROW}')
-
-        except exc.Abort:
-            try:
-                await paginator.edit(content='\N{WHITE HEAVY CHECK MARK}')
-            except UnboundLocalError:
-                await ctx.send('\N{WHITE HEAVY CHECK MARK}')
-        except asyncio.TimeoutError:
-            try:
-                await paginator.edit(content='\N{HOURGLASS}')
-            except UnboundLocalError:
-                await ctx.send('\N{HOURGLASS}')
-        except exc.NotFound as e:
-            await ctx.send('`{}` **not found**'.format(e))
-            await u.add_reaction(ctx.message, '\N{CROSS MARK}')
         except exc.TagBlacklisted as e:
-            await ctx.send('\N{NO ENTRY SIGN} `{}` **blacklisted**'.format(e))
-            await u.add_reaction(ctx.message, '\N{NO ENTRY SIGN}')
+            await ctx.send('`{}` **blacklisted**'.format(e))
+            await u.add_reaction(ctx.message, '\N{CROSS MARK}')
+        except exc.BoundsError as e:
+            await ctx.send('`{}` **out of bounds.** Images limited to 3.'.format(e))
+            await u.add_reaction(ctx.message, '\N{CROSS MARK}')
         except exc.TagBoundsError as e:
             await ctx.send('`{}` **out of bounds.** Tags limited to 5.'.format(e))
+            await u.add_reaction(ctx.message, '\N{CROSS MARK}')
+        except exc.NotFound as e:
+            await ctx.send('`{}` **not found**'.format(e))
             await u.add_reaction(ctx.message, '\N{CROSS MARK}')
         except exc.FavoritesNotFound:
             await ctx.send('**You have no favorite tags**')
@@ -1181,114 +1059,19 @@ class MsG:
         except exc.Timeout:
             await ctx.send('**Request timed out**')
             await u.add_reaction(ctx.message, '\N{CROSS MARK}')
-
-        finally:
-            if hearted:
-                await u.add_reaction(ctx.message, '\N{HOURGLASS WITH FLOWING SAND}')
-
-                n = 1
-                for embed in hearted.values():
-                    await ctx.author.send(content=f'`{n} / {len(hearted)}`', embed=embed)
-                    n += 1
 
     # Searches for and returns images from e621.net given tags when not blacklisted
     @cmds.command(aliases=['e6', '6'], brief='e621 | NSFW', description='e621 | NSFW\nTag-based search for e621.net\n\nYou can only search 5 tags and 6 images at once for now.\ne6 [tags...] ([# of images])')
     @checks.is_nsfw()
     @cmds.cooldown(1, 5, cmds.BucketType.member)
     async def e621(self, ctx, *args):
-        try:
-            kwargs = u.get_kwargs(ctx, args, limit=3)
-            args, limit = kwargs['remaining'], kwargs['limit']
-
-            tags = self._get_favorites(ctx, args)
-
-            await ctx.trigger_typing()
-
-            posts, order = await self._get_posts(ctx, booru='e621', tags=tags, limit=limit)
-
-            for ident, post in posts.items():
-                embed = d.Embed(title=post['artist'], url='https://e621.net/post/show/{}'.format(ident),
-                                color=ctx.me.color if isinstance(ctx.channel, d.TextChannel) else u.color)
-                embed.set_image(url=post['file_url'])
-                embed.set_author(name=' '.join(tags) if tags else order,
-                                 url='https://e621.net/post?tags={}'.format(','.join(tags)), icon_url=ctx.author.avatar_url)
-                embed.set_footer(
-                    text=post['score'], icon_url=self._get_score(post['score']))
-
-                message = await ctx.send(embed=embed)
-
-                self.bot.loop.create_task(self.queue_for_hearts(message=message, send=embed))
-
-        except exc.TagBlacklisted as e:
-            await ctx.send('`{}` **blacklisted**'.format(e))
-            await u.add_reaction(ctx.message, '\N{CROSS MARK}')
-        except exc.BoundsError as e:
-            await ctx.send('`{}` **out of bounds.** Images limited to 3.'.format(e))
-            await u.add_reaction(ctx.message, '\N{CROSS MARK}')
-        except exc.TagBoundsError as e:
-            await ctx.send('`{}` **out of bounds.** Tags limited to 5.'.format(e))
-            await u.add_reaction(ctx.message, '\N{CROSS MARK}')
-        except exc.NotFound as e:
-            await ctx.send('`{}` **not found**'.format(e))
-            await u.add_reaction(ctx.message, '\N{CROSS MARK}')
-        except exc.FavoritesNotFound:
-            await ctx.send('**You have no favorite tags**')
-            await u.add_reaction(ctx.message, '\N{CROSS MARK}')
-        except exc.Timeout:
-            await ctx.send('**Request timed out**')
-            await u.add_reaction(ctx.message, '\N{CROSS MARK}')
-
-    # @e621.error
-    # async def e621_error(self, ctx, error):
-    #     if isinstance(error, exc.NSFW):
-    #         await ctx.send('\N{NO ENTRY} {} **is not an NSFW channel**'.format(ctx.channel.mention))
-    #         await u.add_reaction(ctx.message, '\N{NO ENTRY}')
+        await self._get_images(ctx, args, booru='e621')
 
     # Searches for and returns images from e926.net given tags when not blacklisted
     @cmds.command(aliases=['e9', '9'], brief='e926 | SFW', description='e926 | SFW\nTag-based search for e926.net\n\nYou can only search 5 tags and 6 images at once for now.\ne9 [tags...] ([# of images])')
     @cmds.cooldown(1, 5, cmds.BucketType.member)
     async def e926(self, ctx, *args):
-        try:
-            kwargs = u.get_kwargs(ctx, args, limit=3)
-            args, limit = kwargs['remaining'], kwargs['limit']
-
-            tags = self._get_favorites(ctx, args)
-
-            await ctx.trigger_typing()
-
-            posts, order = await self._get_posts(ctx, booru='e926', tags=tags, limit=limit)
-
-            for ident, post in posts.items():
-                embed = d.Embed(title=post['artist'], url='https://e926.net/post/show/{}'.format(ident),
-                                color=ctx.me.color if isinstance(ctx.channel, d.TextChannel) else u.color)
-                embed.set_image(url=post['file_url'])
-                embed.set_author(name=' '.join(tags) if tags else order,
-                                 url='https://e621.net/post?tags={}'.format(','.join(tags)), icon_url=ctx.author.avatar_url)
-                embed.set_footer(
-                    text=post['score'], icon_url=self._get_score(post['score']))
-
-                message = await ctx.send(embed=embed)
-
-                self.bot.loop.create_task(self.queue_for_hearts(message=message, send=embed))
-
-        except exc.TagBlacklisted as e:
-            await ctx.send('`{}` **blacklisted**'.format(e))
-            await u.add_reaction(ctx.message, '\N{CROSS MARK}')
-        except exc.BoundsError as e:
-            await ctx.send('`{}` **out of bounds.** Images limited to 3.'.format(e))
-            await u.add_reaction(ctx.message, '\N{CROSS MARK}')
-        except exc.TagBoundsError as e:
-            await ctx.send('`{}` **out of bounds.** Tags limited to 5.'.format(e))
-            await u.add_reaction(ctx.message, '\N{CROSS MARK}')
-        except exc.NotFound as e:
-            await ctx.send('`{}` **not found**'.format(e))
-            await u.add_reaction(ctx.message, '\N{CROSS MARK}')
-        except exc.FavoritesNotFound:
-            await ctx.send('**You have no favorite tags**')
-            await u.add_reaction(ctx.message, '\N{CROSS MARK}')
-        except exc.Timeout:
-            await ctx.send('**Request timed out**')
-            await u.add_reaction(ctx.message, '\N{CROSS MARK}')
+        await self._get_images(ctx, args, booru='e926')
 
     # @cmds.group(aliases=['fave', 'fav', 'f'])
     # async def favorite(self, ctx):
