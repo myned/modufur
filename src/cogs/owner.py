@@ -27,8 +27,6 @@ class Bot:
     async def die(self, ctx):
         await u.add_reaction(ctx.message, '\N{CRESCENT MOON}')
 
-        await self.bot.get_channel(u.config['info_channel']).send('**Shutting down** \N{CRESCENT MOON} . . .')
-
         chantype = 'guild' if isinstance(ctx.channel, d.TextChannel) else 'private'
         u.temp['startup'] = (chantype, ctx.channel.id if chantype == 'guild' else ctx.author.id, ctx.message.id)
         u.dump(u.temp, 'temp/temp.pkl')
@@ -37,7 +35,6 @@ class Bot:
         # for task in loop:
         #     task.cancel()
         print('\n< < < < < < < < < < < <\nD I S C O N N E C T E D\n< < < < < < < < < < < <\n')
-        # u.notify('D I S C O N N E C T E D')
         await self.bot.logout()
 
     @cmds.command(name=',restart', aliases=[',res', ',r'], hidden=True)
@@ -46,8 +43,6 @@ class Bot:
         await u.add_reaction(ctx.message, '\N{SLEEPING SYMBOL}')
 
         print('\n^ ^ ^ ^ ^ ^ ^ ^ ^ ^\nR E S T A R T I N G\n^ ^ ^ ^ ^ ^ ^ ^ ^ ^\n')
-        await self.bot.get_channel(u.config['info_channel']).send('**Restarting** \N{SLEEPING SYMBOL} . . .')
-        # u.notify('R E S T A R T I N G')
 
         chantype = 'guild' if isinstance(ctx.channel, d.TextChannel) else 'private'
         u.temp['startup'] = (chantype, ctx.channel.id if chantype == 'guild' else ctx.author.id, ctx.message.id)

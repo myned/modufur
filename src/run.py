@@ -87,8 +87,6 @@ async def on_ready():
         print('\n> > > > > > > > >\nC O N N E C T E D : {}\n> > > > > > > > >\n'.format(bot.user.name))
 
         try:
-            await bot.get_channel(u.config['info_channel']).send(f'**Started** \N{BLACK SUN WITH RAYS} `{"` or `".join(u.config["prefix"])}`')
-
             if u.temp['startup']:
                 with suppress(err.NotFound):
                     if u.temp['startup'][0] == 'guild':
@@ -142,21 +140,11 @@ async def on_error(error, *args, **kwargs):
     print('\n! ! ! ! !\nE R R O R : {}\n! ! ! ! !\n'.format(sys.exc_info()[1].text), file=sys.stderr)
     tb.print_exc()
     await bot.get_user(u.config['owner_id']).send('**ERROR** \N{WARNING SIGN}\n```\n{}```'.format(error))
-    await bot.get_channel(u.config['info_channel']).send('**ERROR** \N{WARNING SIGN}\n```\n{}```'.format(error))
 
     if u.temp['startup']:
-        with suppress(err.NotFound):
-            if u.temp['startup'][0] == 'guild':
-                ctx = bot.get_channel(u.temp['startup'][1])
-            else:
-                ctx = bot.get_user(u.temp['startup'][1])
-            message = await ctx.get_message(u.temp['startup'][2])
-
-            await message.add_reaction('\N{WARNING SIGN}')
-
         u.temp.clear()
         u.dump(u.temp, 'temp/temp.pkl')
-    # u.notify('E R R O R')
+
     await bot.logout()
 
 
@@ -165,12 +153,14 @@ async def on_command_error(ctx, error):
     with suppress(err.NotFound):
         if isinstance(error, err.NotFound):
             print('NOT FOUND')
+        elif isinstance(error, errext.CommandInvokeError):
+            print(f'ERROR : {error}')
         elif isinstance(error, err.Forbidden):
             pass
         elif isinstance(error, errext.CommandOnCooldown):
-                await u.add_reaction(ctx.message, '\N{HOURGLASS}')
-                await asyncio.sleep(error.retry_after)
-                await u.add_reaction(ctx.message, '\N{WHITE HEAVY CHECK MARK}')
+            await u.add_reaction(ctx.message, '\N{HOURGLASS}')
+            await asyncio.sleep(error.retry_after)
+            await u.add_reaction(ctx.message, '\N{WHITE HEAVY CHECK MARK}')
         elif isinstance(error, errext.MissingRequiredArgument):
             await ctx.send('**Missing required argument**')
             await u.add_reaction(ctx.message, '\N{CROSS MARK}')
@@ -184,14 +174,11 @@ async def on_command_error(ctx, error):
             print('INVALID COMMAND : {}'.format(error), file=sys.stderr)
             await u.add_reaction(ctx.message, '\N{BLACK QUESTION MARK ORNAMENT}')
         else:
-            print('\n! ! ! ! ! ! !  ! ! ! ! !\nC O M M A N D  E R R O R : {}\n! ! ! ! ! ! !  ! ! ! ! !\n'.format(
-                error), file=sys.stderr)
+            print('\n! ! ! ! ! ! !  ! ! ! ! !\nC O M M A N D  E R R O R : {}\n! ! ! ! ! ! !  ! ! ! ! !\n'.format(error), file=sys.stderr)
             tb.print_exception(type(error), error, error.__traceback__, file=sys.stderr)
             await bot.get_user(u.config['owner_id']).send('**COMMAND ERROR** \N{WARNING SIGN} `{}` from {} in {}\n```\n{}```'.format(ctx.message.content, ctx.author.mention, ctx.channel.mention if isinstance(ctx.channel, d.channel.TextChannel) else 'DMs', error))
-            await bot.get_channel(u.config['info_channel']).send('**COMMAND ERROR** \N{WARNING SIGN} `{}` from {} in {}\n```\n{}```'.format(ctx.message.content, ctx.author.name, ctx.channel.mention if isinstance(ctx.channel, d.channel.TextChannel) else 'DMs', error))
             await exc.send_error(ctx, error)
             await u.add_reaction(ctx.message, '\N{WARNING SIGN}')
-            # u.notify('C O M M A N D  E R R O R')
 
 # @bot.event
 # async def on_command(ctx):

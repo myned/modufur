@@ -20,11 +20,6 @@ from misc import exceptions as exc
 print('\nPID : {}\n'.format(os.getpid()))
 
 
-# def notify(message):
-#     subprocess.run(['terminal-notifier', '-message', message, '-title',
-#                     'Modumind', '-activate', 'com.apple.Terminal', '-appIcon', 'icon.png', '-sound', 'Ping'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-
-
 try:
     with open('config.json') as infile:
         config = jsn.load(infile)
@@ -32,7 +27,7 @@ try:
 
 except FileNotFoundError:
     with open('config.json', 'w') as outfile:
-        jsn.dump({'client_id': 0, 'info_channel': 0, 'owner_id': 0, 'permissions': 126016,
+        jsn.dump({'client_id': 0, 'owner_id': 0, 'permissions': 126016,
                   'playing': 'a game', 'prefix': [',', 'm,'], 'selfbot': False, 'token': 'str'}, outfile, indent=4, sort_keys=True)
         print('FILE NOT FOUND : config.json created with abstract values. Restart run.py with correct values')
 
