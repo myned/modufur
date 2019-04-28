@@ -26,13 +26,18 @@ async def get_post(url):
         if value != '#':
             ident = re.search('show/([0-9]+)', value).group(1)
             post = await u.fetch('http://e621.net/post/show.json', params={'id': ident}, json=True)
+
+            if (post['status'] == 'deleted'):
+                ident = re.search('#(\\d+)', post['delreason']).group(1)
+                post = await u.fetch('http://e621.net/post/show.json', params={'id': ident}, json=True)
+
             return post
         else:
             raise IndexError
 
     except IndexError:
         try:
-            raise exc.MatchError(re.search('\/([^\/]+)$', url).group(1))
+            raise exc.MatchError(re.search('\\/([^\\/]+)$', url).group(1))
 
         except AttributeError:
             raise exc.MissingArgument
