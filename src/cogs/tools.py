@@ -21,7 +21,7 @@ youtube = None
 tempfile.tempdir = os.getcwd()
 
 
-class Utils:
+class Utils(cmds.Cog):
 
     def __init__(self, bot):
         self.bot = bot

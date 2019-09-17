@@ -13,7 +13,7 @@ from misc import checks
 from utils import utils as u
 
 
-class Administration:
+class Admin(cmds.Cog):
 
     def __init__(self, bot):
         self.bot = bot

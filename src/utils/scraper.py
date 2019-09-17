@@ -16,31 +16,51 @@ async def get_post(url):
         if filesize > 8192 * 1024:
             raise exc.SizeError(size(filesize, system=alternative))
 
-    except (ValueError, KeyError):
-        raise exc.MissingArgument
+        content = await u.fetch('http://iqdb.harry.lu', params={'url': url})
+        soup = BeautifulSoup(content, 'html.parser')
+        source = soup.find_all('a', limit=2)[1].get('href')
 
-    content = await u.fetch('http://iqdb.harry.lu', params={'url': url})
-
-    try:
-        value = BeautifulSoup(content, 'html.parser').find_all('a')[1].get('href')
-        if value != '#':
-            ident = re.search('show/([0-9]+)', value).group(1)
+        if source != '#':
+            ident = re.search('show/([0-9]+)', source).group(1)
             post = await u.fetch('http://e621.net/post/show.json', params={'id': ident}, json=True)
-
             if (post['status'] == 'deleted'):
                 ident = re.search('#(\\d+)', post['delreason']).group(1)
                 post = await u.fetch('http://e621.net/post/show.json', params={'id': ident}, json=True)
+            source = f'https://e621.net/post/show/{post["id"]}'
+            similarity = re.search('\\d+', soup.find(string=re.compile('similarity'))).group(0) + '% Match'
 
-            return post
+            return post, source, similarity
         else:
             raise IndexError
 
     except IndexError:
-        try:
-            raise exc.MatchError(re.search('\\/([^\\/]+)$', url).group(1))
+        content = await u.fetch(
+            'https://saucenao.com/search.php',
+            params={
+                'url': url,
+                'api_key': u.config['saucenao_api'],
+                'output_type': 2},
+            json=True)
+        result = content['results'][0]
+        if 'author_name' in result['data']:
+            artist = 'author_name'
+        elif 'member_name' in result['data']:
+            artist = 'member_name'
+        else:
+            artist = 'creator'
+        post = {
+            'file_url': result['header']['thumbnail'],
+            'artist': [result['data'][artist]],
+            'score': 'SauceNAO'}
+        source = result['data']['ext_urls'][0]
+        similarity = re.search('(\\d+)\\.', result['header']['similarity']).group(1) + '% Match'
 
-        except AttributeError:
-            raise exc.MissingArgument
+        return post, source, similarity
+
+        raise exc.MatchError(re.search('\\/([^\\/]+)$', url).group(1))
+
+    except (AttributeError, ValueError, KeyError):
+        raise exc.MissingArgument
 
 
 async def get_image(url):

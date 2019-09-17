@@ -8,7 +8,7 @@ from misc import exceptions as exc
 from utils import utils as u
 
 
-class Info:
+class Info(cmds.Cog):
 
     def __init__(self, bot):
         self.bot = bot

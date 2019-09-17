@@ -21,7 +21,7 @@ from utils import utils as u
 from utils import formatter, scraper
 
 
-class MsG:
+class MsG(cmds.Cog):
 
     def __init__(self, bot):
         self.bot = bot
@@ -106,8 +106,10 @@ class MsG:
 
         return args
 
-    def _get_score(self, score):
-        if score < 0:
+    def _get_icon(self, score):
+        if score is 'SauceNAO':
+            return 'https://d2.alternativeto.net/dist/icons/saucenao_23437.png?width=64&height=64&mode=crop&upscale=false'
+        elif score < 0:
             return 'https://emojipedia-us.s3.amazonaws.com/thumbs/320/twitter/103/pouting-face_1f621.png'
         elif score == 0:
             return 'https://emojipedia-us.s3.amazonaws.com/thumbs/320/mozilla/36/pile-of-poo_1f4a9.png'
@@ -301,7 +303,7 @@ class MsG:
                 embed.set_author(name=f'{post["width"]} x {post["height"]}',
                                  url=f'https://e621.net/post?tags=ratio:{post["width"]/post["height"]:.2f}', icon_url=ctx.author.avatar_url)
                 embed.set_footer(text=post['score'],
-                                 icon_url=self._get_score(post['score']))
+                                 icon_url=self._get_icon(post['score']))
 
         except exc.MissingArgument:
             await ctx.send('\N{CROSS MARK} **Invalid url**')
@@ -399,17 +401,21 @@ class MsG:
                 try:
                     await ctx.trigger_typing()
 
-                    post = await scraper.get_post(url)
+                    post, source, similarity = await scraper.get_post(url)
 
                     embed = d.Embed(
-                        title=', '.join(post['artist']), url=f'https://e621.net/post/show/{post["id"]}', color=ctx.me.color if isinstance(ctx.channel, d.TextChannel) else u.color)
+                        title=', '.join(post['artist']),
+                        url=source,
+                        color=ctx.me.color if isinstance(ctx.channel, d.TextChannel) else u.color)
                     embed.set_image(url=post['file_url'])
-                    embed.set_author(name=f'{post["width"]} x {post["height"]}',
-                                     url=f'https://e621.net/post?tags=ratio:{post["width"]/post["height"]:.2f}', icon_url=ctx.author.avatar_url)
-                    embed.set_footer(text=post['score'],
-                                     icon_url=self._get_score(post['score']))
+                    embed.set_author(
+                        name=similarity,
+                        icon_url=ctx.author.avatar_url)
+                    embed.set_footer(
+                        text=post['score'],
+                        icon_url=self._get_icon(post['score']))
 
-                    await ctx.send('**Probable match**', embed=embed)
+                    await ctx.send(embed=embed)
 
                     c += 1
 
@@ -437,7 +443,7 @@ class MsG:
     async def reversify(self, ctx, *args):
         try:
             dest = ctx
-            kwargs = u.get_kwargs(ctx, args, limit=self.HISTORY_LIMIT / 5)
+            kwargs = u.get_kwargs(ctx, args, limit=5)
             remove, limit = kwargs['remove'], kwargs['limit']
             links = {}
             c = 0
@@ -470,17 +476,21 @@ class MsG:
                     try:
                         await ctx.trigger_typing()
 
-                        post = await scraper.get_post(url)
+                        post, source, similarity = await scraper.get_post(url)
 
                         embed = d.Embed(
-                            title=', '.join(post['artist']), url=f'https://e621.net/post/show/{post["id"]}', color=ctx.me.color if isinstance(ctx.channel, d.TextChannel) else u.color)
+                            title=', '.join(post['artist']),
+                            url=source,
+                            color=ctx.me.color if isinstance(ctx.channel, d.TextChannel) else u.color)
                         embed.set_image(url=post['file_url'])
-                        embed.set_author(name=f'{post["width"]} x {post["height"]}',
-                                         url=f'https://e621.net/post?tags=ratio:{post["width"]/post["height"]:.2f}', icon_url=ctx.author.avatar_url)
+                        embed.set_author(
+                            name=similarity,
+                            icon_url=message.author.avatar_url)
                         embed.set_footer(
-                            text=post['score'], icon_url=self._get_score(post['score']))
+                            text=post['score'],
+                            icon_url=self._get_icon(post['score']))
 
-                        await dest.send(f'**Probable match from** {message.author.display_name}', embed=embed)
+                        await dest.send(embed=embed)
                         await message.add_reaction('\N{WHITE HEAVY CHECK MARK}')
 
                         if remove:
@@ -529,17 +539,21 @@ class MsG:
                 try:
                     await message.channel.trigger_typing()
 
-                    post = await scraper.get_post(url)
+                    post, source, similarity = await scraper.get_post(url)
 
                     embed = d.Embed(
-                        title=', '.join(post['artist']), url=f'https://e621.net/post/show/{post["id"]}', color=message.channel.guild.me.color if isinstance(message.channel, d.TextChannel) else u.color)
+                        title=', '.join(post['artist']),
+                        url=source,
+                        color=message.channel.guild.me.color if isinstance(message.channel, d.TextChannel) else u.color)
                     embed.set_image(url=post['file_url'])
-                    embed.set_author(name=f'{post["width"]} x {post["height"]}',
-                                     url=f'https://e621.net/post?tags=ratio:{post["width"]/post["height"]:.2f}', icon_url=message.author.avatar_url)
-                    embed.set_footer(text=post['score'],
-                                     icon_url=self._get_score(post['score']))
+                    embed.set_author(
+                        name=similarity,
+                        icon_url=message.author.avatar_url)
+                    embed.set_footer(
+                        text=post['score'],
+                        icon_url=self._get_icon(post['score']))
 
-                    await message.channel.send('**Probable match from** {}'.format(message.author.display_name), embed=embed)
+                    await message.channel.send(embed=embed)
 
                     await message.add_reaction('\N{WHITE HEAVY CHECK MARK}')
 
@@ -768,7 +782,7 @@ class MsG:
             embed.set_author(name=pool['name'],
                              url='https://e621.net/pool/show?id={}'.format(pool['id']), icon_url=ctx.author.avatar_url)
             embed.set_footer(text='{} / {}'.format(c, len(posts)),
-                             icon_url=self._get_score(values[c - 1]['score']))
+                             icon_url=self._get_icon(values[c - 1]['score']))
 
             paginator = await ctx.send(embed=embed)
 
@@ -799,7 +813,7 @@ class MsG:
                         embed.url = 'https://e621.net/post/show/{}'.format(
                             keys[c - 1])
                         embed.set_footer(text='{} / {}'.format(c, len(posts)),
-                                         icon_url=self._get_score(values[c - 1]['score']))
+                                         icon_url=self._get_icon(values[c - 1]['score']))
                         embed.set_image(url=values[c - 1]['file_url'])
 
                         await paginator.edit(content='\N{HEAVY BLACK HEART}' if keys[c - 1] in hearted.keys() else None, embed=embed)
@@ -817,7 +831,7 @@ class MsG:
                         embed.url = 'https://e621.net/post/show/{}'.format(
                             keys[c - 1])
                         embed.set_footer(text='{} / {}'.format(c, len(posts)),
-                                         icon_url=self._get_score(values[c - 1]['score']))
+                                         icon_url=self._get_icon(values[c - 1]['score']))
                         embed.set_image(url=values[c - 1]['file_url'])
 
                     if ctx.channel is d.TextChannel:
@@ -833,7 +847,7 @@ class MsG:
                         embed.url = 'https://e621.net/post/show/{}'.format(
                             keys[c - 1])
                         embed.set_footer(text='{} / {}'.format(c, len(posts)),
-                                         icon_url=self._get_score(values[c - 1]['score']))
+                                         icon_url=self._get_icon(values[c - 1]['score']))
                         embed.set_image(url=values[c - 1]['file_url'])
 
                         await paginator.edit(content='\N{HEAVY BLACK HEART}' if keys[c - 1] in hearted.keys() else None, embed=embed)
@@ -904,7 +918,7 @@ class MsG:
             embed.set_author(name=' '.join(tags) if tags else order,
                              url='https://{}.net/post?tags={}'.format(booru, ','.join(tags)), icon_url=ctx.author.avatar_url)
             embed.set_footer(text=values[c - 1]['score'],
-                             icon_url=self._get_score(values[c - 1]['score']))
+                             icon_url=self._get_icon(values[c - 1]['score']))
 
             paginator = await ctx.send(embed=embed)
 
@@ -936,7 +950,7 @@ class MsG:
                             booru,
                             keys[c - 1])
                         embed.set_footer(text=values[c - 1]['score'],
-                                         icon_url=self._get_score(values[c - 1]['score']))
+                                         icon_url=self._get_icon(values[c - 1]['score']))
                         embed.set_image(url=values[c - 1]['file_url'])
 
                         await paginator.edit(content='\N{HEAVY BLACK HEART}' if keys[c - 1] in hearted.keys() else None, embed=embed)
@@ -960,7 +974,7 @@ class MsG:
                                 booru,
                                 keys[c - 1])
                             embed.set_footer(text=values[c - 1]['score'],
-                                             icon_url=self._get_score(values[c - 1]['score']))
+                                             icon_url=self._get_icon(values[c - 1]['score']))
                             embed.set_image(url=values[c - 1]['file_url'])
 
                             await paginator.edit(content='\N{HEAVY BLACK HEART}' if keys[c - 1] in hearted.keys() else None, embed=embed)
@@ -1035,7 +1049,7 @@ class MsG:
                 embed.set_author(name=' '.join(tags) if tags else order,
                                  url='https://{}.net/post?tags={}'.format(booru, ','.join(tags)), icon_url=ctx.author.avatar_url)
                 embed.set_footer(
-                    text=post['score'], icon_url=self._get_score(post['score']))
+                    text=post['score'], icon_url=self._get_icon(post['score']))
 
                 message = await ctx.send(embed=embed)
 
