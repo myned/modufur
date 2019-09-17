@@ -37,7 +37,6 @@ async def on_ready():
         for cog in (
                 tools.Utils(bot),
                 owner.Bot(bot),
-                owner.Tools(bot),
                 management.Admin(bot),
                 info.Info(bot),
                 booru.MsG(bot)):
