@@ -443,7 +443,7 @@ class MsG(cmds.Cog):
     async def reversify(self, ctx, *args):
         try:
             dest = ctx
-            kwargs = u.get_kwargs(ctx, args, limit=self.HISTORY_LIMIT / 5)
+            kwargs = u.get_kwargs(ctx, args, limit=5)
             remove, limit = kwargs['remove'], kwargs['limit']
             links = {}
             c = 0
