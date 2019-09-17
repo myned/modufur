@@ -16,7 +16,7 @@ from utils import utils as u
 from utils import formatter
 
 
-class Bot:
+class Bot(cmds.Cog):
 
     def __init__(self, bot):
         self.bot = bot
@@ -182,7 +182,7 @@ class Bot:
             await u.add_reaction(ctx.message, '\N{CROSS MARK}')
 
 
-class Tools:
+class Tools(cmds.Cog):
 
     def __init__(self, bot):
         self.bot = bot

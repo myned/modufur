@@ -21,7 +21,7 @@ from utils import utils as u
 from utils import formatter, scraper
 
 
-class MsG:
+class MsG(cmds.Cog):
 
     def __init__(self, bot):
         self.bot = bot

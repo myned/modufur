@@ -26,8 +26,7 @@ bot = cmds.Bot(
     command_prefix=get_prefix,
     self_bot=u.config['selfbot'],
     description='Modufur - A booru bot with a side of management and automated tasking'
-                '\nMade by @Myned#3985',
-    help_attrs={'aliases': ['h']}, pm_help=None)
+                '\nMade by @Myned#3985')
 
 
 @bot.event
@@ -39,7 +38,7 @@ async def on_ready():
                 tools.Utils(bot),
                 owner.Bot(bot),
                 owner.Tools(bot),
-                management.Administration(bot),
+                management.Admin(bot),
                 info.Info(bot),
                 booru.MsG(bot)):
             bot.add_cog(cog)
@@ -60,7 +59,7 @@ async def on_ready():
                         ctx = bot.get_channel(u.temp['startup'][1])
                     else:
                         ctx = bot.get_user(u.temp['startup'][1])
-                    message = await ctx.get_message(u.temp['startup'][2])
+                    message = await ctx.fetch_message(u.temp['startup'][2])
 
                     await message.add_reaction('\N{WHITE HEAVY CHECK MARK}')
 
@@ -80,10 +79,10 @@ async def on_ready():
         if u.tasks['auto_del']:
             for channel in u.tasks['auto_del']:
                 temp = bot.get_channel(channel)
-                bot.loop.create_task(u.cogs['Administration'].queue_for_deletion(temp))
+                bot.loop.create_task(u.cogs['Admin'].queue_for_deletion(temp))
                 print(f'RESTARTED : auto-deleting in #{temp.name}')
-            u.cogs['Administration'].deleting = True
-            bot.loop.create_task(u.cogs['Administration'].delete())
+            u.cogs['Admin'].deleting = True
+            bot.loop.create_task(u.cogs['Admin'].delete())
 
         if u.config['playing'] is not '':
             await bot.change_presence(activity=d.Game(u.config['playing']))
