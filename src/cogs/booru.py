@@ -397,30 +397,29 @@ class MsG(cmds.Cog):
             for attachment in ctx.message.attachments:
                 urls.append(attachment.url)
 
-            for url in urls:
-                try:
-                    await ctx.trigger_typing()
+            async with ctx.channel.typing():
+                for url in urls:
+                    try:
+                        post, source, similarity = await scraper.get_post(url)
 
-                    post, source, similarity = await scraper.get_post(url)
+                        embed = d.Embed(
+                            title=', '.join(post['artist']),
+                            url=source,
+                            color=ctx.me.color if isinstance(ctx.channel, d.TextChannel) else u.color)
+                        embed.set_image(url=post['file_url'])
+                        embed.set_author(
+                            name=similarity,
+                            icon_url=ctx.author.avatar_url)
+                        embed.set_footer(
+                            text=post['score'],
+                            icon_url=self._get_icon(post['score']))
 
-                    embed = d.Embed(
-                        title=', '.join(post['artist']),
-                        url=source,
-                        color=ctx.me.color if isinstance(ctx.channel, d.TextChannel) else u.color)
-                    embed.set_image(url=post['file_url'])
-                    embed.set_author(
-                        name=similarity,
-                        icon_url=ctx.author.avatar_url)
-                    embed.set_footer(
-                        text=post['score'],
-                        icon_url=self._get_icon(post['score']))
+                        await ctx.send(embed=embed)
 
-                    await ctx.send(embed=embed)
+                        c += 1
 
-                    c += 1
-
-                except exc.MatchError as e:
-                    await ctx.send('**No probable match for:** `{}`'.format(e))
+                    except exc.MatchError as e:
+                        await ctx.send('**No probable match for:** `{}`'.format(e))
 
             if not c:
                 await u.add_reaction(ctx.message, '\N{CROSS MARK}')
@@ -471,43 +470,42 @@ class MsG(cmds.Cog):
                 raise exc.NotFound
 
             n = 1
-            for message, urls in links.items():
-                for url in urls:
-                    try:
-                        await ctx.trigger_typing()
+            async with ctx.channel.typing():
+                for message, urls in links.items():
+                    for url in urls:
+                        try:
+                            post, source, similarity = await scraper.get_post(url)
 
-                        post, source, similarity = await scraper.get_post(url)
+                            embed = d.Embed(
+                                title=', '.join(post['artist']),
+                                url=source,
+                                color=ctx.me.color if isinstance(ctx.channel, d.TextChannel) else u.color)
+                            embed.set_image(url=post['file_url'])
+                            embed.set_author(
+                                name=similarity,
+                                icon_url=message.author.avatar_url)
+                            embed.set_footer(
+                                text=post['score'],
+                                icon_url=self._get_icon(post['score']))
 
-                        embed = d.Embed(
-                            title=', '.join(post['artist']),
-                            url=source,
-                            color=ctx.me.color if isinstance(ctx.channel, d.TextChannel) else u.color)
-                        embed.set_image(url=post['file_url'])
-                        embed.set_author(
-                            name=similarity,
-                            icon_url=message.author.avatar_url)
-                        embed.set_footer(
-                            text=post['score'],
-                            icon_url=self._get_icon(post['score']))
+                            await dest.send(embed=embed)
+                            await message.add_reaction('\N{WHITE HEAVY CHECK MARK}')
 
-                        await dest.send(embed=embed)
-                        await message.add_reaction('\N{WHITE HEAVY CHECK MARK}')
+                            if remove:
+                                with suppress(err.NotFound):
+                                    await message.delete()
 
-                        if remove:
-                            with suppress(err.NotFound):
-                                await message.delete()
+                        except exc.MatchError as e:
+                            await dest.send('`{} / {}` **No probable match for:** `{}`'.format(n, len(links), e))
+                            await message.add_reaction('\N{CROSS MARK}')
+                            c -= 1
+                        except exc.SizeError as e:
+                            await dest.send(f'`{e}` **too large.** Maximum is 8 MB')
+                            await message.add_reaction('\N{CROSS MARK}')
+                            c -= 1
 
-                    except exc.MatchError as e:
-                        await dest.send('`{} / {}` **No probable match for:** `{}`'.format(n, len(links), e))
-                        await message.add_reaction('\N{CROSS MARK}')
-                        c -= 1
-                    except exc.SizeError as e:
-                        await dest.send(f'`{e}` **too large.** Maximum is 8 MB')
-                        await message.add_reaction('\N{CROSS MARK}')
-                        c -= 1
-
-                    finally:
-                        n += 1
+                        finally:
+                            n += 1
 
             if c <= 0:
                 await u.add_reaction(ctx.message, '\N{CROSS MARK}')
@@ -535,40 +533,39 @@ class MsG(cmds.Cog):
             for attachment in message.attachments:
                 urls.append(attachment.url)
 
-            for url in urls:
-                try:
-                    await message.channel.trigger_typing()
+            async with message.channel.typing():
+                for url in urls:
+                    try:
+                        post, source, similarity = await scraper.get_post(url)
 
-                    post, source, similarity = await scraper.get_post(url)
+                        embed = d.Embed(
+                            title=', '.join(post['artist']),
+                            url=source,
+                            color=message.channel.guild.me.color if isinstance(message.channel, d.TextChannel) else u.color)
+                        embed.set_image(url=post['file_url'])
+                        embed.set_author(
+                            name=similarity,
+                            icon_url=message.author.avatar_url)
+                        embed.set_footer(
+                            text=post['score'],
+                            icon_url=self._get_icon(post['score']))
 
-                    embed = d.Embed(
-                        title=', '.join(post['artist']),
-                        url=source,
-                        color=message.channel.guild.me.color if isinstance(message.channel, d.TextChannel) else u.color)
-                    embed.set_image(url=post['file_url'])
-                    embed.set_author(
-                        name=similarity,
-                        icon_url=message.author.avatar_url)
-                    embed.set_footer(
-                        text=post['score'],
-                        icon_url=self._get_icon(post['score']))
+                        await message.channel.send(embed=embed)
 
-                    await message.channel.send(embed=embed)
+                        await message.add_reaction('\N{WHITE HEAVY CHECK MARK}')
 
-                    await message.add_reaction('\N{WHITE HEAVY CHECK MARK}')
+                        with suppress(err.NotFound):
+                            await message.delete()
 
-                    with suppress(err.NotFound):
-                        await message.delete()
-
-                except exc.MatchError as e:
-                    await message.channel.send('**No probable match for:** `{}`'.format(e))
-                    await message.add_reaction('\N{CROSS MARK}')
-                except exc.SizeError as e:
-                    await message.channel.send(f'`{e}` **too large.** Maximum is 8 MB')
-                    await message.add_reaction('\N{CROSS MARK}')
-                except Exception:
-                    await message.channel.send(f'**An unknown error occurred.**')
-                    await message.add_reaction('\N{WARNING SIGN}')
+                    except exc.MatchError as e:
+                        await message.channel.send('**No probable match for:** `{}`'.format(e))
+                        await message.add_reaction('\N{CROSS MARK}')
+                    except exc.SizeError as e:
+                        await message.channel.send(f'`{e}` **too large.** Maximum is 8 MB')
+                        await message.add_reaction('\N{CROSS MARK}')
+                    except Exception:
+                        await message.channel.send(f'**An unknown error occurred.**')
+                        await message.add_reaction('\N{WARNING SIGN}')
 
         print('STOPPED : reversifying')
 
