@@ -27,9 +27,9 @@ async def get_post(url):
                 ident = re.search('#(\\d+)', post['delreason']).group(1)
                 post = await u.fetch('http://e621.net/post/show.json', params={'id': ident}, json=True)
             source = f'https://e621.net/post/show/{post["id"]}'
-            similarity = re.search('\\d+', soup.find(string=re.compile('similarity'))).group(0) + '% Match'
+            similarity = re.search('\\d+', soup.find(string=re.compile('similarity'))).group(0)
 
-            return post, source, similarity
+            return post, source, similarity + '% Match'
         else:
             raise IndexError
 
@@ -53,9 +53,10 @@ async def get_post(url):
             'artist': [result['data'][artist]],
             'score': 'SauceNAO'}
         source = result['data']['ext_urls'][0]
-        similarity = re.search('(\\d+)\\.', result['header']['similarity']).group(1) + '% Match'
+        similarity = re.search('(\\d+)\\.', result['header']['similarity']).group(1)
 
-        return post, source, similarity
+        if int(similarity) >= 55:
+            return post, source, similarity + '% Match'
 
         raise exc.MatchError(re.search('\\/([^\\/]+)$', url).group(1))
 
