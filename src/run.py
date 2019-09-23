@@ -118,8 +118,8 @@ async def on_command_error(ctx, error):
     with suppress(err.NotFound):
         if isinstance(error, err.NotFound):
             print('NOT FOUND')
-        elif isinstance(error, errext.CommandInvokeError):
-            print(f'ERROR : {error}')
+        # elif isinstance(error, errext.CommandInvokeError):
+        #     print(f'ERROR : {error}')
         elif isinstance(error, err.Forbidden):
             pass
         elif isinstance(error, errext.CommandOnCooldown):
@@ -144,9 +144,9 @@ async def on_command_error(ctx, error):
                   '\n! ! ! ! ! ! !  ! ! ! ! !\n', file=sys.stderr)
             tb.print_exception(type(error), error, error.__traceback__, file=sys.stderr)
             await bot.get_user(u.config['owner_id']).send(
-                '**COMMAND ERROR** \N{WARNING SIGN}'
-                f'`{ctx.message.content}`'
-                f'from {ctx.author.mention}'
+                '**COMMAND ERROR** \N{WARNING SIGN} '
+                f'`{ctx.message.content}` '
+                f'from {ctx.author.mention} '
                 f'in {ctx.channel.mention if isinstance(ctx.channel, d.channel.TextChannel) else "DMs"}'
                 '\n```\n'
                 f'{error}```')
