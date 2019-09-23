@@ -106,23 +106,6 @@ class MsG(cmds.Cog):
 
         return args
 
-    def _get_icon(self, score):
-        if score is 'SauceNAO':
-            return 'https://d2.alternativeto.net/dist/icons/saucenao_23437.png?width=64&height=64&mode=crop&upscale=false'
-        elif score < 0:
-            return 'https://emojipedia-us.s3.amazonaws.com/thumbs/320/twitter/103/pouting-face_1f621.png'
-        elif score == 0:
-            return 'https://emojipedia-us.s3.amazonaws.com/thumbs/320/mozilla/36/pile-of-poo_1f4a9.png'
-        elif 10 > score > 0:
-            return 'https://emojipedia-us.s3.amazonaws.com/thumbs/320/twitter/103/white-medium-star_2b50.png'
-        elif 50 > score >= 10:
-            return 'https://emojipedia-us.s3.amazonaws.com/thumbs/320/twitter/103/glowing-star_1f31f.png'
-        elif 100 > score >= 50:
-            return 'https://emojipedia-us.s3.amazonaws.com/thumbs/320/twitter/103/dizzy-symbol_1f4ab.png'
-        elif score >= 100:
-            return 'https://emojipedia-us.s3.amazonaws.com/thumbs/320/twitter/103/sparkles_2728.png'
-        return None
-
     async def _send_hearts(self):
         while self.hearting:
             temp = await self.heartqueue.get()
@@ -384,7 +367,7 @@ class MsG(cmds.Cog):
 
     # Reverse image searches a linked image using the public iqdb
     @cmds.cooldown(1, 5, cmds.BucketType.member)
-    @cmds.command(name='reverse', aliases=['rev', 'ris'], brief='Reverse image search from e621', description='NSFW\nReverse-search an image with given URL')
+    @cmds.command(name='reverse', aliases=['rev', 'ris'], brief='Reverse image search from Kheina and SauceNAO', description='NSFW\nReverse-search an image with given URL')
     async def reverse(self, ctx, *args):
         try:
             kwargs = u.get_kwargs(ctx, args)
@@ -400,19 +383,15 @@ class MsG(cmds.Cog):
             async with ctx.channel.typing():
                 for url in urls:
                     try:
-                        post, source, similarity = await scraper.get_post(url)
+                        result = await scraper.get_post(url)
 
                         embed = d.Embed(
-                            title=', '.join(post['artist']),
-                            url=source,
+                            title=result['artist'],
+                            url=result['source'],
                             color=ctx.me.color if isinstance(ctx.channel, d.TextChannel) else u.color)
-                        embed.set_image(url=post['file_url'])
-                        embed.set_author(
-                            name=similarity,
-                            icon_url=ctx.author.avatar_url)
-                        embed.set_footer(
-                            text=post['score'],
-                            icon_url=self._get_icon(post['score']))
+                        embed.set_image(url=result['thumbnail'])
+                        embed.set_author(name=result['similarity'] + '% Match', icon_url=ctx.author.avatar_url)
+                        embed.set_footer(text=result['database'])
 
                         await ctx.send(embed=embed)
 
@@ -474,19 +453,15 @@ class MsG(cmds.Cog):
                 for message, urls in links.items():
                     for url in urls:
                         try:
-                            post, source, similarity = await scraper.get_post(url)
+                            result = await scraper.get_post(url)
 
                             embed = d.Embed(
-                                title=', '.join(post['artist']),
-                                url=source,
+                                title=result['artist'],
+                                url=result['source'],
                                 color=ctx.me.color if isinstance(ctx.channel, d.TextChannel) else u.color)
-                            embed.set_image(url=post['file_url'])
-                            embed.set_author(
-                                name=similarity,
-                                icon_url=message.author.avatar_url)
-                            embed.set_footer(
-                                text=post['score'],
-                                icon_url=self._get_icon(post['score']))
+                            embed.set_image(url=result['thumbnail'])
+                            embed.set_author(name=result['similarity'] + '% Match', icon_url=ctx.author.avatar_url)
+                            embed.set_footer(text=result['database'])
 
                             await dest.send(embed=embed)
                             await message.add_reaction('\N{WHITE HEAVY CHECK MARK}')
@@ -536,19 +511,15 @@ class MsG(cmds.Cog):
             async with message.channel.typing():
                 for url in urls:
                     try:
-                        post, source, similarity = await scraper.get_post(url)
+                        result = await scraper.get_post(url)
 
                         embed = d.Embed(
-                            title=', '.join(post['artist']),
-                            url=source,
-                            color=message.channel.guild.me.color if isinstance(message.channel, d.TextChannel) else u.color)
-                        embed.set_image(url=post['file_url'])
-                        embed.set_author(
-                            name=similarity,
-                            icon_url=message.author.avatar_url)
-                        embed.set_footer(
-                            text=post['score'],
-                            icon_url=self._get_icon(post['score']))
+                            title=result['artist'],
+                            url=result['source'],
+                            color=message.me.color if isinstance(message.channel, d.TextChannel) else u.color)
+                        embed.set_image(url=result['thumbnail'])
+                        embed.set_author(name=result['similarity'] + '% Match', icon_url=message.author.avatar_url)
+                        embed.set_footer(text=result['database'])
 
                         await message.channel.send(embed=embed)
 
