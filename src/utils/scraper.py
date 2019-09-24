@@ -3,7 +3,7 @@ import ast
 import re
 
 from bs4 import BeautifulSoup
-from lxml import html
+import lxml
 from hurry.filesize import size, alternative
 
 from misc import exceptions as exc
@@ -108,7 +108,7 @@ async def get_post(url):
 async def get_image(url):
     content = await u.fetch(url)
 
-    value = html.fromstring(content).xpath(
+    value = lxml.html.fromstring(content).xpath(
         'string(/html/body/div[@id="content"]/div[@id="post-view"]/div[@class="content"]/div[2]/img/@src)')
 
     return value
