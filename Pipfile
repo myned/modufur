@@ -20,6 +20,7 @@ beautifulsoup4 = "*"
 "discord.py" = {extras = ["voice"],git = "https://github.com/Rapptz/discord.py"}
 "hurry.filesize" = "*"
 requests = "*"
+html5lib = "*"
 
 [dev-packages]
 lxml = "*"
