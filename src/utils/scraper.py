@@ -12,7 +12,7 @@ from utils import utils as u
 
 # async def get_harry(url):
 #     content = await u.fetch('https://iqdb.harry.lu', params={'url': url})
-#     soup = BeautifulSoup(content, 'html.parser')
+#     soup = BeautifulSoup(content, 'html5lib')
 #
 #     if soup.find('div', id='show1').string is 'Not the right one? ':
 #         parent = soup.find('th', string='Probable match:').parent.parent
@@ -41,17 +41,25 @@ from utils import utils as u
 
 
 async def get_kheina(url):
-    content = await u.fetch('https://kheina.com', params={'url': url})
-    soup = BeautifulSoup(content, 'html.parser')
+    content = await u.fetch('https://kheina.com', params={'url': url}, text=True)
 
-    results = ast.literal_eval(soup.find('data', id='results').string)[-1]
-    iqdbdata = ast.literal_eval(soup.find('data', id='iqdbdata').string)[0]
+    content = content.replace('&quot;', 'quot;').replace('&apos;', 'apos;')
+    soup = BeautifulSoup(content, 'html5lib')
+    results = soup.find('data', id='results').string.replace('quot;', '&quot;').replace('apos;', '&apos;')
+    results = ast.literal_eval(results)
+    iqdbdata = soup.find('data', id='iqdbdata').string
+    iqdbdata = ast.literal_eval(iqdbdata)
+
+    for e in results:
+        if iqdbdata[0]['iqdbid'] in e:
+            match = e
+            break
 
     result = {
-        'source': results[3],
-        'artist': results[4],
-        'thumbnail': f'https://f002.backblazeb2.com/file/kheinacom/{results[1]}.jpg',
-        'similarity': str(int(float(iqdbdata['similarity']))),
+        'source': match[3],
+        'artist': match[4],
+        'thumbnail': f'https://f002.backblazeb2.com/file/kheinacom/{match[1]}.jpg',
+        'similarity': str(int(float(iqdbdata[0]['similarity']))),
         'database': 'Kheina'
         }
 
@@ -63,6 +71,7 @@ async def get_saucenao(url):
         'https://saucenao.com/search.php',
         params={'url': url, 'api_key': u.config['saucenao_api'], 'output_type': 2},
         json=True)
+
     results = content['results'][0]
     for i in range(len(content['results'])):
         if 'e621' in content['results'][i]['header']['index_name']:
