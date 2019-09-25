@@ -40,7 +40,7 @@ from utils import utils as u
 #         return False
 
 
-async def get_kheina(url):
+async def query_kheina(url):
     content = await u.fetch('https://kheina.com', params={'url': url}, text=True)
 
     content = content.replace('&quot;', 'quot;').replace('&apos;', 'apos;')
@@ -66,7 +66,7 @@ async def get_kheina(url):
     return result
 
 
-async def get_saucenao(url):
+async def query_saucenao(url):
     content = await u.fetch(
         'https://saucenao.com/search.php',
         params={'url': url, 'api_key': u.config['saucenao_api'], 'output_type': 2},
@@ -102,9 +102,9 @@ async def get_post(url):
         if filesize > 8192 * 1024:
             raise exc.SizeError(size(filesize, system=alternative))
 
-        result = await get_kheina(url)
+        result = await query_kheina(url)
         if int(result['similarity']) < 55:
-            result = await get_saucenao(url)
+            result = await query_saucenao(url)
         if int(result['similarity']) < 55:
             raise exc.MatchError(re.search('\\/([^\\/]+)$', url).group(1))
 
