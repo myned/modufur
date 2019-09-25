@@ -60,6 +60,21 @@ class MsG(cmds.Cog):
         #     self.updating = True
         #     self.bot.loop.create_task(self._update_suggested())
 
+    def _get_icon(self, score):
+        if score < 0:
+            return 'https://emojipedia-us.s3.amazonaws.com/thumbs/320/twitter/103/pouting-face_1f621.png'
+        elif score == 0:
+            return 'https://emojipedia-us.s3.amazonaws.com/thumbs/320/mozilla/36/pile-of-poo_1f4a9.png'
+        elif 10 > score > 0:
+            return 'https://emojipedia-us.s3.amazonaws.com/thumbs/320/twitter/103/white-medium-star_2b50.png'
+        elif 50 > score >= 10:
+            return 'https://emojipedia-us.s3.amazonaws.com/thumbs/320/twitter/103/glowing-star_1f31f.png'
+        elif 100 > score >= 50:
+            return 'https://emojipedia-us.s3.amazonaws.com/thumbs/320/twitter/103/dizzy-symbol_1f4ab.png'
+        elif score >= 100:
+            return 'https://emojipedia-us.s3.amazonaws.com/thumbs/320/twitter/103/sparkles_2728.png'
+        return None
+
     async def _update_suggested(self):
         while self.updating:
             print('Checking for tag updates...')
