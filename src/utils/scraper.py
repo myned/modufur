@@ -50,6 +50,10 @@ async def query_kheina(url):
     iqdbdata = soup.find('data', id='iqdbdata').string
     iqdbdata = ast.literal_eval(iqdbdata)
 
+    similarity = int(float(iqdbdata[0]['similarity']))
+    if similarity < 55:
+        return False
+
     for e in results:
         if iqdbdata[0]['iqdbid'] in e:
             match = e
@@ -59,9 +63,9 @@ async def query_kheina(url):
         'source': match[3],
         'artist': match[4],
         'thumbnail': f'https://f002.backblazeb2.com/file/kheinacom/{match[1]}.jpg',
-        'similarity': str(int(float(iqdbdata[0]['similarity']))),
+        'similarity': str(similarity),
         'database': 'Kheina'
-        }
+    }
 
     return result
 
@@ -74,22 +78,33 @@ async def query_saucenao(url):
 
     match = content['results'][0]
 
-    if 'author_name' in match['data']:
-        artist = 'author_name'
-    elif 'member_name' in match['data']:
-        artist = 'member_name'
-    elif 'creator' in match['data']:
-        artist = 'creator'
-    else:
-        artist = 'imdb_id'
+    similarity = int(float(match['header']['similarity']))
+    if similarity < 55:
+        return False
+
+    source = match['data']['ext_urls'][0]
+    for e in match['data']['ext_urls']:
+        if 'e621' in e:
+            source = e
+            break
+
+    artist = 'Unknown'
+    for e in (
+        'author_name',
+        'member_name',
+        'creator'
+    ):
+        if e in match['data']:
+            artist = match['data'][e]
+            break
 
     result = {
-        'source': match['data']['ext_urls'][0],
-        'artist': match['data'][artist],
+        'source': source,
+        'artist': artist,
         'thumbnail': match['header']['thumbnail'],
-        'similarity': str(int(float(match['header']['similarity']))),
+        'similarity': str(similarity),
         'database': 'SauceNAO'
-        }
+    }
 
     return result
 
@@ -102,9 +117,9 @@ async def get_post(url):
             raise exc.SizeError(size(filesize, system=alternative))
 
         result = await query_kheina(url)
-        if int(result['similarity']) < 55:
+        if not result:
             result = await query_saucenao(url)
-        if int(result['similarity']) < 55:
+        if not result:
             raise exc.MatchError(re.search('\\/([^\\/]+)$', url).group(1))
 
         return result
