@@ -81,19 +81,30 @@ async def query_saucenao(url):
     similarity = int(float(match['header']['similarity']))
     if similarity < 55:
         return False
-        artist = 'member_name'
-    elif 'creator' in match['data']:
-        artist = 'creator'
-    else:
-        artist = 'imdb_id'
+
+    source = match['data']['ext_urls'][0]
+    for e in match['data']['ext_urls']:
+        if 'e621' in e:
+            source = e
+            break
+
+    artist = 'Unknown'
+    for e in (
+        'author_name',
+        'member_name',
+        'creator'
+    ):
+        if e in match['data']:
+            artist = match['data'][e]
+            break
 
     result = {
-        'source': match['data']['ext_urls'][0],
-        'artist': match['data'][artist],
+        'source': source,
+        'artist': artist,
         'thumbnail': match['header']['thumbnail'],
         'similarity': str(similarity),
         'database': 'SauceNAO'
-        }
+    }
 
     return result
 
