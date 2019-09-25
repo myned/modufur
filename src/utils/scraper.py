@@ -72,23 +72,22 @@ async def query_saucenao(url):
         params={'url': url, 'api_key': u.config['saucenao_api'], 'output_type': 2},
         json=True)
 
-    results = content['results'][0]
-    for i in range(len(content['results'])):
-        if 'e621' in content['results'][i]['header']['index_name']:
-            results = content['results'][i]
+    match = content['results'][0]
 
-    if 'author_name' in results['data']:
+    if 'author_name' in match['data']:
         artist = 'author_name'
-    elif 'member_name' in results['data']:
+    elif 'member_name' in match['data']:
         artist = 'member_name'
-    else:
+    elif 'creator' in match['data']:
         artist = 'creator'
+    else:
+        artist = 'imdb_id'
 
     result = {
-        'source': results['data']['ext_urls'][0],
-        'artist': results['data'][artist],
-        'thumbnail': results['header']['thumbnail'],
-        'similarity': str(int(float(results['header']['similarity']))),
+        'source': match['data']['ext_urls'][0],
+        'artist': match['data'][artist],
+        'thumbnail': match['header']['thumbnail'],
+        'similarity': str(int(float(match['header']['similarity']))),
         'database': 'SauceNAO'
         }
 
