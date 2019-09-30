@@ -45,6 +45,8 @@ async def query_kheina(url):
 
     for e in ('&quot;', '&apos;'):
         content = content.replace(e, '')
+    content = re.sub('<a href="/cdn-cgi/l/email-protection".+</a>', '', content)
+
     soup = BeautifulSoup(content, 'html5lib')
     results = soup.find('data', id='results').string
     results = ast.literal_eval(results)
