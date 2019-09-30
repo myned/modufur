@@ -43,9 +43,12 @@ from utils import utils as u
 async def query_kheina(url):
     content = await u.fetch('https://kheina.com', params={'url': url}, text=True)
 
-    content = content.replace('&quot;', 'quot;').replace('&apos;', 'apos;')
+    for e in ('&quot;', '&apos;'):
+        content = content.replace(e, '')
+    content = re.sub('<a href="/cdn-cgi/l/email-protection".+</a>', '', content)
+
     soup = BeautifulSoup(content, 'html5lib')
-    results = soup.find('data', id='results').string.replace('quot;', '&quot;').replace('apos;', '&apos;')
+    results = soup.find('data', id='results').string
     results = ast.literal_eval(results)
     iqdbdata = soup.find('data', id='iqdbdata').string
     iqdbdata = ast.literal_eval(iqdbdata)
