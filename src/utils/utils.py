@@ -81,18 +81,20 @@ cogs = {}
 color = d.Color(0x1A1A1A)
 last_commands = {}
 
+asession = aiohttp.ClientSession()
+
 
 async def fetch(url, *, params={}, json=False, response=False, text=False):
-    async with aiohttp.ClientSession() as session:
-        async with session.get(url, params=params, headers={'User-Agent': 'Myned/Modufur'}, ssl=False) as r:
-            if json:
-                return await r.json()
-            elif response:
-                return r
-            elif text:
-                return await r.text()
-            else:
-                return await r.read()
+    async with asession.get(url, params=params, headers={
+            'User-Agent': 'Myned/Modufur (https://github.com/Myned/Modufur)'}, ssl=False) as r:
+        if json:
+            return await r.json()
+        elif response:
+            return r
+        elif text:
+            return await r.text()
+        else:
+            return await r.read()
 
 
 def generate_embed(ctx, *, title=d.Embed.Empty, kind='rich', description=d.Embed.Empty, url=d.Embed.Empty, timestamp=d.Embed.Empty, colour=color, footer={}, image=d.Embed.Empty, thumbnail=d.Embed.Empty, author={}, fields=[]):
