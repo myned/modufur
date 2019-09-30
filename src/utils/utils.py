@@ -1,4 +1,3 @@
-import asyncio
 import json as jsn
 import os
 import pickle as pkl
@@ -11,8 +10,6 @@ import discord as d
 from discord import errors as err
 
 from misc import exceptions as exc
-
-# from pync import Notifier
 
 
 print('\nPID : {}\n'.format(os.getpid()))
