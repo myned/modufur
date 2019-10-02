@@ -7,11 +7,9 @@ async def send_error(ctx, error):
     await ctx.send('{}\n```\n{}```'.format(base, error))
 
 
-# class NSFW(errext.CheckFailure):
-#     pass
-
 class Remove(Exception):
     pass
+
 
 class SizeError(Exception):
     pass
@@ -45,6 +43,7 @@ class Save(Exception):
     def __init__(self, user=None, message=None):
         self.user = user
         self.message = message
+
 
 class GoTo(Exception):
     pass
