@@ -24,7 +24,7 @@ except FileNotFoundError:
     with open('config.json', 'w') as outfile:
         jsn.dump({'client_id': 0, 'owner_id': 0, 'permissions': 126016,
                   'playing': 'a game', 'prefix': [',', 'm,'], 'selfbot': False, 'token': 'str', 'saucenao_api': 'str'}, outfile, indent=4, sort_keys=True)
-        print('FILE NOT FOUND : config.json created with abstract values. Restart run.py with correct values')
+        print('FILE NOT FOUND : config.json created with default values. Restart run.py with correct values')
 
 
 def setdefault(filename, default=None, json=False):
@@ -87,10 +87,10 @@ asession = aiohttp.ClientSession()
 async def fetch(url, *, params={}, json=False, response=False, text=False):
     async with asession.get(url, params=params, headers={
             'User-Agent': 'Myned/Modufur (https://github.com/Myned/Modufur)'}, ssl=False) as r:
-        if json:
-            return await r.json()
-        elif response:
+        if response:
             return r
+        elif json:
+            return await r.json()
         elif text:
             return await r.text()
         else:
