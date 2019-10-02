@@ -48,6 +48,10 @@ async def query_kheina(url):
     content = re.sub('<a href="/cdn-cgi/l/email-protection".+</a>', '', content)
 
     soup = BeautifulSoup(content, 'html5lib')
+
+    if soup.find('data', id='error'):
+        return False
+
     results = soup.find('data', id='results').string
     results = ast.literal_eval(results)
     iqdbdata = soup.find('data', id='iqdbdata').string
