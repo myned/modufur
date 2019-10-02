@@ -87,10 +87,10 @@ asession = aiohttp.ClientSession()
 async def fetch(url, *, params={}, json=False, response=False, text=False):
     async with asession.get(url, params=params, headers={
             'User-Agent': 'Myned/Modufur (https://github.com/Myned/Modufur)'}, ssl=False) as r:
-        if json:
-            return await r.json()
-        elif response:
+        if response:
             return r
+        elif json:
+            return await r.json()
         elif text:
             return await r.text()
         else:
