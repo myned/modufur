@@ -83,6 +83,9 @@ async def query_saucenao(url):
         params={'url': url, 'api_key': u.config['saucenao_api'], 'output_type': 2},
         json=True)
 
+    if content['header'].get('message', '') == 'Access to specified file was denied... ;_;':
+        raise exc.ImageError
+
     match = content['results'][0]
 
     similarity = int(float(match['header']['similarity']))

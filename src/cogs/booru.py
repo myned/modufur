@@ -430,6 +430,10 @@ class MsG(cmds.Cog):
         except err.HTTPException:
             await ctx.send('\N{HEAVY EXCLAMATION MARK SYMBOL} **The image database returned an unexpected result.** It may be offline')
             await u.add_reaction(ctx.message, '\N{HEAVY EXCLAMATION MARK SYMBOL}')
+        except exc.ImageError:
+            await ctx.send(
+                '\N{HEAVY EXCLAMATION MARK SYMBOL} **None of the search engines could use this file.** '
+                'Try opening it in a browser and uploading the copied file into Discord')
 
     @cmds.command(name='reversify', aliases=['revify', 'risify', 'rify'])
     @cmds.cooldown(1, 5, cmds.BucketType.member)
@@ -509,6 +513,10 @@ class MsG(cmds.Cog):
         except err.HTTPException:
             await dest.send('\N{HEAVY EXCLAMATION MARK SYMBOL} **The image database returned an unexpected result.** It may be offline')
             await u.add_reaction(ctx.message, '\N{HEAVY EXCLAMATION MARK SYMBOL}')
+        except exc.ImageError:
+            await ctx.send(
+                '\N{HEAVY EXCLAMATION MARK SYMBOL} **None of the search engines could use this file.** '
+                'Try opening it in a browser and uploading the copied file into Discord')
 
     async def _reversify(self):
         while self.reversifying:
