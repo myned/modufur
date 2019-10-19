@@ -67,7 +67,7 @@ async def query_kheina(url):
             break
 
     result = {
-        'source': match[3],
+        'source': match[3].replace('\\', ''),
         'artist': match[4],
         'thumbnail': f'https://f002.backblazeb2.com/file/kheinacom/{match[1]}.jpg',
         'similarity': str(similarity),
