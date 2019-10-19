@@ -128,10 +128,10 @@ async def on_command_error(ctx, error):
             await u.add_reaction(ctx.message, '\N{WHITE HEAVY CHECK MARK}')
         elif isinstance(error, errext.MissingRequiredArgument):
             await ctx.send('**Missing required argument**')
-            await u.add_reaction(ctx.message, '\N{CROSS MARK}')
+            await u.add_reaction(ctx.message, '\N{HEAVY EXCLAMATION MARK SYMBOL}')
         elif isinstance(error, errext.BadArgument):
             await ctx.send(f'**Invalid argument.** {error}')
-            await u.add_reaction(ctx.message, '\N{CROSS MARK}')
+            await u.add_reaction(ctx.message, '\N{HEAVY EXCLAMATION MARK SYMBOL}')
         elif isinstance(error, errext.CheckFailure):
             await ctx.send('**Insufficient permissions**')
             await u.add_reaction(ctx.message, '\N{NO ENTRY}')
