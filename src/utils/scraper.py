@@ -67,7 +67,7 @@ async def query_kheina(url):
             break
 
     result = {
-        'source': match[3],
+        'source': match[3].replace('\\', ''),
         'artist': match[4],
         'thumbnail': f'https://f002.backblazeb2.com/file/kheinacom/{match[1]}.jpg',
         'similarity': str(similarity),
@@ -82,6 +82,9 @@ async def query_saucenao(url):
         'https://saucenao.com/search.php',
         params={'url': url, 'api_key': u.config['saucenao_api'], 'output_type': 2},
         json=True)
+
+    if content['header'].get('message', '') == 'Access to specified file was denied... ;_;':
+        raise exc.ImageError
 
     match = content['results'][0]
 

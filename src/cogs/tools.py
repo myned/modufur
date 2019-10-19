@@ -63,15 +63,17 @@ class Utils(cmds.Cog):
 
             try:
                 await tempchannel.send(message)
+                await ctx.add_reaction('\N{WHITE HEAVY CHECK MARK}')
 
             except AttributeError:
                 await ctx.send('**Invalid channel**')
-                await u.add_reaction(ctx.message, '\N{CROSS MARK}')
+                await u.add_reaction(ctx.message, '\N{HEAVY EXCLAMATION MARK SYMBOL}')
 
         except AttributeError:
             await ctx.send('**Invalid guild**')
-            await u.add_reaction(ctx.message, '\N{CROSS MARK}')
+            await u.add_reaction(ctx.message, '\N{HEAVY EXCLAMATION MARK SYMBOL}')
 
     @send.command(name='user', aliases=['u', 'member', 'm'])
     async def send_user(self, ctx, user, *, message):
         await d.utils.get(self.bot.get_all_members(), id=int(user)).send(message)
+        await ctx.add_reaction('\N{WHITE HEAVY CHECK MARK}')

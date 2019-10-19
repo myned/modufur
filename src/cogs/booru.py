@@ -277,7 +277,7 @@ class MsG(cmds.Cog):
     async def get(self, ctx):
         if not ctx.invoked_subcommand:
             await ctx.send('**Use a flag to get items.**\n*Type* `{}help get` *for more info.*'.format(ctx.prefix))
-            await u.add_reaction(ctx.message, '\N{CROSS MARK}')
+            await u.add_reaction(ctx.message, '\N{HEAVY EXCLAMATION MARK SYMBOL}')
 
     @get.command(name='info', aliases=['i'], brief='(get) Get info from post', description='Return info for given post URL or ID\n\nExample:\n\{p\}get info 1145042')
     async def _get_info(self, ctx, *args):
@@ -304,8 +304,8 @@ class MsG(cmds.Cog):
                                  icon_url=self._get_icon(post['score']))
 
         except exc.MissingArgument:
-            await ctx.send('\N{CROSS MARK} **Invalid url**')
-            await u.add_reaction(ctx.message, '\N{CROSS MARK}')
+            await ctx.send('\N{HEAVY EXCLAMATION MARK SYMBOL} **Invalid url**')
+            await u.add_reaction(ctx.message, '\N{HEAVY EXCLAMATION MARK SYMBOL}')
 
     @get.command(name='image', aliases=['img'], brief='(get) Get direct image from post', description='Return direct image URL for given post\n\nExample:\n\{p\}get image 1145042')
     async def _get_image(self, ctx, *args):
@@ -331,8 +331,8 @@ class MsG(cmds.Cog):
                 await u.add_reaction(ctx.message, '\N{CROSS MARK}')
 
         except exc.MissingArgument:
-            await ctx.send('\N{CROSS MARK} **Invalid url or file**')
-            await u.add_reaction(ctx.message, '\N{CROSS MARK}')
+            await ctx.send('\N{HEAVY EXCLAMATION MARK SYMBOL} **Invalid url or file**')
+            await u.add_reaction(ctx.message, '\N{HEAVY EXCLAMATION MARK SYMBOL}')
 
     @get.command(name='pool', aliases=['p'], brief='(get) Get pool from query', description='Return pool info for given query\n\nExample:\n\{p\}get pool 1145042')
     async def _get_pool(self, ctx, *args):
@@ -422,14 +422,18 @@ class MsG(cmds.Cog):
                     await ctx.message.delete()
 
         except exc.MissingArgument:
-            await ctx.send('\N{CROSS MARK} **Invalid url or file.** Be sure the link directs to an image file')
-            await u.add_reaction(ctx.message, '\N{CROSS MARK}')
+            await ctx.send('\N{HEAVY EXCLAMATION MARK SYMBOL} **Invalid url or file.** Be sure the link directs to an image file')
+            await u.add_reaction(ctx.message, '\N{HEAVY EXCLAMATION MARK SYMBOL}')
         except exc.SizeError as e:
             await ctx.send(f'`{e}` **too large.** Maximum is 8 MB')
-            await u.add_reaction(ctx.message, '\N{CROSS MARK}')
+            await u.add_reaction(ctx.message, '\N{HEAVY EXCLAMATION MARK SYMBOL}')
         except err.HTTPException:
-            await ctx.send('\N{CROSS MARK} **The image database returned an unexpected result.** It may be offline')
-            await u.add_reaction(ctx.message, '\N{CROSS MARK}')
+            await ctx.send('\N{HEAVY EXCLAMATION MARK SYMBOL} **The image database returned an unexpected result.** It may be offline')
+            await u.add_reaction(ctx.message, '\N{HEAVY EXCLAMATION MARK SYMBOL}')
+        except exc.ImageError:
+            await ctx.send(
+                '\N{HEAVY EXCLAMATION MARK SYMBOL} **None of the search engines could use this file.** '
+                'Try opening it in a browser and uploading the copied file into Discord')
 
     @cmds.command(name='reversify', aliases=['revify', 'risify', 'rify'])
     @cmds.cooldown(1, 5, cmds.BucketType.member)
@@ -502,13 +506,17 @@ class MsG(cmds.Cog):
 
         except exc.NotFound:
             await dest.send('**No matches found**')
-            await u.add_reaction(ctx.message, '\N{CROSS MARK}')
+            await u.add_reaction(ctx.message, '\N{HEAVY EXCLAMATION MARK SYMBOL}')
         except exc.BoundsError as e:
-            await dest.send('`{}` **invalid limit.** Query limited to 30'.format(e))
-            await u.add_reaction(ctx.message, '\N{CROSS MARK}')
+            await dest.send('`{}` **invalid limit.** Query limited to 5'.format(e))
+            await u.add_reaction(ctx.message, '\N{HEAVY EXCLAMATION MARK SYMBOL}')
         except err.HTTPException:
-            await dest.send('\N{CROSS MARK} **The image database returned an unexpected result.** It may be offline')
-            await u.add_reaction(ctx.message, '\N{CROSS MARK}')
+            await dest.send('\N{HEAVY EXCLAMATION MARK SYMBOL} **The image database returned an unexpected result.** It may be offline')
+            await u.add_reaction(ctx.message, '\N{HEAVY EXCLAMATION MARK SYMBOL}')
+        except exc.ImageError:
+            await ctx.send(
+                '\N{HEAVY EXCLAMATION MARK SYMBOL} **None of the search engines could use this file.** '
+                'Try opening it in a browser and uploading the copied file into Discord')
 
     async def _reversify(self):
         while self.reversifying:
@@ -548,7 +556,7 @@ class MsG(cmds.Cog):
                         await message.add_reaction('\N{CROSS MARK}')
                     except exc.SizeError as e:
                         await message.channel.send(f'`{e}` **too large.** Maximum is 8 MB')
-                        await message.add_reaction('\N{CROSS MARK}')
+                        await message.add_reaction('\N{HEAVY EXCLAMATION MARK SYMBOL}')
                     except Exception:
                         await message.channel.send(f'**An unknown error occurred.**')
                         await message.add_reaction('\N{WARNING SIGN}')
@@ -985,7 +993,7 @@ class MsG(cmds.Cog):
             await u.add_reaction(ctx.message, '\N{NO ENTRY SIGN}')
         except exc.TagBoundsError as e:
             await ctx.send('`{}` **out of bounds.** Tags limited to 5.'.format(e))
-            await u.add_reaction(ctx.message, '\N{CROSS MARK}')
+            await u.add_reaction(ctx.message, '\N{HEAVY EXCLAMATION MARK SYMBOL}')
         except exc.FavoritesNotFound:
             await ctx.send('**You have no favorite tags**')
             await u.add_reaction(ctx.message, '\N{CROSS MARK}')
@@ -1043,10 +1051,10 @@ class MsG(cmds.Cog):
             await u.add_reaction(ctx.message, '\N{CROSS MARK}')
         except exc.BoundsError as e:
             await ctx.send('`{}` **out of bounds.** Images limited to 3.'.format(e))
-            await u.add_reaction(ctx.message, '\N{CROSS MARK}')
+            await u.add_reaction(ctx.message, '\N{HEAVY EXCLAMATION MARK SYMBOL}')
         except exc.TagBoundsError as e:
             await ctx.send('`{}` **out of bounds.** Tags limited to 5.'.format(e))
-            await u.add_reaction(ctx.message, '\N{CROSS MARK}')
+            await u.add_reaction(ctx.message, '\N{HEAVY EXCLAMATION MARK SYMBOL}')
         except exc.NotFound as e:
             await ctx.send('`{}` **not found**'.format(e))
             await u.add_reaction(ctx.message, '\N{CROSS MARK}')
@@ -1185,9 +1193,9 @@ class MsG(cmds.Cog):
             await ctx.send(
                 '**Use a flag to manage blacklists.**\n'
                 f'*Type* `{ctx.prefix}help bl` *for more info.*')
-            await u.add_reaction(ctx.message, '\N{CROSS MARK}')
+            await u.add_reaction(ctx.message, '\N{HEAVY EXCLAMATION MARK SYMBOL}')
         elif not ctx.args:
-            await ctx.send('\N{CROSS MARK} **Missing arguments**')
+            await ctx.send('\N{HEAVY EXCLAMATION MARK SYMBOL} **Missing arguments**')
 
     @blacklist.group(
         name='get',
@@ -1197,8 +1205,8 @@ class MsG(cmds.Cog):
         usage='[blacklist]')
     async def get_blacklist(self, ctx):
         if not ctx.invoked_subcommand:
-            await ctx.send('\N{CROSS MARK} **Invalid blacklist**')
-            await u.add_reaction(ctx.message, '\N{CROSS MARK}')
+            await ctx.send('\N{HEAVY EXCLAMATION MARK SYMBOL} **Invalid blacklist**')
+            await u.add_reaction(ctx.message, '\N{HEAVY EXCLAMATION MARK SYMBOL}')
 
     @get_blacklist.command(
         name='global',
@@ -1366,8 +1374,8 @@ class MsG(cmds.Cog):
         usage='[blacklist] [tags...]')
     async def remove_tags(self, ctx):
         if not ctx.invoked_subcommand:
-            await ctx.send('\N{CROSS MARK} **Invalid blacklist**')
-            await u.add_reaction(ctx.message, '\N{CROSS MARK}')
+            await ctx.send('\N{HEAVY EXCLAMATION MARK SYMBOL} **Invalid blacklist**')
+            await u.add_reaction(ctx.message, '\N{HEAVY EXCLAMATION MARK SYMBOL}')
 
     def _remove(self, remove, lst):
         removed = set()
@@ -1464,8 +1472,8 @@ class MsG(cmds.Cog):
         usage='[blacklist]')
     async def clear_blacklist(self, ctx):
         if not ctx.invoked_subcommand:
-            await ctx.send('\N{CROSS MARK} **Invalid blacklist**')
-            await u.add_reaction(ctx.message, '\N{CROSS MARK}')
+            await ctx.send('\N{HEAVY EXCLAMATION MARK SYMBOL} **Invalid blacklist**')
+            await u.add_reaction(ctx.message, '\N{HEAVY EXCLAMATION MARK SYMBOL}')
 
     @clear_blacklist.command(
         name='global',

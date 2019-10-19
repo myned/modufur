@@ -179,7 +179,7 @@ class Bot(cmds.Cog):
             await ctx.send(f'**Username changed to** `{username}`')
         else:
             await ctx.send('**Invalid string**')
-            await u.add_reaction(ctx.message, '\N{CROSS MARK}')
+            await u.add_reaction(ctx.message, '\N{HEAVY EXCLAMATION MARK SYMBOL}')
 
 
 class Tools(cmds.Cog):
