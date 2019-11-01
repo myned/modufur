@@ -63,7 +63,7 @@ class Utils(cmds.Cog):
 
             try:
                 await tempchannel.send(message)
-                await ctx.add_reaction('\N{WHITE HEAVY CHECK MARK}')
+                await ctx.message.add_reaction('\N{WHITE HEAVY CHECK MARK}')
 
             except AttributeError:
                 await ctx.send('**Invalid channel**')
@@ -76,4 +76,4 @@ class Utils(cmds.Cog):
     @send.command(name='user', aliases=['u', 'member', 'm'])
     async def send_user(self, ctx, user, *, message):
         await d.utils.get(self.bot.get_all_members(), id=int(user)).send(message)
-        await ctx.add_reaction('\N{WHITE HEAVY CHECK MARK}')
+        await ctx.message.add_reaction('\N{WHITE HEAVY CHECK MARK}')
