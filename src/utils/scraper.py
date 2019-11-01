@@ -83,7 +83,9 @@ async def query_saucenao(url):
         params={'url': url, 'api_key': u.config['saucenao_api'], 'output_type': 2},
         json=True)
 
-    if content['header'].get('message', '') == 'Access to specified file was denied... ;_;':
+    if content['header'].get('message', '') in (
+            'Access to specified file was denied... ;_;',
+            'Problem with remote server...'):
         raise exc.ImageError
 
     match = content['results'][0]
