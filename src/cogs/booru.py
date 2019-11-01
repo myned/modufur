@@ -422,18 +422,22 @@ class MsG(cmds.Cog):
                     await ctx.message.delete()
 
         except exc.MissingArgument:
-            await ctx.send('\N{HEAVY EXCLAMATION MARK SYMBOL} **Invalid url or file.** Be sure the link directs to an image file')
+            await ctx.send(
+                '\N{HEAVY EXCLAMATION MARK SYMBOL} **Invalid url or file.**\n'
+                'Be sure the link directs to an image file')
             await u.add_reaction(ctx.message, '\N{HEAVY EXCLAMATION MARK SYMBOL}')
         except exc.SizeError as e:
-            await ctx.send(f'`{e}` **too large.** Maximum is 8 MB')
+            await ctx.send(f'`{e}` **too large.**\nMaximum is 8 MB')
             await u.add_reaction(ctx.message, '\N{HEAVY EXCLAMATION MARK SYMBOL}')
         except err.HTTPException:
-            await ctx.send('\N{HEAVY EXCLAMATION MARK SYMBOL} **The image database returned an unexpected result.** It may be offline')
+            await ctx.send(
+                '\N{HEAVY EXCLAMATION MARK SYMBOL} **Search engines returned an unexpected result.**\n'
+                'They may be offline')
             await u.add_reaction(ctx.message, '\N{HEAVY EXCLAMATION MARK SYMBOL}')
         except exc.ImageError:
             await ctx.send(
-                '\N{HEAVY EXCLAMATION MARK SYMBOL} **None of the search engines could use this file.** '
-                'Try opening it in a browser and uploading the copied file into Discord')
+                '\N{HEAVY EXCLAMATION MARK SYMBOL} **Search engines were denied access to this file.**\n'
+                'Try opening it in a browser and uploading the file to Discord')
 
     @cmds.command(name='reversify', aliases=['revify', 'risify', 'rify'])
     @cmds.cooldown(1, 5, cmds.BucketType.member)
@@ -494,7 +498,7 @@ class MsG(cmds.Cog):
                             await message.add_reaction('\N{CROSS MARK}')
                             c -= 1
                         except exc.SizeError as e:
-                            await dest.send(f'`{e}` **too large.** Maximum is 8 MB')
+                            await dest.send(f'`{e}` **too large.**\nMaximum is 8 MB')
                             await message.add_reaction('\N{CROSS MARK}')
                             c -= 1
 
@@ -508,15 +512,17 @@ class MsG(cmds.Cog):
             await dest.send('**No matches found**')
             await u.add_reaction(ctx.message, '\N{HEAVY EXCLAMATION MARK SYMBOL}')
         except exc.BoundsError as e:
-            await dest.send('`{}` **invalid limit.** Query limited to 5'.format(e))
+            await dest.send('`{}` **invalid limit.**\nQuery limited to 5'.format(e))
             await u.add_reaction(ctx.message, '\N{HEAVY EXCLAMATION MARK SYMBOL}')
         except err.HTTPException:
-            await dest.send('\N{HEAVY EXCLAMATION MARK SYMBOL} **The image database returned an unexpected result.** It may be offline')
+            await dest.send(
+                '\N{HEAVY EXCLAMATION MARK SYMBOL} **Search engines returned an unexpected result.**\n'
+                'They may be offline')
             await u.add_reaction(ctx.message, '\N{HEAVY EXCLAMATION MARK SYMBOL}')
         except exc.ImageError:
             await ctx.send(
-                '\N{HEAVY EXCLAMATION MARK SYMBOL} **None of the search engines could use this file.** '
-                'Try opening it in a browser and uploading the copied file into Discord')
+                '\N{HEAVY EXCLAMATION MARK SYMBOL} **Search engines were denied access to this file.**\n'
+                'Try opening it in a browser and uploading the file to Discord')
 
     async def _reversify(self):
         while self.reversifying:
