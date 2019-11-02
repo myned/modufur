@@ -94,6 +94,11 @@ async def on_ready():
 async def on_message(message):
     if not u.config['selfbot']:
         if message.author is not bot.user and not message.author.bot and message.author.id not in u.block['user_ids']:
+            if (message.author.id != u.config['owner_id']
+                    and not any(s in u.config['prefix'] for s in (message.content[:1], message.content[:2]))):
+                await bot.get_user(u.config['owner_id']).send(
+                    f'**@{message.author.name}#{message.author.discriminator}:**\n{message.content}')
+
             await bot.process_commands(message)
     else:
         if not message.author.bot:
