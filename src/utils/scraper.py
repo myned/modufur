@@ -85,7 +85,8 @@ async def query_saucenao(url):
 
     if content['header'].get('message', '') in (
             'Access to specified file was denied... ;_;',
-            'Problem with remote server...'):
+            'Problem with remote server...',
+            'image dimensions too small...'):
         raise exc.ImageError
 
     match = content['results'][0]
