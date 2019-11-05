@@ -438,6 +438,7 @@ class MsG(cmds.Cog):
             await ctx.send(
                 '\N{HEAVY EXCLAMATION MARK SYMBOL} **Search engines were denied access to this file.**\n'
                 'Try opening it in a browser and uploading the file to Discord')
+            await u.add_reaction(ctx.message, '\N{HEAVY EXCLAMATION MARK SYMBOL}')
 
     @cmds.command(name='reversify', aliases=['revify', 'risify', 'rify'])
     @cmds.cooldown(1, 5, cmds.BucketType.member)
@@ -523,6 +524,7 @@ class MsG(cmds.Cog):
             await ctx.send(
                 '\N{HEAVY EXCLAMATION MARK SYMBOL} **Search engines were denied access to this file.**\n'
                 'Try opening it in a browser and uploading the file to Discord')
+            await u.add_reaction(ctx.message, '\N{HEAVY EXCLAMATION MARK SYMBOL}')
 
     async def _reversify(self):
         while self.reversifying:
