@@ -51,7 +51,7 @@ async def query_kheina(url):
         soup = BeautifulSoup(content, 'html5lib')
 
         if soup.find('data', id='error'):
-            return False
+            return None
 
         results = soup.find('data', id='results').string
         results = ast.literal_eval(results)
@@ -60,7 +60,7 @@ async def query_kheina(url):
 
         similarity = int(float(iqdbdata[0]['similarity']))
         if similarity < 55:
-            return False
+            return None
 
         for e in results:
             if iqdbdata[0]['iqdbid'] in e:
@@ -78,7 +78,7 @@ async def query_kheina(url):
         return result
 
     except Exception:
-        return False
+        return None
 
 
 async def query_saucenao(url):
@@ -98,9 +98,13 @@ async def query_saucenao(url):
 
         similarity = int(float(match['header']['similarity']))
         if similarity < 55:
-            return False
+            return None
 
         source = match['data']['ext_urls'][0]
+        for e in match['data']['ext_urls']:
+            if 'furaffinity' in e:
+                source = e
+                break
         for e in match['data']['ext_urls']:
             if 'e621' in e:
                 source = e
@@ -126,7 +130,7 @@ async def query_saucenao(url):
         return result
 
     except Exception:
-        return False
+        return None
 
 
 async def get_post(url):
@@ -136,9 +140,16 @@ async def get_post(url):
         if filesize > 8192 * 1024:
             raise exc.SizeError(size(filesize, system=alternative))
 
-        result = await query_kheina(url)
-        if not result:
-            result = await query_saucenao(url)
+        # Prioritize SauceNAO if e621/furaffinity, Kheina>SauceNAO if not
+        result = await query_saucenao(url)
+        if result:
+            if not any(s in result['source'] for s in ('e621', 'furaffinity')):
+                kheina = await query_kheina(url)
+                if kheina:
+                    result = kheina
+        else:
+            result = await query_kheina(url)
+
         if not result:
             raise exc.MatchError(re.search('\\/([^\\/]+)$', url).group(1))
 
