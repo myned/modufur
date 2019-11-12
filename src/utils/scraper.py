@@ -107,14 +107,13 @@ async def query_saucenao(url):
             break
 
     artist = 'Unknown'
-    for e in (
-        'author_name',
-        'member_name',
-        'creator'
-    ):
-        if e in match['data']:
-            artist = match['data'][e]
-            break
+        for e in (
+                'author_name',
+                'member_name',
+                'creator'):
+            if e in match['data']:
+                artist = match['data'][e]
+                break
 
     result = {
         'source': source,
