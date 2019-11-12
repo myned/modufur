@@ -102,6 +102,10 @@ async def query_saucenao(url):
 
         source = match['data']['ext_urls'][0]
         for e in match['data']['ext_urls']:
+            if 'furaffinity' in e:
+                source = e
+                break
+        for e in match['data']['ext_urls']:
             if 'e621' in e:
                 source = e
                 break
