@@ -41,85 +41,92 @@ from utils import utils as u
 
 
 async def query_kheina(url):
-    content = await u.fetch('https://kheina.com', params={'url': url}, text=True)
+    try:
+        content = await u.fetch('https://kheina.com', params={'url': url}, text=True)
 
-    for e in ('&quot;', '&apos;'):
-        content = content.replace(e, '')
-    content = re.sub('<a href="/cdn-cgi/l/email-protection".+</a>', '', content)
+        for e in ('&quot;', '&apos;'):
+            content = content.replace(e, '')
+        content = re.sub('<a href="/cdn-cgi/l/email-protection".+</a>', '', content)
 
-    soup = BeautifulSoup(content, 'html5lib')
+        soup = BeautifulSoup(content, 'html5lib')
 
-    if soup.find('data', id='error'):
+        if soup.find('data', id='error'):
+            return False
+
+        results = soup.find('data', id='results').string
+        results = ast.literal_eval(results)
+        iqdbdata = soup.find('data', id='iqdbdata').string
+        iqdbdata = ast.literal_eval(iqdbdata)
+
+        similarity = int(float(iqdbdata[0]['similarity']))
+        if similarity < 55:
+            return False
+
+        for e in results:
+            if iqdbdata[0]['iqdbid'] in e:
+                match = e
+                break
+
+        result = {
+            'source': match[3].replace('\\', ''),
+            'artist': match[4],
+            'thumbnail': f'https://f002.backblazeb2.com/file/kheinacom/{match[1]}.jpg',
+            'similarity': str(similarity),
+            'database': 'Kheina'
+        }
+
+        return result
+
+    except Exception:
         return False
-
-    results = soup.find('data', id='results').string
-    results = ast.literal_eval(results)
-    iqdbdata = soup.find('data', id='iqdbdata').string
-    iqdbdata = ast.literal_eval(iqdbdata)
-
-    similarity = int(float(iqdbdata[0]['similarity']))
-    if similarity < 55:
-        return False
-
-    for e in results:
-        if iqdbdata[0]['iqdbid'] in e:
-            match = e
-            break
-
-    result = {
-        'source': match[3].replace('\\', ''),
-        'artist': match[4],
-        'thumbnail': f'https://f002.backblazeb2.com/file/kheinacom/{match[1]}.jpg',
-        'similarity': str(similarity),
-        'database': 'Kheina'
-    }
-
-    return result
 
 
 async def query_saucenao(url):
-    content = await u.fetch(
-        'https://saucenao.com/search.php',
-        params={'url': url, 'api_key': u.config['saucenao_api'], 'output_type': 2},
-        json=True)
+    try:
+        content = await u.fetch(
+            'https://saucenao.com/search.php',
+            params={'url': url, 'api_key': u.config['saucenao_api'], 'output_type': 2},
+            json=True)
 
-    if content['header'].get('message', '') in (
-            'Access to specified file was denied... ;_;',
-            'Problem with remote server...',
-            'image dimensions too small...'):
-        raise exc.ImageError
+        if content['header'].get('message', '') in (
+                'Access to specified file was denied... ;_;',
+                'Problem with remote server...',
+                'image dimensions too small...'):
+            raise exc.ImageError
 
-    match = content['results'][0]
+        match = content['results'][0]
 
-    similarity = int(float(match['header']['similarity']))
-    if similarity < 55:
+        similarity = int(float(match['header']['similarity']))
+        if similarity < 55:
+            return False
+
+        source = match['data']['ext_urls'][0]
+        for e in match['data']['ext_urls']:
+            if 'e621' in e:
+                source = e
+                break
+
+        artist = 'Unknown'
+        for e in (
+                'author_name',
+                'member_name',
+                'creator'):
+            if e in match['data']:
+                artist = match['data'][e]
+                break
+
+        result = {
+            'source': source,
+            'artist': artist,
+            'thumbnail': match['header']['thumbnail'],
+            'similarity': str(similarity),
+            'database': 'SauceNAO'
+        }
+
+        return result
+
+    except Exception:
         return False
-
-    source = match['data']['ext_urls'][0]
-    for e in match['data']['ext_urls']:
-        if 'e621' in e:
-            source = e
-            break
-
-    artist = 'Unknown'
-    for e in (
-        'author_name',
-        'member_name',
-        'creator'
-    ):
-        if e in match['data']:
-            artist = match['data'][e]
-            break
-
-    result = {
-        'source': source,
-        'artist': artist,
-        'thumbnail': match['header']['thumbnail'],
-        'similarity': str(similarity),
-        'database': 'SauceNAO'
-    }
-
-    return result
 
 
 async def get_post(url):
