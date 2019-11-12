@@ -1,6 +1,7 @@
 import aiohttp
 import ast
 import re
+from urllib.parse import urlparse
 
 from bs4 import BeautifulSoup
 import lxml
@@ -72,7 +73,7 @@ async def query_kheina(url):
             'artist': match[4],
             'thumbnail': f'https://f002.backblazeb2.com/file/kheinacom/{match[1]}.jpg',
             'similarity': str(similarity),
-            'database': 'Kheina'
+            'database': urlparse(match[3].replace('\\', '')).hostname.split('.')[0]
         }
 
         return result
@@ -124,7 +125,7 @@ async def query_saucenao(url):
             'artist': artist,
             'thumbnail': match['header']['thumbnail'],
             'similarity': str(similarity),
-            'database': 'SauceNAO'
+            'database': urlparse(source).hostname.split('.')[0]
         }
 
         return result
