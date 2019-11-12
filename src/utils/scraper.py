@@ -140,9 +140,16 @@ async def get_post(url):
         if filesize > 8192 * 1024:
             raise exc.SizeError(size(filesize, system=alternative))
 
-        result = await query_kheina(url)
-        if not result:
-            result = await query_saucenao(url)
+        # Prioritize SauceNAO if e621/furaffinity, Kheina>SauceNAO if not
+        result = await query_saucenao(url)
+        if result:
+            if not any(s in result['source'] for s in ('e621', 'furaffinity')):
+                kheina = await query_kheina(url)
+                if kheina:
+                    result = kheina
+        else:
+            result = await query_kheina(url)
+
         if not result:
             raise exc.MatchError(re.search('\\/([^\\/]+)$', url).group(1))
 
