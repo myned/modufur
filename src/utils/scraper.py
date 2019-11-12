@@ -51,7 +51,7 @@ async def query_kheina(url):
         soup = BeautifulSoup(content, 'html5lib')
 
         if soup.find('data', id='error'):
-            return False
+            return None
 
         results = soup.find('data', id='results').string
         results = ast.literal_eval(results)
@@ -60,7 +60,7 @@ async def query_kheina(url):
 
         similarity = int(float(iqdbdata[0]['similarity']))
         if similarity < 55:
-            return False
+            return None
 
         for e in results:
             if iqdbdata[0]['iqdbid'] in e:
@@ -78,7 +78,7 @@ async def query_kheina(url):
         return result
 
     except Exception:
-        return False
+        return None
 
 
 async def query_saucenao(url):
@@ -98,7 +98,7 @@ async def query_saucenao(url):
 
         similarity = int(float(match['header']['similarity']))
         if similarity < 55:
-            return False
+            return None
 
         source = match['data']['ext_urls'][0]
         for e in match['data']['ext_urls']:
@@ -126,7 +126,7 @@ async def query_saucenao(url):
         return result
 
     except Exception:
-        return False
+        return None
 
 
 async def get_post(url):
