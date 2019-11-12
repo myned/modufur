@@ -41,9 +41,10 @@ from utils import utils as u
 
 
 async def query_kheina(url):
-    content = await u.fetch('https://kheina.com', params={'url': url}, text=True)
+    try:
+        content = await u.fetch('https://kheina.com', params={'url': url}, text=True)
 
-    for e in ('&quot;', '&apos;'):
+        for e in ('&quot;', '&apos;'):
         content = content.replace(e, '')
     content = re.sub('<a href="/cdn-cgi/l/email-protection".+</a>', '', content)
 
@@ -74,13 +75,17 @@ async def query_kheina(url):
         'database': 'Kheina'
     }
 
-    return result
+        return result
+
+    except Exception:
+        return False
 
 
 async def query_saucenao(url):
-    content = await u.fetch(
-        'https://saucenao.com/search.php',
-        params={'url': url, 'api_key': u.config['saucenao_api'], 'output_type': 2},
+    try:
+        content = await u.fetch(
+            'https://saucenao.com/search.php',
+            params={'url': url, 'api_key': u.config['saucenao_api'], 'output_type': 2},
         json=True)
 
     if content['header'].get('message', '') in (
@@ -119,7 +124,10 @@ async def query_saucenao(url):
         'database': 'SauceNAO'
     }
 
-    return result
+        return result
+
+    except Exception:
+        return False
 
 
 async def get_post(url):
