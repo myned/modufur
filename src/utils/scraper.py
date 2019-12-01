@@ -1,11 +1,11 @@
 import aiohttp
 import ast
 import re
-from urllib.parse import urlparse
 
 from bs4 import BeautifulSoup
 import lxml
 from hurry.filesize import size, alternative
+import tldextract as tld
 
 from misc import exceptions as exc
 from utils import utils as u
@@ -73,7 +73,7 @@ async def query_kheina(url):
             'artist': match[4],
             'thumbnail': f'https://f002.backblazeb2.com/file/kheinacom/{match[1]}.jpg',
             'similarity': str(similarity),
-            'database': urlparse(match[3].replace('\\', '')).hostname.split('.')[0]
+            'database': tld.extract(match[3].replace('\\', '')).domain
         }
 
         return result
@@ -125,7 +125,7 @@ async def query_saucenao(url):
             'artist': artist,
             'thumbnail': match['header']['thumbnail'],
             'similarity': str(similarity),
-            'database': urlparse(source).hostname.split('.')[0]
+            'database': tld.extract(source).domain
         }
 
         return result
