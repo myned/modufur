@@ -44,7 +44,7 @@ async def on_ready():
             u.cogs[type(cog).__name__] = cog
             print(f'COG : {type(cog).__name__}')
 
-        if u.config['playing'] is not '':
+        if u.config['playing'] != '':
             await bot.change_presence(activity=d.Game(u.config['playing']))
 
         print('\n> > > > > > > > >'
@@ -83,7 +83,7 @@ async def on_ready():
             u.cogs['Admin'].deleting = True
             bot.loop.create_task(u.cogs['Admin'].delete())
 
-        if u.config['playing'] is not '':
+        if u.config['playing'] != '':
             await bot.change_presence(activity=d.Game(u.config['playing']))
 
         await reconnect.add_reaction('\N{WHITE HEAVY CHECK MARK}')
