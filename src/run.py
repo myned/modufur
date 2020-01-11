@@ -44,7 +44,7 @@ async def on_ready():
             u.cogs[type(cog).__name__] = cog
             print(f'COG : {type(cog).__name__}')
 
-        if u.config['playing'] is not '':
+        if u.config['playing'] != '':
             await bot.change_presence(activity=d.Game(u.config['playing']))
 
         print('\n> > > > > > > > >'
@@ -83,7 +83,7 @@ async def on_ready():
             u.cogs['Admin'].deleting = True
             bot.loop.create_task(u.cogs['Admin'].delete())
 
-        if u.config['playing'] is not '':
+        if u.config['playing'] != '':
             await bot.change_presence(activity=d.Game(u.config['playing']))
 
         await reconnect.add_reaction('\N{WHITE HEAVY CHECK MARK}')
@@ -98,7 +98,7 @@ async def on_message(message):
                     and message.author.id != u.config['owner_id']
                     and not any(s in u.config['prefix'] for s in (message.content[:1], message.content[:2]))):
                 await bot.get_user(u.config['owner_id']).send(
-                    f'**@{message.author.name}#{message.author.discriminator}:**\n{message.content}')
+                    f'**{message.author.id}:**\n{message.content}')
 
             await bot.process_commands(message)
     else:
@@ -152,7 +152,7 @@ async def on_command_error(ctx, error):
             await bot.get_user(u.config['owner_id']).send(
                 '**COMMAND ERROR** \N{WARNING SIGN} '
                 f'`{ctx.message.content}` '
-                f'from {ctx.author.mention} '
+                f'from {ctx.author.id} '
                 f'in {ctx.channel.mention if isinstance(ctx.channel, d.channel.TextChannel) else "DMs"}'
                 '\n```\n'
                 f'{error}```')
