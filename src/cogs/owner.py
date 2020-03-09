@@ -213,19 +213,19 @@ class Tools(cmds.Cog):
     @cmds.is_owner()
     async def console(self, ctx):
         def execute(msg):
-            if msg.content.lower().startswith('exec ') and msg.author is ctx.author and msg.channel is ctx.channel:
+            if msg.content.lower().startswith('exec ') and msg.author.id is ctx.author.id and msg.channel.id is ctx.channel.id:
                 msg.content = msg.content[5:]
                 return True
             return False
 
         def evaluate(msg):
-            if msg.content.lower().startswith('eval ') and msg.author is ctx.author and msg.channel is ctx.channel:
+            if msg.content.lower().startswith('eval ') and msg.author.id is ctx.author.id and msg.channel.id is ctx.channel.id:
                 msg.content = msg.content[5:]
                 return True
             return False
 
         def exit(reaction, user):
-            if reaction.emoji == '\N{OCTAGONAL SIGN}' and user is ctx.author and reaction.message.id == ctx.message.id:
+            if reaction.emoji == '\N{OCTAGONAL SIGN}' and user.id is ctx.author.id and reaction.message.id == ctx.message.id:
                 raise exc.Abort
             return False
 
