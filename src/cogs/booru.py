@@ -294,14 +294,15 @@ class MsG(cmds.Cog):
                 ident = ident if not ident.isdigit() else re.search(
                     'show/([0-9]+)', ident).group(1)
                 post = await u.fetch(f'https://e621.net/posts/{ident}.json', json=True)
+                post = post['post']
 
                 embed = d.Embed(
-                    title=', '.join(post['artist']), url=f'https://e621.net/post/show/{post["id"]}', color=ctx.me.color if isinstance(ctx.channel, d.TextChannel) else u.color)
-                embed.set_thumbnail(url=post['file_url'])
-                embed.set_author(name=f'{post["width"]} x {post["height"]}',
-                                 url=f'https://e621.net/post?tags=ratio:{post["width"]/post["height"]:.2f}', icon_url=ctx.author.avatar_url)
-                embed.set_footer(text=post['score'],
-                                 icon_url=self._get_icon(post['score']))
+                    title=', '.join(post['tags']['artist']), url=f'https://e621.net/posts/{post["id"]}', color=ctx.me.color if isinstance(ctx.channel, d.TextChannel) else u.color)
+                embed.set_thumbnail(url=post['sample']['url'])
+                embed.set_author(name=f'{post["file"]["width"]} x {post["file"]["height"]}',
+                                 url=f'https://e621.net/posts?tags=ratio:{post["file"]["width"]/post["file"]["height"]:.2f}', icon_url=ctx.author.avatar_url)
+                embed.set_footer(text=post['score']['total'],
+                                 icon_url=self._get_icon(post['score']['total']))
 
         except exc.MissingArgument:
             await ctx.send('\N{HEAVY EXCLAMATION MARK SYMBOL} **Invalid url**')
@@ -375,7 +376,7 @@ class MsG(cmds.Cog):
             else:
                 raise exc.NotFound
 
-            await ctx.send(f'**{tempool["name"]}**\nhttps://e621.net/pool/show/{tempool["id"]}')
+            await ctx.send(f'**{tempool["name"]}**\nhttps://e621.net/pools/{tempool["id"]}')
 
         except exc.Abort as e:
             await e.message.edit(content='\N{NO ENTRY SIGN}')
@@ -655,13 +656,13 @@ class MsG(cmds.Cog):
             else:
                 raise exc.NotFound
 
-            page = 1
-            while len(posts) < tempool['post_count']:
-                posts_request = await u.fetch('https://{}.net/pool/show.json'.format(booru), params={'id': tempool['id'], 'page': page}, json=True)
-                for post in posts_request['posts']:
-                    posts[post['id']] = {'artist': ', '.join(
-                        post['artist']), 'file_url': post['file_url'], 'score': post['score']}
-                page += 1
+            for ident in tempool['post_ids']:
+                post = await u.fetch(f'https://{booru}.net/posts/{ident}.json', json=True)
+                post = post['post']
+                posts[post['id']] = {'artist': ', '.join(
+                    post['tags']['artist']), 'sample_url': post['sample']['url'], 'score': post['score']['total']}
+
+                await asyncio.sleep(0.5)
 
             return pool, posts
 
@@ -711,15 +712,16 @@ class MsG(cmds.Cog):
                 raise exc.Timeout
 
             request = await u.fetch(f'https://{booru}.net/posts.json?tags={"+".join([order] + tags)}&limit={int(320)}', json=True)
+            if len(request['posts']) == 0:
                 raise exc.NotFound(' '.join(tags))
-            if len(request) < limit:
-                limit = len(request)
+            if len(request['posts']) < limit:
+                limit = len(request['posts'])
 
-            for post in request:
-                if 'swf' in post['file_ext'] or 'webm' in post['file_ext']:
+            for post in request['posts']:
+                if 'swf' in post['file']['ext'] or 'webm' in post['file']['ext']:
                     continue
                 try:
-                    post_tags = post['tags'].split(' ')
+                    post_tags = [tag for tags in post['tags'].values() for tag in tags]
                     for tag in blacklist:
                         if tag in post_tags:
                             raise exc.Continue
@@ -727,7 +729,7 @@ class MsG(cmds.Cog):
                     continue
                 if post['id'] not in posts.keys() and post['id'] not in previous.keys():
                     posts[post['id']] = {'artist': ', '.join(
-                        post['artist']), 'file_url': post['file_url'], 'score': post['score']}
+                        post['tags']['artist']), 'sample_url': post['sample']['url'], 'score': post['score']['total']}
                 if len(posts) == limit:
                     break
 
@@ -771,26 +773,28 @@ class MsG(cmds.Cog):
             hearted = {}
             c = 1
 
-            await ctx.trigger_typing()
+            if not args:
+                raise exc.MissingArgument
 
-            pool, posts = await self._get_pool(ctx, booru='e621', query=query)
-            keys = list(posts.keys())
-            values = list(posts.values())
+            async with ctx.channel.typing():
+                pool, posts = await self._get_pool(ctx, booru='e621', query=query)
+                keys = list(posts.keys())
+                values = list(posts.values())
 
-            embed = d.Embed(
-                title=values[c - 1]['artist'], url='https://e621.net/post/show/{}'.format(keys[c - 1]), color=ctx.me.color if isinstance(ctx.channel, d.TextChannel) else u.color)
-            embed.set_image(url=values[c - 1]['file_url'])
-            embed.set_author(name=pool['name'],
-                             url='https://e621.net/pool/show?id={}'.format(pool['id']), icon_url=ctx.author.avatar_url)
-            embed.set_footer(text='{} / {}'.format(c, len(posts)),
-                             icon_url=self._get_icon(values[c - 1]['score']))
+                embed = d.Embed(
+                    title=values[c - 1]['artist'], url='https://e621.net/posts/{}'.format(keys[c - 1]), color=ctx.me.color if isinstance(ctx.channel, d.TextChannel) else u.color)
+                embed.set_image(url=values[c - 1]['sample_url'])
+                embed.set_author(name=pool['name'],
+                                 url='https://e621.net/pools/{}'.format(pool['id']), icon_url=ctx.author.avatar_url)
+                embed.set_footer(text='{} / {}'.format(c, len(posts)),
+                                 icon_url=self._get_icon(values[c - 1]['score']))
 
-            paginator = await ctx.send(embed=embed)
+                paginator = await ctx.send(embed=embed)
 
-            for emoji in ('\N{HEAVY BLACK HEART}', '\N{LEFTWARDS BLACK ARROW}', '\N{NUMBER SIGN}\N{COMBINING ENCLOSING KEYCAP}', '\N{BLACK RIGHTWARDS ARROW}'):
-                await paginator.add_reaction(emoji)
-            await u.add_reaction(ctx.message, '\N{OCTAGONAL SIGN}')
-            await asyncio.sleep(1)
+                for emoji in ('\N{HEAVY BLACK HEART}', '\N{LEFTWARDS BLACK ARROW}', '\N{NUMBER SIGN}\N{COMBINING ENCLOSING KEYCAP}', '\N{BLACK RIGHTWARDS ARROW}'):
+                    await paginator.add_reaction(emoji)
+                await u.add_reaction(ctx.message, '\N{OCTAGONAL SIGN}')
+                await asyncio.sleep(1)
 
             while not self.bot.is_closed():
                 try:
@@ -811,11 +815,11 @@ class MsG(cmds.Cog):
                     if c > 1:
                         c -= 1
                         embed.title = values[c - 1]['artist']
-                        embed.url = 'https://e621.net/post/show/{}'.format(
+                        embed.url = 'https://e621.net/posts/{}'.format(
                             keys[c - 1])
                         embed.set_footer(text='{} / {}'.format(c, len(posts)),
                                          icon_url=self._get_icon(values[c - 1]['score']))
-                        embed.set_image(url=values[c - 1]['file_url'])
+                        embed.set_image(url=values[c - 1]['sample_url'])
 
                         await paginator.edit(content='\N{HEAVY BLACK HEART}' if keys[c - 1] in hearted.keys() else None, embed=embed)
                     else:
@@ -829,11 +833,11 @@ class MsG(cmds.Cog):
                         c = int(number.content)
 
                         embed.title = values[c - 1]['artist']
-                        embed.url = 'https://e621.net/post/show/{}'.format(
+                        embed.url = 'https://e621.net/posts/{}'.format(
                             keys[c - 1])
                         embed.set_footer(text='{} / {}'.format(c, len(posts)),
                                          icon_url=self._get_icon(values[c - 1]['score']))
-                        embed.set_image(url=values[c - 1]['file_url'])
+                        embed.set_image(url=values[c - 1]['sample_url'])
 
                     if ctx.channel is d.TextChannel:
                         with suppress(errext.CheckFailure):
@@ -845,11 +849,11 @@ class MsG(cmds.Cog):
                     if c < len(keys):
                         c += 1
                         embed.title = values[c - 1]['artist']
-                        embed.url = 'https://e621.net/post/show/{}'.format(
+                        embed.url = 'https://e621.net/posts/{}'.format(
                             keys[c - 1])
                         embed.set_footer(text='{} / {}'.format(c, len(posts)),
                                          icon_url=self._get_icon(values[c - 1]['score']))
-                        embed.set_image(url=values[c - 1]['file_url'])
+                        embed.set_image(url=values[c - 1]['sample_url'])
 
                         await paginator.edit(content='\N{HEAVY BLACK HEART}' if keys[c - 1] in hearted.keys() else None, embed=embed)
                     else:
@@ -865,6 +869,9 @@ class MsG(cmds.Cog):
                 await paginator.edit(content='\N{HOURGLASS}')
             except UnboundLocalError:
                 await ctx.send('\N{HOURGLASS}')
+        except exc.MissingArgument:
+            await ctx.send('**Missing argument**')
+            await u.add_reaction(ctx.message, '\N{CROSS MARK}')
         except exc.NotFound:
             await ctx.send('**Pool not found**')
             await u.add_reaction(ctx.message, '\N{CROSS MARK}')
@@ -914,10 +921,10 @@ class MsG(cmds.Cog):
             values = list(posts.values())
 
             embed = d.Embed(
-                title=values[c - 1]['artist'], url='https://{}.net/post/show/{}'.format(booru, keys[c - 1]), color=ctx.me.color if isinstance(ctx.channel, d.TextChannel) else u.color)
-            embed.set_image(url=values[c - 1]['file_url'])
+                title=values[c - 1]['artist'], url='https://{}.net/posts/{}'.format(booru, keys[c - 1]), color=ctx.me.color if isinstance(ctx.channel, d.TextChannel) else u.color)
+            embed.set_image(url=values[c - 1]['sample_url'])
             embed.set_author(name=' '.join(tags) if tags else order,
-                             url='https://{}.net/post?tags={}'.format(booru, ','.join(tags)), icon_url=ctx.author.avatar_url)
+                             url='https://{}.net/posts?tags={}'.format(booru, '+'.join(tags) if tags else order), icon_url=ctx.author.avatar_url)
             embed.set_footer(text=values[c - 1]['score'],
                              icon_url=self._get_icon(values[c - 1]['score']))
 
@@ -947,12 +954,12 @@ class MsG(cmds.Cog):
                     if c > 1:
                         c -= 1
                         embed.title = values[c - 1]['artist']
-                        embed.url = 'https://{}.net/post/show/{}'.format(
+                        embed.url = 'https://{}.net/posts/{}'.format(
                             booru,
                             keys[c - 1])
                         embed.set_footer(text=values[c - 1]['score'],
                                          icon_url=self._get_icon(values[c - 1]['score']))
-                        embed.set_image(url=values[c - 1]['file_url'])
+                        embed.set_image(url=values[c - 1]['sample_url'])
 
                         await paginator.edit(content='\N{HEAVY BLACK HEART}' if keys[c - 1] in hearted.keys() else None, embed=embed)
                     else:
@@ -971,12 +978,12 @@ class MsG(cmds.Cog):
                         if c < len(keys):
                             c += 1
                             embed.title = values[c - 1]['artist']
-                            embed.url = 'https://{}.net/post/show/{}'.format(
+                            embed.url = 'https://{}.net/posts/{}'.format(
                                 booru,
                                 keys[c - 1])
                             embed.set_footer(text=values[c - 1]['score'],
                                              icon_url=self._get_icon(values[c - 1]['score']))
-                            embed.set_image(url=values[c - 1]['file_url'])
+                            embed.set_image(url=values[c - 1]['sample_url'])
 
                             await paginator.edit(content='\N{HEAVY BLACK HEART}' if keys[c - 1] in hearted.keys() else None, embed=embed)
                         else:
@@ -1044,11 +1051,11 @@ class MsG(cmds.Cog):
             posts, order = await self._get_posts(ctx, booru=booru, tags=tags, limit=limit)
 
             for ident, post in posts.items():
-                embed = d.Embed(title=post['artist'], url='https://{}.net/post/show/{}'.format(booru, ident),
+                embed = d.Embed(title=post['artist'], url='https://{}.net/posts/{}'.format(booru, ident),
                                 color=ctx.me.color if isinstance(ctx.channel, d.TextChannel) else u.color)
-                embed.set_image(url=post['file_url'])
+                embed.set_image(url=post['sample_url'])
                 embed.set_author(name=' '.join(tags) if tags else order,
-                                 url='https://{}.net/post?tags={}'.format(booru, ','.join(tags)), icon_url=ctx.author.avatar_url)
+                                 url='https://{}.net/posts?tags={}'.format(booru, '+'.join(tags) if tags else order), icon_url=ctx.author.avatar_url)
                 embed.set_footer(
                     text=post['score'], icon_url=self._get_icon(post['score']))
 
@@ -1297,8 +1304,7 @@ class MsG(cmds.Cog):
             if tags:
                 for tag in tags:
                     request = await u.fetch(
-                        'https://e621.net/tag_alias/index.json',
-                        params={'aliased_to': tag, 'approved': 'true'},
+                        f'https://e621.net/tag_alias/index.json?aliased_to={tag}&approved=true',
                         json=True)
 
                     for elem in request:
