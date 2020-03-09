@@ -12,25 +12,23 @@ from utils import utils as u
 
 
 # async def get_harry(url):
-#     content = await u.fetch('https://iqdb.harry.lu', params={'url': url})
+#     content = await u.fetch(f'https://iqdb.harry.lu?url={url}')
 #     soup = BeautifulSoup(content, 'html5lib')
 #
 #     if soup.find('div', id='show1').string is 'Not the right one? ':
 #         parent = soup.find('th', string='Probable match:').parent.parent
 #
 #         post = await u.fetch(
-#             'https://e621.net/post/show.json',
-#             params={'id': re.search('show/([0-9]+)', parent.tr.td.a.get('href')).group(1)},
+#             f'https://e621.net/posts.json?id={re.search("show/([0-9]+)", parent.tr.td.a.get('href')).group(1)}',
 #             json=True)
 #         if (post['status'] == 'deleted'):
 #             post = await u.fetch(
-#                 'https://e621.net/post/show.json',
-#                 params={'id': re.search('#(\\d+)', post['delreason']).group(1)},
+#                 f'https://e621.net/posts.json?id={re.search("#(\\d+)", post["delreason"]).group(1)}',
 #                 json=True)
 #
 #         result = {
-#             'source': f'https://e621.net/post/show/{post["id"]}',
-#             'artist': ', '.join(post['artist']),
+#             'source': f'https://e621.net/posts/{post["id"]}',
+#             'artist': ', '.join(post['tags']['artist']),
 #             'thumbnail': parent.td.a.img.get('src'),
 #             'similarity': re.search('\\d+', parent.tr[4].td.string).group(0),
 #             'database': 'Harry.lu'
@@ -43,7 +41,7 @@ from utils import utils as u
 
 async def query_kheina(url):
     try:
-        content = await u.fetch('https://kheina.com', params={'url': url}, text=True)
+        content = await u.fetch(f'https://kheina.com?url={url}', text=True)
 
         for e in ('&quot;', '&apos;'):
             content = content.replace(e, '')
@@ -85,8 +83,7 @@ async def query_kheina(url):
 async def query_saucenao(url):
     try:
         content = await u.fetch(
-            'https://saucenao.com/search.php',
-            params={'url': url, 'api_key': u.config['saucenao_api'], 'output_type': 2},
+            f'https://saucenao.com/search.php?url={url}&api_key={u.config["saucenao_api"]}&output_type={2}',
             json=True)
 
         if content['header'].get('message', '') in (

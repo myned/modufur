@@ -94,7 +94,7 @@ class MsG(cmds.Cog):
                 print(f'Last updated: {self.suggested["last_update"]}')
                 print('Updating tags...')
 
-                content = await u.fetch('https://e621.net/tag/index.json', params={'order': 'count', 'limit': 500, 'page': page}, json=True)
+                content = await u.fetch(f'https://e621.net/tag/index.json?order=count&limit={500}&page={page}', json=True)
                 while content:
                     for tag in content:
                         self.suggested['tags'][tag['name']] = tag['count']
@@ -102,7 +102,7 @@ class MsG(cmds.Cog):
                     print(f'    UPDATED : PAGE {page} / {pages}', end='\r')
 
                     page += 1
-                    content = await u.fetch('https://e621.net/tag/index.json', params={'order': 'count', 'limit': 500, 'page': page}, json=True)
+                    content = await u.fetch(f'https://e621.net/tag/index.json?order=count&limit={500}&page={page}', json=True)
 
                 u.dump(self.suggested, 'cogs/suggested.pkl')
                 self.suggested['last_update'] = time.strftime('%d/%m/%Y/%H:%M:%S')
@@ -232,7 +232,7 @@ class MsG(cmds.Cog):
         await ctx.trigger_typing()
 
         for tag in tags:
-            tag_request = await u.fetch('https://e621.net/tag/related.json', params={'tags': tag}, json=True)
+            tag_request = await u.fetch(f'https://e621.net/tag/related.json?tags={tag}', json=True)
             for rel in tag_request.get(tag, []):
                 related.append(rel[0])
 
@@ -258,7 +258,7 @@ class MsG(cmds.Cog):
         await ctx.trigger_typing()
 
         for tag in tags:
-            alias_request = await u.fetch('https://e621.net/tag_alias/index.json', params={'aliased_to': tag, 'approved': 'true'}, json=True)
+            alias_request = await u.fetch(f'https://e621.net/tag_alias/index.json?aliased_to={tag}&approved=true', json=True)
             for dic in alias_request:
                 aliases.append(dic['name'])
 
@@ -293,7 +293,7 @@ class MsG(cmds.Cog):
 
                 ident = ident if not ident.isdigit() else re.search(
                     'show/([0-9]+)', ident).group(1)
-                post = await u.fetch('https://e621.net/post/show.json', params={'id': ident}, json=True)
+                post = await u.fetch(f'https://e621.net/posts/{ident}.json', json=True)
 
                 embed = d.Embed(
                     title=', '.join(post['artist']), url=f'https://e621.net/post/show/{post["id"]}', color=ctx.me.color if isinstance(ctx.channel, d.TextChannel) else u.color)
@@ -352,7 +352,7 @@ class MsG(cmds.Cog):
             await ctx.trigger_typing()
 
             pools = []
-            pool_request = await u.fetch('https://e621.net/pool/index.json', params={'query': ' '.join(query)}, json=True)
+            pool_request = await u.fetch(f'https://e621.net/pools.json?search[name_matches]={" ".join(query)}', json=True)
             if len(pool_request) > 1:
                 for pool in pool_request:
                     pools.append(pool['name'])
@@ -625,7 +625,7 @@ class MsG(cmds.Cog):
 
         try:
             pools = []
-            pool_request = await u.fetch('https://{}.net/pool/index.json'.format(booru), params={'query': ' '.join(query)}, json=True)
+            pool_request = await u.fetch(f'https://{booru}.net/pools.json?search[name_matches]={" ".join(query)}', json=True)
             if len(pool_request) > 1:
                 for pool in pool_request:
                     pools.append(pool['name'])
@@ -707,8 +707,8 @@ class MsG(cmds.Cog):
         while len(posts) < limit:
             if c == limit * 5 + (self.LIMIT / 5):
                 raise exc.Timeout
-            request = await u.fetch('https://{}.net/post/index.json'.format(booru), params={'tags': ','.join([order] + tags), 'limit': int(self.LIMIT * limit)}, json=True)
-            if len(request) == 0:
+
+            request = await u.fetch(f'https://{booru}.net/posts.json?tags={"+".join([order] + tags)}&limit={int(320)}', json=True)
                 raise exc.NotFound(' '.join(tags))
             if len(request) < limit:
                 limit = len(request)
