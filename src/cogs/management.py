@@ -40,7 +40,7 @@ class Admin(cmds.Cog):
     @_prune_user.command(name='channel', aliases=['channels', 'chans', 'chan', 'ch', 'c'])
     async def _prune_user_channel(self, ctx, user: d.User, *channels: d.TextChannel):
         def confirm(r, u):
-            if u is ctx.author:
+            if u.id is ctx.author.id:
                 if r.emoji == '\N{OCTAGONAL SIGN}':
                     raise exc.Abort
                 if r.emoji == '\N{THUMBS UP SIGN}':
@@ -92,7 +92,7 @@ class Admin(cmds.Cog):
     @cmds.is_owner()
     async def _prune_user_all(self, ctx, user: d.User):
         def confirm(r, u):
-            if u is ctx.author:
+            if u.id is ctx.author.id:
                 if r.emoji == '\N{OCTAGONAL SIGN}':
                     raise exc.Abort
                 if r.emoji == '\N{THUMBS UP SIGN}':

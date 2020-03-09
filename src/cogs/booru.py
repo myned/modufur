@@ -337,12 +337,12 @@ class MsG(cmds.Cog):
     @get.command(name='pool', aliases=['p'], brief='(get) Get pool from query', description='Return pool info for given query\n\nExample:\n\{p\}get pool 1145042')
     async def _get_pool(self, ctx, *args):
         def on_reaction(reaction, user):
-            if reaction.emoji == '\N{OCTAGONAL SIGN}' and reaction.message.id == ctx.message.id and user is ctx.author:
+            if reaction.emoji == '\N{OCTAGONAL SIGN}' and reaction.message.id == ctx.message.id and user.id is ctx.author.id:
                 raise exc.Abort(match)
             return False
 
         def on_message(msg):
-            return msg.content.isdigit() and int(msg.content) <= len(pools) and int(msg.content) > 0 and msg.author is ctx.author and msg.channel is ctx.channel
+            return msg.content.isdigit() and int(msg.content) <= len(pools) and int(msg.content) > 0 and msg.author.id is ctx.author.id and msg.channel.id is ctx.channel.id
 
         try:
             kwargs = u.get_kwargs(ctx, args)
@@ -613,12 +613,12 @@ class MsG(cmds.Cog):
 
     async def _get_pool(self, ctx, *, booru='e621', query=[]):
         def on_reaction(reaction, user):
-            if reaction.emoji == '\N{OCTAGONAL SIGN}' and reaction.message.id == ctx.message.id and user is ctx.author:
+            if reaction.emoji == '\N{OCTAGONAL SIGN}' and reaction.message.id == ctx.message.id and user.id is ctx.author.id:
                 raise exc.Abort(match)
             return False
 
         def on_message(msg):
-            return msg.content.isdigit() and int(msg.content) <= len(pools) and int(msg.content) > 0 and msg.author is ctx.author and msg.channel is ctx.channel
+            return msg.content.isdigit() and int(msg.content) <= len(pools) and int(msg.content) > 0 and msg.author.id is ctx.author.id and msg.channel.id is ctx.channel.id
 
         posts = {}
         pool = {}
@@ -748,20 +748,20 @@ class MsG(cmds.Cog):
     @cmds.cooldown(1, 5, cmds.BucketType.member)
     async def pool_paginator(self, ctx, *args):
         def on_reaction(reaction, user):
-            if reaction.emoji == '\N{OCTAGONAL SIGN}' and reaction.message.id == ctx.message.id and (user is ctx.author or user.permissions_in(reaction.message.channel).manage_messages):
+            if reaction.emoji == '\N{OCTAGONAL SIGN}' and reaction.message.id == ctx.message.id and (user.id is ctx.author.id or user.permissions_in(reaction.message.channel).manage_messages):
                 raise exc.Abort
-            elif reaction.emoji == '\N{HEAVY BLACK HEART}' and reaction.message.id == paginator.id and user is ctx.author:
+            elif reaction.emoji == '\N{HEAVY BLACK HEART}' and reaction.message.id == paginator.id and user.id is ctx.author.id:
                 raise exc.Save
-            elif reaction.emoji == '\N{LEFTWARDS BLACK ARROW}' and reaction.message.id == paginator.id and user is ctx.author:
+            elif reaction.emoji == '\N{LEFTWARDS BLACK ARROW}' and reaction.message.id == paginator.id and user.id is ctx.author.id:
                 raise exc.Left
-            elif reaction.emoji == '\N{NUMBER SIGN}\N{COMBINING ENCLOSING KEYCAP}' and reaction.message.id == paginator.id and user is ctx.author:
+            elif reaction.emoji == '\N{NUMBER SIGN}\N{COMBINING ENCLOSING KEYCAP}' and reaction.message.id == paginator.id and user.id is ctx.author.id:
                 raise exc.GoTo
-            elif reaction.emoji == '\N{BLACK RIGHTWARDS ARROW}' and reaction.message.id == paginator.id and user is ctx.author:
+            elif reaction.emoji == '\N{BLACK RIGHTWARDS ARROW}' and reaction.message.id == paginator.id and user.id is ctx.author.id:
                 raise exc.Right
             return False
 
         def on_message(msg):
-            return msg.content.isdigit() and 0 <= int(msg.content) <= len(posts) and msg.author is ctx.author and msg.channel is ctx.channel
+            return msg.content.isdigit() and 0 <= int(msg.content) <= len(posts) and msg.author.id is ctx.author.id and msg.channel.id is ctx.channel.id
 
         try:
             kwargs = u.get_kwargs(ctx, args)
@@ -883,18 +883,18 @@ class MsG(cmds.Cog):
 
     async def _get_paginator(self, ctx, args, booru='e621'):
         def on_reaction(reaction, user):
-            if reaction.emoji == '\N{OCTAGONAL SIGN}' and reaction.message.id == ctx.message.id and (user is ctx.author or user.permissions_in(reaction.message.channel).manage_messages):
+            if reaction.emoji == '\N{OCTAGONAL SIGN}' and reaction.message.id == ctx.message.id and (user.id is ctx.author.id or user.permissions_in(reaction.message.channel).manage_messages):
                 raise exc.Abort
-            elif reaction.emoji == '\N{HEAVY BLACK HEART}' and reaction.message.id == paginator.id and user is ctx.author:
+            elif reaction.emoji == '\N{HEAVY BLACK HEART}' and reaction.message.id == paginator.id and user.id is ctx.author.id:
                 raise exc.Save
-            elif reaction.emoji == '\N{LEFTWARDS BLACK ARROW}' and reaction.message.id == paginator.id and user is ctx.author:
+            elif reaction.emoji == '\N{LEFTWARDS BLACK ARROW}' and reaction.message.id == paginator.id and user.id is ctx.author.id:
                 raise exc.Left
-            elif reaction.emoji == '\N{BLACK RIGHTWARDS ARROW}' and reaction.message.id == paginator.id and user is ctx.author:
+            elif reaction.emoji == '\N{BLACK RIGHTWARDS ARROW}' and reaction.message.id == paginator.id and user.id is ctx.author.id:
                 raise exc.Right
             return False
 
         def on_message(msg):
-            return msg.content.isdigit() and 0 <= int(msg.content) <= len(posts) and msg.author is ctx.author and msg.channel is ctx.channel
+            return msg.content.isdigit() and 0 <= int(msg.content) <= len(posts) and msg.author.id is ctx.author.id and msg.channel.id is ctx.channel.id
 
         try:
             kwargs = u.get_kwargs(ctx, args)
