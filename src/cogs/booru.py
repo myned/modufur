@@ -695,8 +695,8 @@ class MsG(cmds.Cog):
             order = 'order:random'
         # Checks if tags are in local blacklists
         if tags:
-            if (len(tags) > 5 and booru == 'e621') or (len(tags) > 4 and booru == 'e926'):
-                raise exc.TagBoundsError(' '.join(tags[5:]))
+            if (len(tags) > 40):
+                raise exc.TagBoundsError(' '.join(tags[40:]))
             for tag in tags:
                 if tag == 'swf' or tag == 'webm' or tag in blacklist:
                     raise exc.TagBlacklisted(tag)
@@ -1002,7 +1002,7 @@ class MsG(cmds.Cog):
             await ctx.send('\N{NO ENTRY SIGN} `{}` **blacklisted**'.format(e))
             await u.add_reaction(ctx.message, '\N{NO ENTRY SIGN}')
         except exc.TagBoundsError as e:
-            await ctx.send('`{}` **out of bounds.** Tags limited to 5.'.format(e))
+            await ctx.send('`{}` **out of bounds.** Tags limited to 40.'.format(e))
             await u.add_reaction(ctx.message, '\N{HEAVY EXCLAMATION MARK SYMBOL}')
         except exc.FavoritesNotFound:
             await ctx.send('**You have no favorite tags**')
@@ -1063,7 +1063,7 @@ class MsG(cmds.Cog):
             await ctx.send('`{}` **out of bounds.** Images limited to 3.'.format(e))
             await u.add_reaction(ctx.message, '\N{HEAVY EXCLAMATION MARK SYMBOL}')
         except exc.TagBoundsError as e:
-            await ctx.send('`{}` **out of bounds.** Tags limited to 5.'.format(e))
+            await ctx.send('`{}` **out of bounds.** Tags limited to 40.'.format(e))
             await u.add_reaction(ctx.message, '\N{HEAVY EXCLAMATION MARK SYMBOL}')
         except exc.NotFound as e:
             await ctx.send('`{}` **not found**'.format(e))
