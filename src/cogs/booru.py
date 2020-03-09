@@ -633,7 +633,9 @@ class MsG(cmds.Cog):
 
                 await u.add_reaction(ctx.message, '\N{OCTAGONAL SIGN}')
                 done, pending = await asyncio.wait([self.bot.wait_for('reaction_add', check=on_reaction, timeout=60),
-                                                    self.bot.wait_for('reaction_remove', check=on_reaction, timeout=60), self.bot.wait_for('message', check=on_message, timeout=60)], return_when=asyncio.FIRST_COMPLETED)
+                                                    self.bot.wait_for('reaction_remove', check=on_reaction, timeout=60),
+                                                    self.bot.wait_for('message', check=on_message, timeout=60)],
+                                                    return_when=asyncio.FIRST_COMPLETED)
                 for future in done:
                     selection = future.result()
 
