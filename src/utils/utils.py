@@ -23,7 +23,7 @@ try:
 except FileNotFoundError:
     with open('config.json', 'w') as outfile:
         jsn.dump({'client_id': 0, 'owner_id': 0, 'permissions': 126016,
-                  'playing': 'a game', 'prefix': [',', 'm,'], 'selfbot': False, 'token': 'str', 'saucenao_api': 'str'}, outfile, indent=4, sort_keys=True)
+                  'playing': 'a game', 'prefix': [',', 'm,'], 'selfbot': False, 'token': 'str', 'saucenao_api': 'str', 'e621_api': 'str'}, outfile, indent=4, sort_keys=True)
         print('FILE NOT FOUND : config.json created with default values. Restart run.py with correct values')
 
 
@@ -84,8 +84,10 @@ last_commands = {}
 asession = aiohttp.ClientSession()
 
 
-async def fetch(url, *, params={}, json=False, response=False, text=False):
-    async with asession.get(url, params=params, headers={
+async def fetch(url, *, json=False, response=False, text=False):
+    if 'e621' in url or 'e926' in url:
+        url += f'&login=BotMyned&api_key={config["e621_api"]}'
+    async with asession.get(url, headers={
             'User-Agent': 'Myned/Modufur (https://github.com/Myned/Modufur)'}, ssl=False) as r:
         if response:
             return r
