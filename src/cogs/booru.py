@@ -298,7 +298,7 @@ class MsG(cmds.Cog):
 
                 embed = d.Embed(
                     title=', '.join(post['tags']['artist']), url=f'https://e621.net/posts/{post["id"]}', color=ctx.me.color if isinstance(ctx.channel, d.TextChannel) else u.color)
-                embed.set_thumbnail(url=post['sample']['url'])
+                embed.set_thumbnail(url=post['file']['url'])
                 embed.set_author(name=f'{post["file"]["width"]} x {post["file"]["height"]}',
                                  url=f'https://e621.net/posts?tags=ratio:{post["file"]["width"]/post["file"]["height"]:.2f}', icon_url=ctx.author.avatar_url)
                 embed.set_footer(text=post['score']['total'],
@@ -660,7 +660,7 @@ class MsG(cmds.Cog):
                 post = await u.fetch(f'https://{booru}.net/posts/{ident}.json', json=True)
                 post = post['post']
                 posts[post['id']] = {'artist': ', '.join(
-                    post['tags']['artist']), 'sample_url': post['sample']['url'], 'score': post['score']['total']}
+                    post['tags']['artist']), 'file_url': post['file']['url'], 'score': post['score']['total']}
 
                 await asyncio.sleep(0.5)
 
@@ -729,7 +729,7 @@ class MsG(cmds.Cog):
                     continue
                 if post['id'] not in posts.keys() and post['id'] not in previous.keys():
                     posts[post['id']] = {'artist': ', '.join(
-                        post['tags']['artist']), 'sample_url': post['sample']['url'], 'score': post['score']['total']}
+                        post['tags']['artist']), 'file_url': post['file']['url'], 'score': post['score']['total']}
                 if len(posts) == limit:
                     break
 
@@ -783,7 +783,7 @@ class MsG(cmds.Cog):
 
                 embed = d.Embed(
                     title=values[c - 1]['artist'], url='https://e621.net/posts/{}'.format(keys[c - 1]), color=ctx.me.color if isinstance(ctx.channel, d.TextChannel) else u.color)
-                embed.set_image(url=values[c - 1]['sample_url'])
+                embed.set_image(url=values[c - 1]['file_url'])
                 embed.set_author(name=pool['name'],
                                  url='https://e621.net/pools/{}'.format(pool['id']), icon_url=ctx.author.avatar_url)
                 embed.set_footer(text='{} / {}'.format(c, len(posts)),
@@ -819,7 +819,7 @@ class MsG(cmds.Cog):
                             keys[c - 1])
                         embed.set_footer(text='{} / {}'.format(c, len(posts)),
                                          icon_url=self._get_icon(values[c - 1]['score']))
-                        embed.set_image(url=values[c - 1]['sample_url'])
+                        embed.set_image(url=values[c - 1]['file_url'])
 
                         await paginator.edit(content='\N{HEAVY BLACK HEART}' if keys[c - 1] in hearted.keys() else None, embed=embed)
                     else:
@@ -837,7 +837,7 @@ class MsG(cmds.Cog):
                             keys[c - 1])
                         embed.set_footer(text='{} / {}'.format(c, len(posts)),
                                          icon_url=self._get_icon(values[c - 1]['score']))
-                        embed.set_image(url=values[c - 1]['sample_url'])
+                        embed.set_image(url=values[c - 1]['file_url'])
 
                     if ctx.channel is d.TextChannel:
                         with suppress(errext.CheckFailure):
@@ -853,7 +853,7 @@ class MsG(cmds.Cog):
                             keys[c - 1])
                         embed.set_footer(text='{} / {}'.format(c, len(posts)),
                                          icon_url=self._get_icon(values[c - 1]['score']))
-                        embed.set_image(url=values[c - 1]['sample_url'])
+                        embed.set_image(url=values[c - 1]['file_url'])
 
                         await paginator.edit(content='\N{HEAVY BLACK HEART}' if keys[c - 1] in hearted.keys() else None, embed=embed)
                     else:
@@ -922,7 +922,7 @@ class MsG(cmds.Cog):
 
             embed = d.Embed(
                 title=values[c - 1]['artist'], url='https://{}.net/posts/{}'.format(booru, keys[c - 1]), color=ctx.me.color if isinstance(ctx.channel, d.TextChannel) else u.color)
-            embed.set_image(url=values[c - 1]['sample_url'])
+            embed.set_image(url=values[c - 1]['file_url'])
             embed.set_author(name=' '.join(tags) if tags else order,
                              url='https://{}.net/posts?tags={}'.format(booru, '+'.join(tags) if tags else order), icon_url=ctx.author.avatar_url)
             embed.set_footer(text=values[c - 1]['score'],
@@ -959,7 +959,7 @@ class MsG(cmds.Cog):
                             keys[c - 1])
                         embed.set_footer(text=values[c - 1]['score'],
                                          icon_url=self._get_icon(values[c - 1]['score']))
-                        embed.set_image(url=values[c - 1]['sample_url'])
+                        embed.set_image(url=values[c - 1]['file_url'])
 
                         await paginator.edit(content='\N{HEAVY BLACK HEART}' if keys[c - 1] in hearted.keys() else None, embed=embed)
                     else:
@@ -983,7 +983,7 @@ class MsG(cmds.Cog):
                                 keys[c - 1])
                             embed.set_footer(text=values[c - 1]['score'],
                                              icon_url=self._get_icon(values[c - 1]['score']))
-                            embed.set_image(url=values[c - 1]['sample_url'])
+                            embed.set_image(url=values[c - 1]['file_url'])
 
                             await paginator.edit(content='\N{HEAVY BLACK HEART}' if keys[c - 1] in hearted.keys() else None, embed=embed)
                         else:
@@ -1053,7 +1053,7 @@ class MsG(cmds.Cog):
             for ident, post in posts.items():
                 embed = d.Embed(title=post['artist'], url='https://{}.net/posts/{}'.format(booru, ident),
                                 color=ctx.me.color if isinstance(ctx.channel, d.TextChannel) else u.color)
-                embed.set_image(url=post['sample_url'])
+                embed.set_image(url=post['file_url'])
                 embed.set_author(name=' '.join(tags) if tags else order,
                                  url='https://{}.net/posts?tags={}'.format(booru, '+'.join(tags) if tags else order), icon_url=ctx.author.avatar_url)
                 embed.set_footer(
