@@ -85,7 +85,7 @@ asession = aiohttp.ClientSession()
 
 
 async def fetch(url, *, json=False, response=False, text=False):
-    if 'e621' in url or 'e926' in url:
+    if '.json' in url and ('e621' in url or 'e926' in url):
         url += f'&login=BotMyned&api_key={config["e621_api"]}'
     async with asession.get(url, headers={
             'User-Agent': 'Myned/Modufur (https://github.com/Myned/Modufur)'}, ssl=False) as r:
