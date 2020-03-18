@@ -47,18 +47,20 @@ async def query_kheina(url):
         if similarity < 55:
             return None
 
-        source = re.search('\\d+$', content['results'][0]['sources'][0]['source']).group(0)
-        export = await u.fetch(f'https://faexport.spangle.org.uk/submission/{source}.json', json=True)
+        if tld.extract(content['results'][0]['sources'][0]['source']).domain == 'furaffinity':
+            submission = re.search('\\d+$', content['results'][0]['sources'][0]['source']).group(0)
             try:
                 export = await u.fetch(f'https://faexport.spangle.org.uk/submission/{submission}.json', json=True)
                 thumbnail = export['full']
             except AssertionError:
                 thumbnail = ''
+        else:
+            thumbnail = ''
 
         result = {
             'source': content['results'][0]['sources'][0]['source'],
             'artist': content['results'][0]['sources'][0]['artist'],
-            'thumbnail': '' if isinstance(export, int) and export != 200 else export['full'],
+            'thumbnail': thumbnail,
             'similarity': str(similarity),
             'database': tld.extract(content['results'][0]['sources'][0]['source']).domain
         }
