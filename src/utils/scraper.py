@@ -49,6 +49,11 @@ async def query_kheina(url):
 
         source = re.search('\\d+$', content['results'][0]['sources'][0]['source']).group(0)
         export = await u.fetch(f'https://faexport.spangle.org.uk/submission/{source}.json', json=True)
+            try:
+                export = await u.fetch(f'https://faexport.spangle.org.uk/submission/{submission}.json', json=True)
+                thumbnail = export['full']
+            except AssertionError:
+                thumbnail = ''
 
         result = {
             'source': content['results'][0]['sources'][0]['source'],

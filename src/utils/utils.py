@@ -91,9 +91,9 @@ async def fetch(url, *, post={}, response=False, text=False, json=False):
     if post:
         async with asession.post(url, data=post, headers={
                 'User-Agent': 'Myned/Modufur (https://github.com/Myned/Modufur)'}, ssl=False) as r:
-            if r.status != 200:
-                return r.status
-            elif response:
+            assert r.status == 200
+
+            if response:
                 return r
             elif text:
                 return await r.text()
