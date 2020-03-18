@@ -41,37 +41,21 @@ from utils import utils as u
 
 async def query_kheina(url):
     try:
-        content = await u.fetch(f'https://kheina.com?url={url}', text=True)
+        content = await u.fetch(f'https://api.kheina.com/v1/search', post={'url': url}, json=True)
 
-        for e in ('&quot;', '&apos;'):
-            content = content.replace(e, '')
-        content = re.sub('<a href="/cdn-cgi/l/email-protection".+</a>', '', content)
-
-        soup = BeautifulSoup(content, 'html5lib')
-
-        if soup.find('data', id='error'):
-            return None
-
-        results = soup.find('data', id='results').string
-        results = ast.literal_eval(results)
-        iqdbdata = soup.find('data', id='iqdbdata').string
-        iqdbdata = ast.literal_eval(iqdbdata)
-
-        similarity = int(float(iqdbdata[0]['similarity']))
+        similarity = int(content['results'][0]['similarity'])
         if similarity < 55:
             return None
 
-        for e in results:
-            if iqdbdata[0]['iqdbid'] in e:
-                match = e
-                break
+        source = re.search('\\d+$', content['results'][0]['sources'][0]['source']).group(0)
+        export = await u.fetch(f'https://faexport.spangle.org.uk/submission/{source}.json', json=True)
 
         result = {
-            'source': match[3].replace('\\', ''),
-            'artist': match[4],
-            'thumbnail': f'https://f002.backblazeb2.com/file/kheinacom/{match[1]}.jpg',
+            'source': content['results'][0]['sources'][0]['source'],
+            'artist': content['results'][0]['sources'][0]['artist'],
+            'thumbnail': '' if isinstance(export, int) and export != 200 else export['full'],
             'similarity': str(similarity),
-            'database': tld.extract(match[3].replace('\\', '')).domain
+            'database': tld.extract(content['results'][0]['sources'][0]['source']).domain
         }
 
         return result
