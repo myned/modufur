@@ -84,19 +84,36 @@ last_commands = {}
 asession = aiohttp.ClientSession()
 
 
-async def fetch(url, *, json=False, response=False, text=False):
+async def fetch(url, *, post={}, response=False, text=False, json=False):
     if '.json' in url and ('e621' in url or 'e926' in url):
         url += f'&login=BotMyned&api_key={config["e621_api"]}'
-    async with asession.get(url, headers={
-            'User-Agent': 'Myned/Modufur (https://github.com/Myned/Modufur)'}, ssl=False) as r:
-        if response:
-            return r
-        elif json:
-            return await r.json()
-        elif text:
-            return await r.text()
-        else:
-            return await r.read()
+
+    if post:
+        async with asession.post(url, data=post, headers={
+                'User-Agent': 'Myned/Modufur (https://github.com/Myned/Modufur)'}, ssl=False) as r:
+            if r.status != 200:
+                return r.status
+            elif response:
+                return r
+            elif text:
+                return await r.text()
+            elif json:
+                return await r.json()
+            else:
+                return await r.read()
+    else:
+        async with asession.get(url, headers={
+                'User-Agent': 'Myned/Modufur (https://github.com/Myned/Modufur)'}, ssl=False) as r:
+            if r.status != 200:
+                return r.status
+            elif response:
+                return r
+            elif text:
+                return await r.text()
+            elif json:
+                return await r.json()
+            else:
+                return await r.read()
 
 
 def generate_embed(ctx, *, title=d.Embed.Empty, kind='rich', description=d.Embed.Empty, url=d.Embed.Empty, timestamp=d.Embed.Empty, colour=color, footer={}, image=d.Embed.Empty, thumbnail=d.Embed.Empty, author={}, fields=[]):
