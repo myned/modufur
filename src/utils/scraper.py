@@ -59,7 +59,7 @@ async def query_kheina(url):
 
         result = {
             'source': content['results'][0]['sources'][0]['source'],
-            'artist': content['results'][0]['sources'][0]['artist'],
+            'artist': content['results'][0]['sources'][0]['artist'] if content['results'][0]['sources'][0]['artist'] else 'unknown',
             'thumbnail': thumbnail,
             'similarity': str(similarity),
             'database': tld.extract(content['results'][0]['sources'][0]['source']).domain
@@ -99,12 +99,12 @@ async def query_saucenao(url):
                 source = e
                 break
 
-        artist = 'Unknown'
+        artist = 'unknown'
         for e in (
                 'author_name',
                 'member_name',
                 'creator'):
-            if e in match['data']:
+            if e in match['data'] and match['data'][e]:
                 artist = match['data'][e]
                 break
 
