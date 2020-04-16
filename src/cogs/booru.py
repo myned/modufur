@@ -728,8 +728,10 @@ class MsG(cmds.Cog):
                 except exc.Continue:
                     continue
                 if post['id'] not in posts.keys() and post['id'] not in previous.keys():
-                    posts[post['id']] = {'artist': ', '.join(
-                        post['tags']['artist']), 'file_url': post['file']['url'], 'score': post['score']['total']}
+                    posts[post['id']] = {
+                        'artist': ', '.join(post['tags']['artist']) if post['tags']['artist'] else 'unknown',
+                        'file_url': post['file']['url'],
+                        'score': post['score']['total']}
                 if len(posts) == limit:
                     break
 
