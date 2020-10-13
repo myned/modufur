@@ -21,25 +21,30 @@ def get_prefix(bot, message):
         return u.settings['prefixes'].get(message.guild.id, u.config['prefix'])
     return u.config['prefix']
 
+intents = d.Intents.default()
+intents.members = True
 
 bot = cmds.Bot(
+    intents=intents,
     command_prefix=get_prefix,
     self_bot=u.config['selfbot'],
     description='Modufur - A booru bot with a side of management and automated tasking'
-                '\nMade by @Myned#3985')
+                '\nMade by @Myned#3985'
+)
 
 
 @bot.event
 async def on_ready():
     if not checks.ready:
-        from cogs import booru, info, management, owner, tools
+        from cogs import weeb, booru, info, management, owner, tools
 
         for cog in (
                 tools.Utils(bot),
                 owner.Bot(bot),
                 management.Admin(bot),
                 info.Info(bot),
-                booru.MsG(bot)):
+                booru.MsG(bot),
+                weeb.Weeb(bot)):
             bot.add_cog(cog)
             u.cogs[type(cog).__name__] = cog
             print(f'COG : {type(cog).__name__}')
