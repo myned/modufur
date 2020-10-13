@@ -21,12 +21,16 @@ def get_prefix(bot, message):
         return u.settings['prefixes'].get(message.guild.id, u.config['prefix'])
     return u.config['prefix']
 
+intents = d.Intents.default()
+intents.members = True
 
 bot = cmds.Bot(
+    intents=intents,
     command_prefix=get_prefix,
     self_bot=u.config['selfbot'],
     description='Modufur - A booru bot with a side of management and automated tasking'
-                '\nMade by @Myned#3985')
+                '\nMade by @Myned#3985'
+)
 
 
 @bot.event
