@@ -32,14 +32,15 @@ bot = cmds.Bot(
 @bot.event
 async def on_ready():
     if not checks.ready:
-        from cogs import booru, info, management, owner, tools
+        from cogs import weeb, booru, info, management, owner, tools
 
         for cog in (
                 tools.Utils(bot),
                 owner.Bot(bot),
                 management.Admin(bot),
                 info.Info(bot),
-                booru.MsG(bot)):
+                booru.MsG(bot),
+                weeb.Weeb(bot)):
             bot.add_cog(cog)
             u.cogs[type(cog).__name__] = cog
             print(f'COG : {type(cog).__name__}')
