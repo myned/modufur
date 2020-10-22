@@ -31,7 +31,10 @@ class Weeb(cmds.Cog):
 
         for item, url in urls.items():
             browser.get(url)
-            status = browser.find_elements_by_css_selector('#addToCartText-product-template')[0].text
+            try:
+                status = browser.find_elements_by_css_selector('#addToCartText-product-template')[0].text
+            except IndexError:
+                status = 'SOLD OUT'
 
             if status != 'SOLD OUT':
                 message += f'{item} is in stock at Switchmod!\n<{url}>\n'
@@ -72,8 +75,9 @@ class Weeb(cmds.Cog):
 
                     browser.quit()
                     self.weebing = False
+                    print('STOPPED : weebing')
 
-                await asyncio.sleep(60)
+                await asyncio.sleep(120)
 
         except Exception as e:
             tb.print_exc()
