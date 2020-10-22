@@ -75,8 +75,9 @@ class Weeb(cmds.Cog):
 
                     browser.quit()
                     self.weebing = False
+                    print('STOPPED : weebing')
 
-                await asyncio.sleep(60)
+                await asyncio.sleep(120)
 
         except Exception as e:
             tb.print_exc()
