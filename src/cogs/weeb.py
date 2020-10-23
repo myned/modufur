@@ -48,8 +48,14 @@ class Weeb(cmds.Cog):
         url = 'https://www.deskhero.ca/products/gmk-metaverse-2'
 
         browser.get(url)
-        royal_soldout = browser.find_elements_by_css_selector('#data-product-option-1-1')[0].get_attribute('data-soldout')
-        novelties_soldout = browser.find_elements_by_css_selector('#data-product-option-1-3')[0].get_attribute('data-soldout')
+        try:
+            royal_soldout = browser.find_elements_by_css_selector('#data-product-option-1-1')[0].get_attribute('data-soldout')
+        except IndexError:
+            royal_soldout = 'true'
+        try:
+            novelties_soldout = browser.find_elements_by_css_selector('#data-product-option-1-3')[0].get_attribute('data-soldout')
+        except IndexError:
+            novelties_soldout = 'true'
 
         if royal_soldout != 'true':
             message += f'Royal is in stock at Deskhero!\n<{url}>\n'
