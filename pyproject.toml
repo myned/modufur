@@ -13,7 +13,7 @@ aiohttp = "*"
 urlextract = "*"
 tldextract = "*"
 hikari = {extras = ["speedups"], version = "*"}
-hikari-lightbulb = "*"
+hikari-lightbulb = {git = "https://github.com/tandemdude/hikari-lightbulb.git", rev = "development"}
 hikari-miru = "*"
 pysaucenao = {git = "https://github.com/Myned/pysaucenao.git"}
 
