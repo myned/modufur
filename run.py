@@ -24,7 +24,7 @@ async def on_error(event):
     try:
         await event.context.respond(c.ERROR)
     except:
-        pass
+        await event.context.interaction.edit_initial_response(c.ERROR, components=None)
 
     raise event.exception
 

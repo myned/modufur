@@ -70,7 +70,11 @@ async def on_reverse_error(event):
             error = '**An unknown SauceNAO error has occurred. The service may be down.**'
 
     if error:
+        try:
         await event.context.respond(error)
+        except:
+            await event.context.interaction.edit_initial_response(error, components=None)
+
         return True
 
 async def _reverse(context, urls, *, selector=None):
