@@ -46,6 +46,7 @@ async def reverse(context):
                 await selector.wait()
 
                 if selector.timed_out:
+                    await context.interaction.edit_initial_response('**Timed out.**', components=None)
                     return
 
                 urls = selector.selected
