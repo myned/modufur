@@ -1,4 +1,5 @@
 import os
+
 import hikari
 import lightbulb
 import miru
@@ -8,13 +9,12 @@ import config as c
 
 # Unix optimizations
 # https://github.com/hikari-py/hikari#uvloop
-if os.name != 'nt':
+if os.name != "nt":
     import uvloop
+
     uvloop.install()
 
-bot = lightbulb.BotApp(
-    token=c.config['token'],
-    default_enabled_guilds=c.config['guilds'])
+bot = lightbulb.BotApp(token=c.config["token"], default_enabled_guilds=c.config["guilds"])
 
 
 @bot.listen(lightbulb.CommandErrorEvent)
@@ -30,5 +30,5 @@ async def on_error(event):
 
 
 miru.load(bot)
-bot.load_extensions_from('tools', 'commands')
-bot.run(activity=hikari.Activity(name=c.config['activity'], type=c.ACTIVITY))
+bot.load_extensions_from("tools", "commands")
+bot.run(activity=hikari.Activity(name=c.config["activity"], type=c.ACTIVITY))
