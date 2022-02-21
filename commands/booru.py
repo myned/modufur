@@ -73,7 +73,7 @@ async def on_reverse_error(event):
 
     if error:
         try:
-        await event.context.respond(error)
+            await event.context.respond(error)
         except:
             await event.context.interaction.edit_initial_response(error, components=None)
 
