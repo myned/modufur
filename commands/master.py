@@ -2,12 +2,14 @@ import os
 
 import lightbulb
 
+import config as c
+
 
 plugin = lightbulb.Plugin("master")
 
 
 @plugin.command
-@lightbulb.option("command", "What is your command, master?", required=False, choices=("reload", "sleep"))
+@lightbulb.option("command", "What is your command, master?", required=False, choices=("reload", "sleep", "invite"))
 @lightbulb.command("master", "Commands my master can demand of me", ephemeral=True)
 @lightbulb.implements(lightbulb.SlashCommand)
 async def master(context):
@@ -23,6 +25,10 @@ async def master(context):
             case "sleep":
                 await context.respond("**Goodnight, master.**")
                 await context.bot.close()
+            case "invite":
+                await context.respond(
+                    f"https://discord.com/api/oauth2/authorize?client_id={c.config['client']}&permissions=0&scope=bot%20applications.commands"
+                )
             case _:
                 await context.respond(f"**Hello, master.**")
     else:
