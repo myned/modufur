@@ -1,11 +1,11 @@
 # Modufur
-An experimental [Hikari](https://github.com/hikari-py/hikari) Discord bot for reverse image searching using [SauceNAO](https://saucenao.com) & [Kheina](https://kheina.com)
+An experimental [Hikari](https://www.hikari-py.dev) Discord bot for reverse image searching using [SauceNAO](https://saucenao.com) & [Kheina](https://kheina.com).
 ## Requirements
 [Python](https://www.python.org) 3.10+\
 [Poetry](https://python-poetry.org)
-## Installation
+## Installing
 ```
-git clone https://github.com/Myned/Modufur.git
+git clone -b hikari https://github.com/Myned/Modufur.git
 ```
 ```
 cd Modufur
@@ -17,8 +17,8 @@ poetry install
 ```
 poetry run python run.py
 ```
-## Configuration
-`config.toml`
+## Setup
+`config.toml` will automatically generate if it does not exist
 ```
 guilds = [] # guild IDs to register commands, empty for global
 client = 0 # bot application ID
@@ -26,6 +26,19 @@ token = "" # bot token
 activity = "" # bot status
 saucenao = "" # saucenao token
 e621 = "" # e621 token
+```
+## Updating
+```
+cd Modufur
+```
+```
+git pull
+```
+```
+poetry env remove python
+```
+```
+poetry update
 ```
 ## Credits
 [hikari](https://github.com/hikari-py/hikari)\
