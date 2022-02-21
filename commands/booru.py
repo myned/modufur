@@ -37,9 +37,10 @@ async def reverse(context):
 
             if len(urls) > 1:
                 selector = components.Selector(
-                    pages=[f'**Select {urls.index(url) + 1} out of {len(urls)} potential images to search:**\n{url}' for url in urls],
-                    buttons=[components.Select(), components.Back(), components.Forward(), components.Confirm()],
-                    urls=urls)
+                    pages=[f'**Select potential images to search: `{urls.index(url) + 1}/{len(urls)}`**\n{url}' for url in urls],
+                    buttons=[components.Back(), components.Forward(), components.Select(), components.Confirm()],
+                    urls=urls
+                )
 
                 await selector.send(context.interaction, ephemeral=True)
                 await selector.wait()
@@ -100,7 +101,8 @@ async def _reverse(context, urls, *, selector=None):
         selector = components.Selector(
             pages=pages,
             buttons=[components.Back(), components.Forward()],
-            timeout=900)
+            timeout=900
+        )
 
         await selector.send_edit(context.interaction)
     else:

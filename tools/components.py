@@ -11,21 +11,24 @@ class Back(nav.PrevButton):
         super().__init__(
             style=hikari.ButtonStyle.SECONDARY,
             label='⟵',
-            emoji=None)
+            emoji=None
+        )
 
 class Forward(nav.NextButton):
     def __init__(self):
         super().__init__(
             style=hikari.ButtonStyle.SECONDARY,
             label='⟶',
-            emoji=None)
+            emoji=None
+        )
 
 class Confirm(nav.StopButton):
     def __init__(self):
         super().__init__(
             style=hikari.ButtonStyle.PRIMARY,
             label='➤',
-            emoji=None)
+            emoji=None
+        )
 
     async def callback(self, context):
         await context.edit_response(content='**Searching...**', components=None)
@@ -40,7 +43,8 @@ class Select(nav.NavButton):
         super().__init__(
             style=hikari.ButtonStyle.DANGER,
             label='✗',
-            emoji=None)
+            emoji=None
+        )
 
     async def callback(self, context):
         if self.view.urls[self.view.current_page] not in self.view.selected:
@@ -74,7 +78,8 @@ class Selector(nav.NavigatorView):
         super().__init__(
             pages=pages,
             buttons=buttons,
-            timeout=timeout)
+            timeout=timeout
+        )
         self.urls = urls
         self.selected = []
         self.saved = set()
