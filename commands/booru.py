@@ -93,10 +93,11 @@ async def _reverse(context, urls, *, selector=None):
         return
 
     pages = [(hikari.Embed(
-                title=match['artist'], url=match['source'], color=context.get_guild().get_my_member().get_top_role().color)
+                title=match['artist'], url=match['url'], color=context.get_guild().get_my_member().get_top_role().color)
                 .set_author(name=f'{match["similarity"]}% Match')
                 .set_image(match['thumbnail'])
-                .set_footer(match['index'])) if match else f'**No match found for:**\n{urls[index]}' for index, match in enumerate(matches)]
+                .set_footer(match['source']))
+            if match else f'**No match found.**\n{urls[index]}' for index, match in enumerate(matches)]
 
     if len(pages) > 1:
         selector = components.Selector(
