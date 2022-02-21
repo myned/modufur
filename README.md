@@ -5,17 +5,17 @@ An experimental [Hikari](https://www.hikari-py.dev) Discord bot for reverse imag
 [Poetry](https://python-poetry.org)
 ## Installing
 ```
-git clone -b hikari https://github.com/Myned/Modufur.git
+git clone --branch hikari https://github.com/Myned/Modufur.git
 ```
 ```
 cd Modufur
 ```
 ```
-poetry install
+poetry install --no-dev
 ```
 ## Usage
 ```
-poetry run python run.py
+poetry run python -00 run.py
 ```
 ## Setup
 `config.toml` will automatically generate if it does not exist
@@ -39,6 +39,16 @@ poetry env remove python
 ```
 ```
 poetry update
+```
+## Contributing
+```
+git clone --branch hikari https://github.com/Myned/Modufur.git
+```
+```
+cd Modufur
+```
+```
+poetry install
 ```
 ## Credits
 [hikari](https://github.com/hikari-py/hikari)\
