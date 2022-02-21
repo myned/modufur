@@ -1,5 +1,7 @@
 import toml
+import hikari
 
+ACTIVITY = hikari.ActivityType.LISTENING
 ERROR = '```❗ An internal error has occurred. This has been reported to my master. 🐺```'
 CONFIG = '''\
 guilds = [] # guild IDs to register commands, empty for global
