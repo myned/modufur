@@ -65,11 +65,11 @@ rm -rf Modufur
 ## Contributing
 1. [Fork](https://docs.github.com/en/get-started/quickstart/fork-a-repo) this repository on GitHub
 2. Make changes to the code
-3. [Commit](https://github.com/git-guides/git-commit) them to the fork
-4. Format the code with [Black](https://black.readthedocs.io/en/stable) inside the project folder
+3. Format the code with [Black](https://black.readthedocs.io/en/stable) inside the project folder
     ```
     poetry run python black .
     ```
+4. [Commit](https://github.com/git-guides/git-commit) them to the fork
 5. Create a [pull request](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/creating-a-pull-request) from the fork
 ## FAQ
 ### What happened to the public bot?
