@@ -27,7 +27,7 @@ cd Modufur
 ```
 Run with optimizations
 ```
-poetry run python -00 run.py
+poetry run python -OO run.py
 ```
 ## Setup
 Run to create `config.toml`\
