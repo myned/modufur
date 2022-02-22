@@ -27,6 +27,6 @@ def error(event):
     exception = event.exception.__cause__ or event.exception
 
     return (
-        f"**`{event.context.command.name}` in {event.context.get_channel().mention}"
+        f"**`{event.context.command.name}` in {event.context.get_channel().mention if event.context.guild_id else 'DMs'}"
         f"```❗ {type(exception).__name__}: {exception}```**"
     )
