@@ -1,24 +1,37 @@
 # Modufur
 An experimental [Hikari](https://www.hikari-py.dev) Discord bot for reverse image searching using [SauceNAO](https://saucenao.com) & [Kheina](https://kheina.com).
+## Optional
+A Unix-based operating system is used for the following commands.\
+[WSL](https://docs.microsoft.com/en-us/windows/wsl) can be used to run Linux on Windows, but is not required.
 ## Requirements
+[Git](https://git-scm.com/downloads)\
 [Python](https://www.python.org) 3.10+\
 [Poetry](https://python-poetry.org)
 ## Installing
+Clone this repository
 ```
-git clone --branch hikari https://github.com/Myned/Modufur.git
+git clone https://github.com/Myned/Modufur.git
 ```
+Go to the project folder
 ```
 cd Modufur
 ```
+Create a virtual environment and install dependencies
 ```
-poetry install --no-dev
+poetry install
 ```
 ## Usage
+Go to the project folder
+```
+cd Modufur
+```
+Run with optimizations
 ```
 poetry run python -00 run.py
 ```
 ## Setup
-`config.toml` will automatically generate if it does not exist
+Run to create `config.toml`\
+The file will automatically generate if it does not exist
 ```
 guilds = [] # guild IDs to register commands, empty for global
 client = 0 # bot application ID
@@ -28,28 +41,37 @@ saucenao = "" # saucenao token
 e621 = "" # e621 token
 ```
 ## Updating
+Go to the project folder
 ```
 cd Modufur
 ```
+Pull changes from the repository
 ```
 git pull
 ```
+Remove the virtual environment folder (necessary because of git dependencies)
 ```
-poetry env remove python
+rm -rf .venv
 ```
+Reinstall and update the virtual environment
 ```
 poetry update
 ```
+## Uninstalling
+Remove the project folder
+```
+rm -rf Modufur
+```
 ## Contributing
-```
-git clone --branch hikari https://github.com/Myned/Modufur.git
-```
-```
-cd Modufur
-```
-```
-poetry install
-```
+1. [Fork](https://docs.github.com/en/get-started/quickstart/fork-a-repo) this repository on GitHub
+2. Make changes to the code
+3. In the project folder, run `poetry run python black .`
+4. Create a [pull request](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/creating-a-pull-request) from the fork
+## FAQ
+### What happened to the public bot?
+My Discord account was deleted, so a new bot had to be created.
+### Why not link to the bot here?
+Although public, I do not wish for it to be excessively used due to API quotas.
 ## Credits
 [hikari](https://github.com/hikari-py/hikari)\
 [hikari-lightbulb](https://github.com/tandemdude/hikari-lightbulb)\
