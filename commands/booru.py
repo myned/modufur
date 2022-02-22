@@ -67,11 +67,11 @@ async def on_reverse_error(event):
         case pysaucenao.DailyLimitReachedException():
             error = "**Daily API limit reached. Please try again tomorrow.**"
         case pysaucenao.FileSizeLimitException() as url:
-            error = f"**Image file size too large:**\n{url}"
+            error = f"**Image file size too large.**\n{url}"
         case pysaucenao.ImageSizeException() as url:
-            error = f"**Image resolution too small:**\n{url}"
+            error = f"**Image resolution too small.**\n{url}"
         case pysaucenao.InvalidImageException() as url:
-            error = f"**Invalid image:**\n{url}"
+            error = f"**Invalid image.**\n{url}"
         case pysaucenao.UnknownStatusCodeException():
             error = "**An unknown SauceNAO error has occurred. The service may be down.**"
 
