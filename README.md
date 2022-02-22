@@ -1,8 +1,8 @@
 # Modufur
-An experimental [Hikari](https://www.hikari-py.dev) Discord bot for reverse image searching using [SauceNAO](https://saucenao.com) & [Kheina](https://kheina.com).
+An experimental [Hikari](https://www.hikari-py.dev) Discord bot for reverse image searching using [SauceNAO](https://saucenao.com) & [Kheina](https://kheina.com)
 ## Optional
-A Unix-based operating system is used for the following commands.\
-[WSL](https://docs.microsoft.com/en-us/windows/wsl) can be used to run Linux on Windows, but is not required.
+A Unix-based operating system is used for the following commands\
+[WSL](https://docs.microsoft.com/en-us/windows/wsl) can be used to run Linux on Windows, but is not required
 ## Requirements
 [Git](https://git-scm.com/downloads)\
 [Python](https://www.python.org) 3.10+\
@@ -65,8 +65,12 @@ rm -rf Modufur
 ## Contributing
 1. [Fork](https://docs.github.com/en/get-started/quickstart/fork-a-repo) this repository on GitHub
 2. Make changes to the code
-3. In the project folder, run `poetry run python black .`
-4. Create a [pull request](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/creating-a-pull-request) from the fork
+3. [Commit](https://github.com/git-guides/git-commit) them to the fork
+4. Format the code with [Black](https://black.readthedocs.io/en/stable) inside the project folder
+    ```
+    poetry run python black .
+    ```
+5. Create a [pull request](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/creating-a-pull-request) from the fork
 ## FAQ
 ### What happened to the public bot?
 My Discord account was deleted, so a new bot had to be created.
