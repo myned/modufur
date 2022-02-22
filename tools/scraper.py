@@ -54,9 +54,7 @@ async def _kheina(url):
 
 async def _post(url, data):
     async with aiohttp.ClientSession() as session:
-        async with session.post(
-            url, data=data, headers={"User-Agent": "Myned/Modufur (https://github.com/Myned/Modufur)"}
-        ) as response:
+        async with session.post(url, data=data) as response:
             return await response.json() if response.status == 200 else None
 
 
