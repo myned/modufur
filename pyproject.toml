@@ -15,7 +15,7 @@ tldextract = "*"
 hikari = {extras = ["speedups"], version = "*"}
 hikari-lightbulb = {git = "https://github.com/tandemdude/hikari-lightbulb.git", rev = "development"}
 hikari-miru = "*"
-pysaucenao = {git = "https://github.com/Myned/pysaucenao.git"}
+pysaucenao = {git = "https://github.com/FujiMakoto/pysaucenao"}
 
 [tool.poetry.dev-dependencies]
 black = "*"
