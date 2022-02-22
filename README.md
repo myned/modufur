@@ -1,8 +1,8 @@
 # Modufur
 An experimental [Hikari](https://www.hikari-py.dev) Discord bot for reverse image searching using [SauceNAO](https://saucenao.com) & [Kheina](https://kheina.com)
-## Optional
+## Prerequisites
 A Unix-based operating system is used for the following commands\
-[WSL](https://docs.microsoft.com/en-us/windows/wsl) can be used to run Linux on Windows, but is not required
+[WSL](https://docs.microsoft.com/en-us/windows/wsl) can be used to run Linux on Windows, but is not required to run the bot
 ## Requirements
 [Git](https://git-scm.com/downloads)\
 [Python](https://www.python.org) 3.10+\
@@ -69,7 +69,7 @@ rm -rf Modufur
     ```
     poetry run python black .
     ```
-4. [Commit](https://github.com/git-guides/git-commit) them to the fork
+4. [Commit](https://github.com/git-guides/git-commit) the changes to the fork
 5. Create a [pull request](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/creating-a-pull-request) from the fork
 ## FAQ
 ### What happened to the public bot?
