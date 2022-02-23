@@ -27,7 +27,9 @@ async def _saucenao(url):
     return (
         {
             "url": results[0].url,
-            "artist": ", ".join(results[0].authors) or "Unknown",
+            "artist": results[0].title
+            if results[0].author_name == "Unknown"
+            else ", ".join(results[0].authors) or "Unknown",
             "thumbnail": results[0].thumbnail,
             "similarity": round(results[0].similarity),
             "source": tldextract.extract(results[0].index).domain,
