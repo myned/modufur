@@ -104,7 +104,7 @@ async def _reverse(context, urls, *, selector=None):
                 url=match["url"],
                 color=context.get_guild().get_my_member().get_top_role().color if context.get_guild() else "#1a1a1a",
             )
-            .set_author(name=f'{match["similarity"]}% Match')
+            .set_author(name=f"{match['similarity']}% Match")
             .set_image(match["thumbnail"])
             .set_footer(match["source"])
         )

@@ -48,7 +48,7 @@ async def _kheina(url):
     return {
         "url": content["results"][0]["sources"][0]["source"],
         "artist": content["results"][0]["sources"][0]["artist"] or "Unknown",
-        "thumbnail": f'https://cdn.kheina.com/file/kheinacom/{content["results"][0]["sources"][0]["sha1"]}.jpg',
+        "thumbnail": f"https://cdn.kheina.com/file/kheinacom/{content['results'][0]['sources'][0]['sha1']}.jpg",
         "similarity": round(content["results"][0]["similarity"]),
         "source": tldextract.extract(content["results"][0]["sources"][0]["source"]).domain,
     }

@@ -20,7 +20,7 @@ async def master(context):
 
                 extensions = [os.path.splitext(extension)[1][1:] for extension in context.bot.extensions]
                 await context.respond(
-                    f'**Reloaded `{"`, `".join(extensions[:-1])}`, and `{extensions[-1]}` for you, master.**'
+                    f"**Reloaded `{'`, `'.join(extensions[:-1])}`, and `{extensions[-1]}` for you, master.**"
                 )
             case "sleep":
                 await context.respond("**Goodnight, master.**")
