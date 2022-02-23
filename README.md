@@ -74,8 +74,11 @@ rm -rf Modufur
 ## FAQ
 ### What happened to the public bot?
 My Discord account was deleted, so a new bot had to be created.
-### Why not link to the bot here?
+### Why not link to the public bot here?
 Although public, I do not wish for it to be excessively used due to API quotas.
+### Why can't I send explicit images to the bot?
+Discord currently has no way to disable scanning content for bots.\
+You can send links uploaded elsewhere instead.
 ## Credits
 [hikari](https://github.com/hikari-py/hikari)\
 [hikari-lightbulb](https://github.com/tandemdude/hikari-lightbulb)\
