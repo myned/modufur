@@ -27,7 +27,7 @@ async def master(context):
                 await context.bot.close()
             case "invite":
                 await context.respond(
-                    f"https://discord.com/api/oauth2/authorize?client_id={c.config['client']}&permissions=0&scope=bot%20applications.commands"
+                    f"https://discord.com/api/oauth2/authorize?client_id={c.config['client']}&permissions=1024&scope=bot%20applications.commands"
                 )
             case _:
                 await context.respond(f"**Hello, master.**")
