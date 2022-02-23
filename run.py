@@ -14,7 +14,11 @@ if os.name != "nt":
 
     uvloop.install()
 
-bot = lightbulb.BotApp(token=c.config["token"], default_enabled_guilds=c.config["guilds"])
+bot = lightbulb.BotApp(
+    token=c.config["token"],
+    default_enabled_guilds=c.config["guilds"],
+    help_slash_command=True,
+)
 
 
 @bot.listen(lightbulb.CommandErrorEvent)
