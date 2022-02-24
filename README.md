@@ -9,7 +9,7 @@ A Unix-based operating system is used for the following commands\
 ## Requirements
 [Git](https://git-scm.com/downloads)\
 [Python](https://www.python.org) 3.10+\
-[Poetry](https://python-poetry.org)
+[Poetry](https://python-poetry.org/docs/master)
 ## Installing
 Clone this repository
 ```
