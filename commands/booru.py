@@ -116,7 +116,11 @@ async def _reverse(context, urls, *, selector=None):
     ]
 
     if len(pages) > 1:
-        selector = components.Selector(pages=pages, buttons=[components.Back(), components.Forward()], timeout=900)
+        selector = components.Selector(
+            pages=pages,
+            buttons=[components.Back(), components.Forward()],
+            timeout=600,
+        )
 
         await selector.send_edit(context.interaction)
     else:
