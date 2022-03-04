@@ -522,7 +522,7 @@ async def connect(context):
             context.guild_id
         ]
 
-        await plugin.d.queue[context.guild_id].clear()
+        plugin.d.queue[context.guild_id].clear()
         plugin.d.queue[context.guild_id] = songbird.Queue(driver)
         plugin.d.queue[context.guild_id].extend(sources)
     elif context.guild_id not in plugin.d.queue:
