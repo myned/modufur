@@ -38,3 +38,9 @@ def error(event):
         f"**`{event.context.command.name}` in {event.context.get_channel().mention if event.context.guild_id else 'DMs'}"
         f"```❗ {type(exception).__name__}: {exception}```**"
     )
+
+
+# Write config to file
+def dump():
+    with open("config.toml", "w") as file:
+        toml.dump(config, file)
