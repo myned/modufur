@@ -17,7 +17,7 @@ if os.name != "nt":
 bot = lightbulb.BotApp(
     token=c.config["token"],
     default_enabled_guilds=c.config["guilds"],
-    help_slash_command=True,
+    help_slash_command=False,
 )
 
 
