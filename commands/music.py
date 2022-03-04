@@ -12,6 +12,13 @@ plugin = lightbulb.Plugin("music", include_datastore=True)
 plugin.add_checks(lightbulb.guild_only)
 plugin.d.queue = {}
 
+# Bot permissions required for functionality
+PERMISSIONS = (
+    hikari.Permissions.VIEW_CHANNEL,
+    hikari.Permissions.CONNECT,
+    hikari.Permissions.SPEAK,
+)
+
 
 # Subclass string to store metadata in coroutine parameters
 # Prevents needing to query for metadata again
@@ -58,8 +65,6 @@ async def on_error(event):
     match event.exception.__cause__ or event.exception:
         case AttributeError():
             error = f"***Queue may still be initializing.** If this continues, please notify my master, {event.context.bot.application.owner.mention}*"
-        case lightbulb.MissingRequiredPermission():
-            error = "***You are missing required permissions***"
         case lightbulb.CheckFailure():
             if "voice_only" in str(event.exception):
                 error = "***Join the voice channel first***"
@@ -105,9 +110,11 @@ async def on_error(event):
 
 
 @plugin.command
-@lightbulb.add_checks(lightbulb.has_guild_permissions(hikari.Permissions.MANAGE_GUILD))
+@lightbulb.add_checks(
+    lightbulb.has_guild_permissions(hikari.Permissions.MANAGE_GUILD), lightbulb.bot_has_guild_permissions(*PERMISSIONS)
+)
 @lightbulb.option("channel", "Channel for music commands, empty to unset", hikari.GuildChannel, required=False)
-@lightbulb.command("set", "Settings for the server, Manage Server permission required", ephemeral=True)
+@lightbulb.command("set", "Settings for the server, MANAGE_GUILD permission required", ephemeral=True)
 @lightbulb.implements(lightbulb.SlashCommand)
 async def set(context):
     if context.options.channel:
@@ -127,7 +134,7 @@ async def set(context):
 
 
 @plugin.command
-@lightbulb.add_checks(music_channel)
+@lightbulb.add_checks(lightbulb.bot_has_guild_permissions(*PERMISSIONS), music_channel)
 @lightbulb.command("move", "Move to a voice channel, queue intact")
 @lightbulb.implements(lightbulb.SlashCommand)
 async def move(context):
@@ -141,7 +148,7 @@ async def move(context):
 
 
 @plugin.command
-@lightbulb.add_checks(voice_only, music_channel)
+@lightbulb.add_checks(lightbulb.bot_has_guild_permissions(*PERMISSIONS), voice_only, music_channel)
 @lightbulb.option("query", "Search for a track, playlist, or link to play", required=False)
 @lightbulb.command("play", "Play or resume music from YouTube")
 @lightbulb.implements(lightbulb.SlashCommand)
@@ -238,7 +245,7 @@ async def play(context):
 
 
 @plugin.command
-@lightbulb.add_checks(voice_only, music_channel)
+@lightbulb.add_checks(lightbulb.bot_has_guild_permissions(*PERMISSIONS), voice_only, music_channel)
 @lightbulb.option("position", "Position of the track to skip to", required=False, autocomplete=True)
 @lightbulb.command("skip", "Skip the current or to a specific track")
 @lightbulb.implements(lightbulb.SlashCommand)
@@ -289,7 +296,7 @@ async def skip(context):
 
 
 @plugin.command
-@lightbulb.add_checks(voice_only, music_channel)
+@lightbulb.add_checks(lightbulb.bot_has_guild_permissions(*PERMISSIONS), voice_only, music_channel)
 @lightbulb.option("position", "Position of the track to remove", autocomplete=True)
 @lightbulb.command("remove", "Remove a track from the queue")
 @lightbulb.implements(lightbulb.SlashCommand)
@@ -381,7 +388,7 @@ async def position_autocomplete(option, interaction):
 
 
 @plugin.command
-@lightbulb.add_checks(voice_only, music_channel)
+@lightbulb.add_checks(lightbulb.bot_has_guild_permissions(*PERMISSIONS), voice_only, music_channel)
 @lightbulb.command("pause", "Pause the current track")
 @lightbulb.implements(lightbulb.SlashCommand)
 async def pause(context):
@@ -398,7 +405,7 @@ async def pause(context):
 
 
 @plugin.command
-@lightbulb.add_checks(voice_only, music_channel)
+@lightbulb.add_checks(lightbulb.bot_has_guild_permissions(*PERMISSIONS), voice_only, music_channel)
 @lightbulb.command("stop", "Stop the current track and clear the queue")
 @lightbulb.implements(lightbulb.SlashCommand)
 async def stop(context):
@@ -424,7 +431,7 @@ async def stop(context):
 
 
 @plugin.command
-@lightbulb.add_checks()
+@lightbulb.add_checks(lightbulb.bot_has_guild_permissions(*PERMISSIONS))
 @lightbulb.command("nowplaying", "Show the current track", ephemeral=True)
 @lightbulb.implements(lightbulb.SlashCommand)
 async def nowplaying(context):
@@ -449,7 +456,7 @@ async def nowplaying(context):
 
 
 @plugin.command
-@lightbulb.add_checks()
+@lightbulb.add_checks(lightbulb.bot_has_guild_permissions(*PERMISSIONS))
 @lightbulb.command("queue", "List songs in the queue", ephemeral=True)
 @lightbulb.implements(lightbulb.SlashCommand)
 async def queue(context):

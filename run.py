@@ -24,18 +24,24 @@ bot = lightbulb.BotApp(
 # Listener for global command exceptions
 @bot.listen(lightbulb.CommandErrorEvent)
 async def on_error(event):
+    error = c.ERROR
+
     match event.exception.__cause__ or event.exception:
+        case lightbulb.BotMissingRequiredPermission():
+            error = f"***Missing required permissions: `{event.exception.missing_perms}`***"
+        case lightbulb.MissingRequiredPermission():
+            error = f"***You are missing required permissions: `{event.exception.missing_perms}`***"
         case hikari.ForbiddenError():
-            pass
+            raise event.exception
         case _:
             await bot.application.owner.send(c.error(event))
 
-            try:
-                await event.context.respond(c.ERROR, flags=hikari.MessageFlag.EPHEMERAL)
-            except:
-                await event.context.interaction.edit_initial_response(c.ERROR, components=None)
+    try:
+        await event.context.respond(error, flags=hikari.MessageFlag.EPHEMERAL)
+    except:
+        await event.context.interaction.edit_initial_response(error, components=None)
 
-            raise event.exception
+    raise event.exception
 
 
 miru.load(bot)
