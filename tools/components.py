@@ -49,6 +49,7 @@ class Select(nav.NavButton):
         else:
             self._button(selected=True)
 
+    # Flip button state
     def _button(self, *, selected=False):
         self.style = hikari.ButtonStyle.SUCCESS if selected else hikari.ButtonStyle.DANGER
         self.label = "✔" if selected else "✗"
@@ -77,6 +78,7 @@ class Selector(nav.NavigatorView):
 
         self.timed_out = True
 
+    # Resend new navigator as edit of previous
     async def send_edit(self, interaction):
         self._inter = interaction
 

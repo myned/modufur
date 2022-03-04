@@ -21,6 +21,7 @@ bot = lightbulb.BotApp(
 )
 
 
+# Listener for global command exceptions
 @bot.listen(lightbulb.CommandErrorEvent)
 async def on_error(event):
     await bot.application.owner.send(c.error(event))

@@ -2,8 +2,12 @@ import toml
 import hikari
 
 
+# Hikari activity type
+# https://www.hikari-py.dev/hikari/presences.html#hikari.presences.ActivityType
 ACTIVITY = hikari.ActivityType.LISTENING
+# Global command error response
 ERROR = "```❗ An internal error has occurred. This has been reported to my master 🐺```"
+# Local bot configuration
 CONFIG = """\
 guilds = [] # guild IDs to register commands, empty for global
 master = 0 # guild ID to register owner commands
@@ -12,9 +16,11 @@ token = "" # bot token
 activity = "" # bot status
 saucenao = "" # saucenao token
 e621 = "" # e621 token
+
 """
 
 
+# Load or create config.toml
 try:
     config = toml.load("config.toml")
 except FileNotFoundError:
@@ -24,6 +30,7 @@ except FileNotFoundError:
         exit()
 
 
+# Global command error response for owner
 def error(event):
     exception = event.exception.__cause__ or event.exception
 

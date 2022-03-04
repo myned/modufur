@@ -10,6 +10,7 @@ plugin = lightbulb.Plugin("scraper")
 sauce = pysaucenao.SauceNao(api_key=c.config["saucenao"], priority=(29, 40, 41))  # e621 > Fur Affinity > Twitter
 
 
+# Return list of matches
 async def reverse(urls):
     return [await _saucenao(url) or await _kheina(url) for url in urls]
 

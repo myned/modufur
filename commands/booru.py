@@ -57,6 +57,7 @@ async def reverse(context):
             await _reverse(context, urls, selector=selector)
 
 
+# Listener for reverse exceptions
 @reverse.set_error_handler()
 async def on_reverse_error(event):
     error = None
@@ -84,6 +85,7 @@ async def on_reverse_error(event):
         return True
 
 
+# Reverse images and respond
 async def _reverse(context, urls, *, selector=None):
     if not selector:
         await context.respond(hikari.ResponseType.DEFERRED_MESSAGE_CREATE)
