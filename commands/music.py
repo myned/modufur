@@ -256,7 +256,7 @@ async def skip(context):
     if len(plugin.d.queue[context.guild_id]) == 0:
         plugin.d.queue[context.guild_id].skip()
 
-        await context.respond("**Last track skipped**")
+        await context.respond("**Final track skipped**")
         return
 
     embed = (
