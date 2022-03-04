@@ -20,19 +20,19 @@ async def master(context):
 
                 extensions = [os.path.splitext(extension)[1][1:] for extension in context.bot.extensions]
                 await context.respond(
-                    f"**Reloaded `{'`, `'.join(extensions[:-1])}`, and `{extensions[-1]}` for you, master.**"
+                    f"**Reloaded `{'`, `'.join(extensions[:-1])}`, and `{extensions[-1]}` for you, master**"
                 )
             case "sleep":
-                await context.respond("**Goodnight, master.**")
+                await context.respond("**Goodnight, master**")
                 await context.bot.close()
             case "invite":
                 await context.respond(
                     f"https://discord.com/api/oauth2/authorize?client_id={c.config['client']}&permissions=1024&scope=bot%20applications.commands"
                 )
             case _:
-                await context.respond(f"**Hello, master.**")
+                await context.respond(f"**Hello, master**")
     else:
-        await context.respond(f"**{context.bot.application.owner.mention} is my master. 🐺**")
+        await context.respond(f"**{context.bot.application.owner.mention} is my master 🐺**")
 
 
 def load(bot):

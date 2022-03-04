@@ -21,7 +21,7 @@ async def reverse(context):
             urls = extractor.find_urls(context.options.url or "", only_unique=True, with_schema_only=True)
 
             if not urls:
-                await context.respond("**Invalid URL(s).**")
+                await context.respond("***Invalid URL(s)***")
                 return
 
             await _reverse(context, urls)
@@ -30,7 +30,7 @@ async def reverse(context):
             urls += [attachment.url for attachment in context.options.target.attachments if attachment.url not in urls]
 
             if not urls:
-                await context.respond("**No images found.**")
+                await context.respond("***No images found***")
                 return
 
             selector = None
@@ -49,7 +49,7 @@ async def reverse(context):
                 await selector.wait()
 
                 if selector.timed_out:
-                    await context.interaction.edit_initial_response("**Timed out.**", components=None)
+                    await context.interaction.edit_initial_response("***Timed out***", components=None)
                     return
 
                 urls = selector.selected
@@ -63,17 +63,17 @@ async def on_reverse_error(event):
 
     match event.exception.__cause__:
         case pysaucenao.ShortLimitReachedException():
-            error = "**API limit reached. Please try again in a minute.**"
+            error = "***API limit reached. Please try again in a minute***"
         case pysaucenao.DailyLimitReachedException():
-            error = "**Daily API limit reached. Please try again tomorrow.**"
+            error = "***Daily API limit reached. Please try again tomorrow***"
         case pysaucenao.FileSizeLimitException() as url:
-            error = f"**Image file size too large.**\n{url}"
+            error = f"***Image file size too large***\n{url}"
         case pysaucenao.ImageSizeException() as url:
-            error = f"**Image resolution too small.**\n{url}"
+            error = f"***Image resolution too small***\n{url}"
         case pysaucenao.InvalidImageException() as url:
-            error = f"**Invalid image.**\n{url}"
+            error = f"***Invalid image***\n{url}"
         case pysaucenao.UnknownStatusCodeException():
-            error = "**An unknown SauceNAO error has occurred. The service may be down.**"
+            error = "***An unknown SauceNAO error has occurred. The service may be down***"
 
     if error:
         try:
@@ -92,9 +92,9 @@ async def _reverse(context, urls, *, selector=None):
 
     if not matches:
         if selector:
-            await context.interaction.edit_initial_response("**No matches found.**", components=None)
+            await context.interaction.edit_initial_response("***No matches found***", components=None)
         else:
-            await context.respond("**No matches found.**")
+            await context.respond("***No matches found***")
         return
 
     pages = [
@@ -109,7 +109,7 @@ async def _reverse(context, urls, *, selector=None):
             .set_footer(match["source"])
         )
         if match
-        else f"**No match found.**\n{urls[index]}"
+        else f"***No match found***\n{urls[index]}"
         for index, match in enumerate(matches)
     ]
 

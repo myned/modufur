@@ -3,7 +3,7 @@ import hikari
 
 
 ACTIVITY = hikari.ActivityType.LISTENING
-ERROR = "```❗ An internal error has occurred. This has been reported to my master. 🐺```"
+ERROR = "```❗ An internal error has occurred. This has been reported to my master 🐺```"
 CONFIG = """\
 guilds = [] # guild IDs to register commands, empty for global
 master = 0 # guild ID to register owner commands
@@ -20,7 +20,7 @@ try:
 except FileNotFoundError:
     with open("config.toml", "w") as f:
         f.write(CONFIG)
-        print("config.toml created with default values. Restart when modified.")
+        print("config.toml created with default values. Restart when modified")
         exit()
 
 
