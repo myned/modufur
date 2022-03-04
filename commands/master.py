@@ -13,7 +13,11 @@ plugin = lightbulb.Plugin("master", default_enabled_guilds=c.config["master"])
 @lightbulb.command("master", "Commands my master can demand of me", ephemeral=True)
 @lightbulb.implements(lightbulb.SlashCommand)
 async def master(context):
-    if context.user.id == context.bot.application.owner.id:
+    owners = (
+        context.bot.application.team.members if context.bot.application.team else [context.bot.application.owner.id]
+    )
+
+    if context.user.id in owners:
         match context.options.command:
             case "reload":
                 context.bot.reload_extensions(*context.bot.extensions)
