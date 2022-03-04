@@ -5,7 +5,7 @@ import lightbulb
 import config as c
 
 
-plugin = lightbulb.Plugin("master")
+plugin = lightbulb.Plugin("master", default_enabled_guilds=c.config["master"])
 
 
 @plugin.command

@@ -6,6 +6,7 @@ ACTIVITY = hikari.ActivityType.LISTENING
 ERROR = "```❗ An internal error has occurred. This has been reported to my master. 🐺```"
 CONFIG = """\
 guilds = [] # guild IDs to register commands, empty for global
+master = 0 # guild ID to register owner commands
 client = 0 # bot application ID
 token = "" # bot token
 activity = "" # bot status

@@ -37,6 +37,7 @@ Run to create `config.toml`\
 The file will automatically generate if it does not exist
 ```
 guilds = [] # guild IDs to register commands, empty for global
+master = 0 # guild ID to register owner commands
 client = 0 # bot application ID
 token = "" # bot token
 activity = "" # bot status
