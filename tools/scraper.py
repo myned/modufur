@@ -12,10 +12,11 @@ sauce = pysaucenao.SauceNao(api_key=c.config["saucenao"], priority=(29, 40, 41))
 
 # Return list of matches
 async def reverse(urls):
-    return [await _saucenao(url) or await _kheina(url) for url in urls]
+    return [await saucenao(url) or await kheina(url) for url in urls]
 
 
-async def _saucenao(url):
+# Query SauceNAO
+async def saucenao(url):
     try:
         results = await sauce.from_url(url)
     except pysaucenao.FileSizeLimitException:
@@ -40,8 +41,9 @@ async def _saucenao(url):
     )
 
 
-async def _kheina(url):
-    content = await _post("https://api.kheina.com/v1/search", {"url": url})
+# Query Kheina
+async def kheina(url):
+    content = await post("https://api.kheina.com/v1/search", {"url": url})
 
     if content["results"][0]["similarity"] < 50:
         return None
@@ -55,7 +57,8 @@ async def _kheina(url):
     }
 
 
-async def _post(url, data):
+# Return post response as json
+async def post(url, data):
     async with aiohttp.ClientSession() as session:
         async with session.post(url, data=data) as response:
             return await response.json() if response.status == 200 else None
