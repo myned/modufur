@@ -548,7 +548,7 @@ async def running(guild_id):
 def convert(seconds):
     h = seconds // 3600
     m = seconds % 3600 // 60
-    s = seconds % 3600 % 60  # YouTube values seem to be one second lower
+    s = seconds % 3600 % 60
 
     return f"{f'{h}:' if h else ''}{m}:{s:02d}"
 
