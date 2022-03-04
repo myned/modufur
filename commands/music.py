@@ -154,10 +154,10 @@ async def move(context):
 @lightbulb.implements(lightbulb.SlashCommand)
 async def play(context):
     if not context.options.query:
-        if not await running(context.guild_id):
+        if not running(context.guild_id) or not await state(context.guild_id):
             await context.respond("***Nothing to resume***", flags=hikari.MessageFlag.EPHEMERAL)
             return
-        if (await plugin.d.queue[context.guild_id].track_handle.get_info()).playing == songbird.PlayMode.Play:
+        if (await state(context.guild_id)).playing == songbird.PlayMode.Play:
             await context.respond("***Already playing***", flags=hikari.MessageFlag.EPHEMERAL)
             return
 
@@ -225,7 +225,7 @@ async def play(context):
     embed.url = match["link"]
     embed.set_thumbnail(match["thumbnails"][0]["url"])
 
-    if await running(context.guild_id):
+    if running(context.guild_id) and await state(context.guild_id):
         plugin.d.queue[context.guild_id].extend(sources)
 
         if len(sources) > 1:
@@ -250,7 +250,7 @@ async def play(context):
 @lightbulb.command("skip", "Skip the current or to a specific track")
 @lightbulb.implements(lightbulb.SlashCommand)
 async def skip(context):
-    if not await running(context.guild_id):
+    if not running(context.guild_id) or not await state(context.guild_id):
         await context.respond("***Nothing to skip***", flags=hikari.MessageFlag.EPHEMERAL)
         return
     if len(plugin.d.queue[context.guild_id]) == 0:
@@ -312,7 +312,7 @@ async def remove(context):
             .set_footer(f"{len(sources)} track{'s' if len(sources) > 1 else ''}")
         )
 
-    if not await running(context.guild_id):
+    if not running(context.guild_id) or not await state(context.guild_id):
         await context.respond("***Nothing to remove***", flags=hikari.MessageFlag.EPHEMERAL)
         return
 
@@ -363,7 +363,7 @@ async def remove(context):
 @skip.autocomplete("position")
 @remove.autocomplete("position")
 async def position_autocomplete(option, interaction):
-    if not await running(interaction.guild_id):
+    if not running(interaction.guild_id) or not await state(interaction.guild_id):
         return
 
     suggestions = []
@@ -392,10 +392,10 @@ async def position_autocomplete(option, interaction):
 @lightbulb.command("pause", "Pause the current track")
 @lightbulb.implements(lightbulb.SlashCommand)
 async def pause(context):
-    if not await running(context.guild_id):
+    if not running(context.guild_id) or not await state(context.guild_id):
         await context.respond("***Nothing to pause***", flags=hikari.MessageFlag.EPHEMERAL)
         return
-    if (await plugin.d.queue[context.guild_id].track_handle.get_info()).playing == songbird.PlayMode.Pause:
+    if (await state(context.guild_id)).playing == songbird.PlayMode.Pause:
         await context.respond("***Already paused***", flags=hikari.MessageFlag.EPHEMERAL)
         return
 
@@ -409,16 +409,12 @@ async def pause(context):
 @lightbulb.command("stop", "Stop the current track and clear the queue")
 @lightbulb.implements(lightbulb.SlashCommand)
 async def stop(context):
-    if context.guild_id not in plugin.d.queue:
+    if not running(context.guild_id):
         await context.respond("***Nothing to stop***", flags=hikari.MessageFlag.EPHEMERAL)
         return
 
     try:
-        if (
-            plugin.d.queue[context.guild_id].track_handle
-            and await plugin.d.queue[context.guild_id].track_handle.get_info()
-        ):
-            plugin.d.queue[context.guild_id].track_handle.stop()
+        plugin.d.queue[context.guild_id].track_handle.stop()
     except songbird.SongbirdError:
         pass
 
@@ -435,11 +431,9 @@ async def stop(context):
 @lightbulb.command("nowplaying", "Show the current track", ephemeral=True)
 @lightbulb.implements(lightbulb.SlashCommand)
 async def nowplaying(context):
-    if not await running(context.guild_id):
+    if not running(context.guild_id) or not await state(context.guild_id):
         await context.respond("***Nothing is playing***", flags=hikari.MessageFlag.EPHEMERAL)
         return
-
-    state = await plugin.d.queue[context.guild_id].track_handle.get_info()
 
     await context.respond(
         hikari.Embed(
@@ -450,7 +444,7 @@ async def nowplaying(context):
         .set_author(name="Now playing")
         .set_thumbnail(plugin.d.queue[context.guild_id].track_handle.metadata.thumbnail)
         .set_footer(
-            f"{convert(round(state.position))} / {convert(round(plugin.d.queue[context.guild_id].track_handle.metadata.duration))}"
+            f"{convert(round((await state(context.guild_id)).position))} / {convert(round(plugin.d.queue[context.guild_id].track_handle.metadata.duration))}"
         )
     )
 
@@ -476,7 +470,7 @@ async def queue(context):
             )
         )
 
-    if not await running(context.guild_id):
+    if not running(context.guild_id) or not await state(context.guild_id):
         await context.respond("***Nothing in the queue***", flags=hikari.MessageFlag.EPHEMERAL)
         return
 
@@ -517,7 +511,7 @@ async def connect(context):
     )
 
     # Reconstruct queue
-    if await running(context.guild_id):
+    if running(context.guild_id):
         sources = [songbird.ytdl(plugin.d.queue[context.guild_id].track_handle.metadata.source_url)] + plugin.d.queue[
             context.guild_id
         ]
@@ -531,17 +525,19 @@ async def connect(context):
     return driver
 
 
-# Return True if queue exists and is playing
-async def running(guild_id):
+# Return track info if queue is playing
+async def state(guild_id):
     try:
-        return (
-            guild_id in plugin.d.queue
-            and plugin.d.queue[guild_id].track_handle
-            and await plugin.d.queue[guild_id].track_handle.get_info()
-        )
+        return await plugin.d.queue[guild_id].track_handle.get_info()
     # TrackError is not exposed, so use base songbird error
+    # Return empty TrackState
     except songbird.SongbirdError:
-        return False
+        return None
+
+
+# Return True if queue exists and is running
+def running(guild_id):
+    return guild_id in plugin.d.queue and plugin.d.queue[guild_id].track_handle
 
 
 # Convert seconds into (HH:)MM:SS
