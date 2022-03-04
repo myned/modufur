@@ -24,14 +24,18 @@ bot = lightbulb.BotApp(
 # Listener for global command exceptions
 @bot.listen(lightbulb.CommandErrorEvent)
 async def on_error(event):
-    await bot.application.owner.send(c.error(event))
+    match event.exception.__cause__ or event.exception:
+        case hikari.ForbiddenError():
+            pass
+        case _:
+            await bot.application.owner.send(c.error(event))
 
-    try:
-        await event.context.respond(c.ERROR)
-    except:
-        await event.context.interaction.edit_initial_response(c.ERROR, components=None)
+            try:
+                await event.context.respond(c.ERROR, flags=hikari.MessageFlag.EPHEMERAL)
+            except:
+                await event.context.interaction.edit_initial_response(c.ERROR, components=None)
 
-    raise event.exception
+            raise event.exception
 
 
 miru.load(bot)
