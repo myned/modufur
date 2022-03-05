@@ -223,7 +223,8 @@ async def play(context):
 
     embed.title = match["title"]
     embed.url = match["link"]
-    embed.set_thumbnail(match["thumbnails"][0]["url"])
+    if match["thumbnails"]:
+        embed.set_thumbnail(match["thumbnails"][0]["url"])
 
     if running(context.guild_id) and await state(context.guild_id):
         plugin.d.queue[context.guild_id].extend(sources)
