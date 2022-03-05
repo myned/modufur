@@ -467,7 +467,7 @@ async def queue(context):
             .set_author(name="Queue")
             .set_thumbnail(plugin.d.queue[context.guild_id].track_handle.metadata.thumbnail)
             .set_footer(
-                f"{len(plugin.d.queue[context.guild_id]) + 1} track{'s' if len(plugin.d.queue[context.guild_id]) > 1 else ''}"
+                f"{len(plugin.d.queue[context.guild_id])} track{'s' if len(plugin.d.queue[context.guild_id]) > 1 else ''}"
             )
         )
 
