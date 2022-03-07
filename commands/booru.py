@@ -125,7 +125,10 @@ async def _reverse(context, urls, *, selector=None):
         await selector.send_edit(context.interaction)
     else:
         if selector:
-            await context.interaction.edit_initial_response(content=None, embed=pages[0], components=None)
+            if isinstance(pages[0], hikari.Embed):
+                await context.interaction.edit_initial_response(content=None, embed=pages[0], components=None)
+            else:
+                await context.interaction.edit_initial_response(pages[0], components=None)
         else:
             await context.respond(pages[0])
 
