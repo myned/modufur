@@ -81,6 +81,10 @@ git pull
 ```
 poetry update
 ```
+4. Restart systemd user service
+```
+systemctl --user restart modufur
+```
 ## Uninstalling
 1. Stop and disable systemd user service
 ```
