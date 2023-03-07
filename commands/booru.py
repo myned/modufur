@@ -11,26 +11,36 @@ extractor = urlextract.URLExtract()
 
 
 @plugin.command
-# @lightbulb.option('attachment', 'Attachment(s) to reverse')
-@lightbulb.option("url", "URL(s) to reverse, separated by space")
-@lightbulb.command("reverse", "Reverse image search using SauceNAO & Kheina", ephemeral=True)
+@lightbulb.option(
+    "ephemeral",
+    "Respond ephemerally (only visible to invoker) or in current channel",
+    type=hikari.OptionType.BOOLEAN,
+    default=True,
+)
+@lightbulb.option("attachment", "Attachment to reverse", type=hikari.OptionType.ATTACHMENT, default=None)
+@lightbulb.option("url", "URL(s) to reverse, separated by space", default=None)
+@lightbulb.command("reverse", "Reverse image search using SauceNAO & Kheina")
 @lightbulb.implements(lightbulb.SlashCommand, lightbulb.MessageCommand)
 async def reverse(context):
     match context:
         case lightbulb.SlashContext():
-            urls = extractor.find_urls(context.options.url or "", only_unique=True, with_schema_only=True)
+            urls = extractor.find_urls(
+                f"{context.options.url} {context.options.attachment.url if context.options.attachment else None}",
+                only_unique=True,
+                with_schema_only=True,
+            )
 
             if not urls:
-                await context.respond("***Invalid URL(s)***")
+                await context.respond("***Invalid URL(s)***", flags=hikari.MessageFlag.EPHEMERAL)
                 return
 
-            await _reverse(context, urls)
+            await _reverse(context, urls, ephemeral=context.options.ephemeral)
         case lightbulb.MessageContext():
             urls = extractor.find_urls(context.options.target.content or "", only_unique=True, with_schema_only=True)
             urls += [attachment.url for attachment in context.options.target.attachments if attachment.url not in urls]
 
             if not urls:
-                await context.respond("***No images found***")
+                await context.respond("***No images found***", flags=hikari.MessageFlag.EPHEMERAL)
                 return
 
             selector = None
@@ -86,9 +96,12 @@ async def on_reverse_error(event):
 
 
 # Reverse images and respond
-async def _reverse(context, urls, *, selector=None):
+async def _reverse(context, urls, *, selector=None, ephemeral=True):
     if not selector:
-        await context.respond(hikari.ResponseType.DEFERRED_MESSAGE_CREATE)
+        await context.respond(
+            hikari.ResponseType.DEFERRED_MESSAGE_CREATE,
+            flags=hikari.MessageFlag.EPHEMERAL if ephemeral else hikari.MessageFlag.NONE,
+        )
 
     matches = await scraper.reverse(urls)
 
@@ -96,7 +109,7 @@ async def _reverse(context, urls, *, selector=None):
         if selector:
             await context.interaction.edit_initial_response("***No matches found***", components=None)
         else:
-            await context.respond("***No matches found***")
+            await context.respond("***No matches found***", flags=hikari.MessageFlag.EPHEMERAL)
         return
 
     pages = [
@@ -130,7 +143,9 @@ async def _reverse(context, urls, *, selector=None):
             else:
                 await context.interaction.edit_initial_response(pages[0], components=None)
         else:
-            await context.respond(pages[0])
+            await context.respond(
+                pages[0], flags=hikari.MessageFlag.EPHEMERAL if ephemeral else hikari.MessageFlag.NONE
+            )
 
 
 def load(bot):
