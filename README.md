@@ -87,4 +87,5 @@ You can send links uploaded elsewhere instead.
 [hikari](https://github.com/hikari-py/hikari)\
 [hikari-lightbulb](https://github.com/tandemdude/hikari-lightbulb)\
 [hikari-miru](https://github.com/HyperGH/hikari-miru)\
+[songbird-py](https://github.com/magpie-dev/Songbird-Py)\
 [pysaucenao](https://github.com/FujiMakoto/pysaucenao)

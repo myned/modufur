@@ -1,0 +1,11 @@
+[Unit]
+Description=Modufur
+Requires=default.target
+After=default.target
+
+[Service]
+WorkingDirectory=~/.git/Modufur
+ExecStart=poetry run python -OO run.py >&2
+
+[Install]
+WantedBy=default.target
