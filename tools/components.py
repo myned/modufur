@@ -90,7 +90,7 @@ class Selector(nav.NavigatorView):
 
         await interaction.edit_initial_response(**payload)
 
-        self.start(await interaction.fetch_initial_response())
+        await self.start(await interaction.fetch_initial_response())
 
 
 def load(bot):
