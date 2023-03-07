@@ -6,20 +6,20 @@ authors = ["Myned <dev@myned.dev>"]
 license = "MIT"
 
 [tool.poetry.dependencies]
-python = "~3.10"
+python = ">=3.10,<3.12"
 toml = "*"
 uvloop = "*"
 aiohttp = "*"
 urlextract = "*"
 tldextract = "*"
 hikari = {extras = ["speedups"], version = "*"}
-hikari-lightbulb = {git = "https://github.com/tandemdude/hikari-lightbulb.git", rev = "development"}
+hikari-lightbulb = "*"
 hikari-miru = "*"
 songbird-py = "*"
 youtube-search-python = "*"
 pysaucenao = {git = "https://github.com/FujiMakoto/pysaucenao.git"}
 
-[tool.poetry.dev-dependencies]
+[tool.poetry.group.dev.dependencies]
 black = "*"
 
 [tool.black]
