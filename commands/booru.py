@@ -47,10 +47,7 @@ async def reverse(context):
 
             if len(urls) > 1:
                 selector = components.Selector(
-                    pages=[
-                        f"**Select potential images to search: `{urls.index(url) + 1}/{len(urls)}`**\n{url}"
-                        for url in urls
-                    ],
+                    pages=[f"**Select images to search: `{urls.index(url) + 1}/{len(urls)}`**\n{url}" for url in urls],
                     buttons=[components.Back(), components.Forward(), components.Select(), components.Confirm()],
                     urls=urls,
                 )
