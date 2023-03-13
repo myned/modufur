@@ -56,15 +56,19 @@ cd Modufur
 ```
 cp modufur.service ~/.config/systemd/user
 ```
-3. Reload user daemon
+3. Replace `user` in `WorkingDirectory` with current user
+```
+sed -i "s|\(WorkingDirectory=/home/\)user|\1$(whoami)|" ~/.config/systemd/user/modufur.service
+```
+4. Reload user daemon
 ```
 systemctl --user daemon-reload
 ```
-4. Start and enable service on login
+5. Start and enable service on login
 ```
 systemctl --user enable --now modufur
 ```
-5. Enable lingering to start user services on boot
+6. Enable lingering to start user services on boot
 ```
 sudo loginctl enable-linger username
 ```
