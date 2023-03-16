@@ -111,7 +111,7 @@ rm -rf Modufur
 2. Make changes to the code
 3. Format the code with [Black](https://black.readthedocs.io/en/stable) inside the project folder
     ```
-    poetry run python black .
+    poetry run black .
     ```
 4. [Commit](https://github.com/git-guides/git-commit) the changes to the fork
 5. Create a [pull request](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/creating-a-pull-request) from the fork
