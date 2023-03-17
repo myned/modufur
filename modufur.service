@@ -4,7 +4,7 @@ Requires=default.target
 After=default.target
 
 [Service]
-WorkingDirectory=/home/user/.git/Modufur
+WorkingDirectory=/home/user/.git/modufur
 ExecStart=poetry run python -OO run.py >&2
 
 [Install]

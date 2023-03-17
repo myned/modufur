@@ -13,11 +13,11 @@ Linux is used for the following commands\
 ## Installing
 1. Clone repository
 ```
-git clone https://github.com/Myned/Modufur.git
+git clone https://github.com/Myned/modufur.git
 ```
 2. Go to project folder
 ```
-cd Modufur
+cd modufur
 ```
 3. Create a virtual environment and install dependencies
 ```
@@ -26,7 +26,7 @@ poetry install
 ## Usage
 1. Go to project folder
 ```
-cd Modufur
+cd modufur
 ```
 2. Run with optimizations
 ```
@@ -46,11 +46,11 @@ e621 = "" # e621 token
 ```
 ### systemd service
 Run in the background on most Linux machines\
-This assumes that the project folder is located at `~/.git/Modufur`\
+This assumes that the project folder is located at `~/.git/modufur`\
 Change the `WorkingDirectory` path in `modufur.service` if this is not the case
 1. Go to project folder
 ```
-cd Modufur
+cd modufur
 ```
 2. Copy user service file
 ```
@@ -75,7 +75,7 @@ sudo loginctl enable-linger username
 ## Updating
 1. Go to project folder
 ```
-cd Modufur
+cd modufur
 ```
 2. Pull changes from repository
 ```
@@ -104,7 +104,7 @@ sudo loginctl disable-linger username
 ```
 4. Remove project folder
 ```
-rm -rf Modufur
+rm -rf modufur
 ```
 ## Contributing
 1. [Fork](https://docs.github.com/en/get-started/quickstart/fork-a-repo) this repository on GitHub
