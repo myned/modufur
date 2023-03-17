@@ -2,7 +2,7 @@
 name = "modufur"
 version = "0.1.0"
 description = "Modufur Discord Bot"
-authors = ["Myned <dev@myned.dev>"]
+authors = ["Myned <dev@bjork.tech>"]
 license = "MIT"
 
 [tool.poetry.dependencies]
